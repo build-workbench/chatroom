@@ -21,11 +21,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Architecture documentation
 - Grafana dashboard for monitoring
 - Comprehensive test coverage
+- `.env.example` for local setup
+- Frontend unit tests using Node built-in test runner
+- Release bundles that include runnable frontend static assets
+- A VitePress-based teaching docs site under `docs/`
+- GitHub Pages deployment workflow for the docs site
 
 ### Changed
-- Updated README with badges and improved documentation
+- Updated README with teaching-friendly documentation and manual testing steps
 - Enhanced docker-compose.yml with application service
 - Improved security configuration with JWT secret validation
+- Translated `AGENTS.md` to Chinese
+- Replaced the frontend template README with project-specific guidance
+- Added frontend tests to CI
+- Adjusted release workflow to validate tests before packaging
+- Stabilized backend websocket and router tests across environments
+- Reorganized project documentation into an online teaching docs experience
 
 ## [0.1.0] - 2025-01-08
 
@@ -49,6 +60,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - gorilla/websocket for WebSocket handling
 - PostgreSQL 16 for data persistence
 - React 19 with Vite
-
-[Unreleased]: https://github.com/your-username/chatroom/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/your-username/chatroom/releases/tag/v0.1.0

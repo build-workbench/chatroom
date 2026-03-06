@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "./.test-dist",
+    "rootDir": "./src",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "types": ["node"],
+    "jsx": "react-jsx"
+  },
+  "include": ["src/storage.ts", "src/storage.test.ts", "src/types.ts"]
+}

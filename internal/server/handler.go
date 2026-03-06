@@ -94,7 +94,9 @@ func (h *Handler) Login(c *gin.Context) {
 
 // RefreshToken 处理 token 刷新请求。
 func (h *Handler) RefreshToken(c *gin.Context) {
-	var req struct{ RefreshToken string `json:"refresh_token"` }
+	var req struct {
+		RefreshToken string `json:"refresh_token"`
+	}
 	if err := c.ShouldBindJSON(&req); err != nil || req.RefreshToken == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
 		return
@@ -110,7 +112,9 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 
 // CreateRoom 处理创建房间请求。
 func (h *Handler) CreateRoom(c *gin.Context) {
-	var req struct{ Name string `json:"name"` }
+	var req struct {
+		Name string `json:"name"`
+	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
 		return

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { useToast } from '../toast'
+import { useToast } from '../toast-context'
 
 export function AuthScreen(props: {
   onLogin: (username: string, password: string) => Promise<void>

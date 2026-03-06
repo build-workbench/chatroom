@@ -1,7 +1,7 @@
 # ChatRoom 设计文档
 
 ## 系统概览
-本项目是一套教学用的实时聊天室，后端使用 Gin + GORM + Zerolog，前端为轻量原生 JS，数据层采用 Docker 化的 Postgres。整体拓扑为：浏览器先通过 REST API 完成注册/登录，再以 `ws://host/ws?room_id=xx&token=yy` 方式建立 WebSocket，后端在 `internal/ws` 中维护房间级 Hub 实时转发消息，并将历史消息持久化到数据库。
+本项目是一套教学用的实时聊天室，后端使用 Gin + GORM + Zerolog，主前端为 React + TypeScript，另提供 `web/` 目录下的静态回退界面，数据层采用 Docker 化的 Postgres。整体拓扑为：浏览器先通过 REST API 完成注册/登录，再以 `ws://host/ws?room_id=xx&token=yy` 方式建立 WebSocket，后端在 `internal/ws` 中维护房间级 Hub 实时转发消息，并将历史消息持久化到数据库。
 
 ## 模块拆分
 - `cmd/server`: 程序入口，按顺序完成配置加载、日志初始化、数据库连接和 Router 构建。
@@ -10,7 +10,8 @@
 - `internal/auth`: JWT + 刷新令牌逻辑，并封装 Gin 中间件。
 - `internal/ws`: Hub/Client 抽象，负责房间内的广播、心跳以及 typing 事件。
 - `internal/mw`、`internal/metrics`、`internal/log`: 封装限流、Prometheus 指标和 Zerolog。
-- `web/`: 静态页面和前端逻辑，直接由 Gin 的 `Static` 中间件托管。
+- `frontend/`: React 主前端，负责日常开发、测试与构建产物输出。
+- `web/`: 静态回退页面，在 `frontend/dist` 不存在时由 Gin 直接托管。
 
 ## 关键流程
 ### 鉴权

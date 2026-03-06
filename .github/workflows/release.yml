@@ -7,13 +7,96 @@ on:
 
 env:
   GO_VERSION: '1.24'
+  NODE_VERSION: '20'
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-binaries:
-    name: Build Binaries
+  validate:
+    name: Validate
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: chatroom_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Download Go dependencies
+        run: go mod download
+
+      - name: Run Go tests
+        env:
+          DATABASE_DSN: postgres://postgres:postgres@localhost:5432/chatroom_test?sslmode=disable
+          JWT_SECRET: test-secret-for-release
+          APP_ENV: test
+        run: go test ./...
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
+      - name: Run frontend tests
+        run: npm --prefix frontend run test
+
+  build-frontend:
+    name: Build Frontend Bundle
+    runs-on: ubuntu-latest
+    needs: validate
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Upload frontend dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+  build-binaries:
+    name: Build Release Bundles
+    runs-on: ubuntu-latest
+    needs: [validate, build-frontend]
     strategy:
       matrix:
         include:
@@ -38,6 +121,12 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
+      - name: Download frontend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
       - name: Get version
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
@@ -47,20 +136,42 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          mkdir -p dist
+          mkdir -p build
           go build -ldflags="-s -w -X main.Version=${{ steps.version.outputs.VERSION }} -X main.GitCommit=${{ github.sha }}" \
-            -o dist/chatroom-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} \
+            -o build/chatroom${{ matrix.ext }} \
             ./cmd/server
+
+      - name: Package release bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          ARCHIVE_BASE="chatroom-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}"
+          PACKAGE_DIR="dist/${ARCHIVE_BASE}"
+
+          mkdir -p "${PACKAGE_DIR}/frontend"
+          cp "build/chatroom${{ matrix.ext }}" "${PACKAGE_DIR}/chatroom${{ matrix.ext }}"
+          cp README.md LICENSE .env.example "${PACKAGE_DIR}/"
+          cp -R frontend/dist "${PACKAGE_DIR}/frontend/dist"
+
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            (cd dist && zip -r "${ARCHIVE_BASE}.zip" "${ARCHIVE_BASE}")
+          else
+            tar -C dist -czf "dist/${ARCHIVE_BASE}.tar.gz" "${ARCHIVE_BASE}"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: chatroom-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/
+          name: release-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
 
   build-docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
+    needs: validate
     permissions:
       contents: read
       packages: write
@@ -120,7 +231,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist
-          pattern: chatroom-*
+          pattern: release-*
           merge-multiple: true
 
       - name: Create checksums

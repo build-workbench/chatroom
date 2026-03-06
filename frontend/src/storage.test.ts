@@ -1,127 +1,162 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { loadAuth, saveTokens, saveUser, setLastRoomId, clearAuth } from './storage';
-import type { User } from './types';
+import assert from 'node:assert/strict'
+import { beforeEach, describe, it } from 'node:test'
+
+import { clearAuth, loadAuth, saveTokens, saveUser, setLastRoomId } from './storage'
+import type { User } from './types'
+
+type StorageValue = string | null
+
+class MemoryStorage implements Storage {
+	private readonly data = new Map<string, string>()
+
+	get length(): number {
+		return this.data.size
+	}
+
+	clear(): void {
+		this.data.clear()
+	}
+
+	getItem(key: string): StorageValue {
+		return this.data.has(key) ? this.data.get(key) ?? null : null
+	}
+
+	key(index: number): StorageValue {
+		return Array.from(this.data.keys())[index] ?? null
+	}
+
+	removeItem(key: string): void {
+		this.data.delete(key)
+	}
+
+	setItem(key: string, value: string): void {
+		this.data.set(key, value)
+	}
+}
+
+beforeEach(() => {
+	Object.defineProperty(globalThis, 'localStorage', {
+		value: new MemoryStorage(),
+		configurable: true,
+		writable: true,
+	})
+})
 
 describe('storage', () => {
-    beforeEach(() => {
-        localStorage.clear();
-    });
+	describe('loadAuth', () => {
+		it('returns empty values when nothing is stored', () => {
+			const auth = loadAuth()
+			assert.equal(auth.accessToken, '')
+			assert.equal(auth.refreshToken, '')
+			assert.equal(auth.user, null)
+			assert.equal(auth.lastRoomId, null)
+		})
 
-    describe('loadAuth', () => {
-        it('should return empty values when nothing is stored', () => {
-            const auth = loadAuth();
-            expect(auth.accessToken).toBe('');
-            expect(auth.refreshToken).toBe('');
-            expect(auth.user).toBeNull();
-            expect(auth.lastRoomId).toBeNull();
-        });
+		it('returns stored tokens', () => {
+			localStorage.setItem('chat_access', 'test-access')
+			localStorage.setItem('chat_refresh', 'test-refresh')
 
-        it('should return stored tokens', () => {
-            localStorage.setItem('chat_access', 'test-access');
-            localStorage.setItem('chat_refresh', 'test-refresh');
+			const auth = loadAuth()
+			assert.equal(auth.accessToken, 'test-access')
+			assert.equal(auth.refreshToken, 'test-refresh')
+		})
 
-            const auth = loadAuth();
-            expect(auth.accessToken).toBe('test-access');
-            expect(auth.refreshToken).toBe('test-refresh');
-        });
+		it('returns stored user', () => {
+			const user: User = { id: 1, username: 'testuser' }
+			localStorage.setItem('chat_user', JSON.stringify(user))
 
-        it('should return stored user', () => {
-            const user: User = { id: 1, username: 'testuser' };
-            localStorage.setItem('chat_user', JSON.stringify(user));
+			const auth = loadAuth()
+			assert.deepEqual(auth.user, user)
+		})
 
-            const auth = loadAuth();
-            expect(auth.user).toEqual(user);
-        });
+		it('handles invalid user json', () => {
+			localStorage.setItem('chat_user', 'invalid-json')
 
-        it('should handle invalid user JSON', () => {
-            localStorage.setItem('chat_user', 'invalid-json');
+			const auth = loadAuth()
+			assert.equal(auth.user, null)
+		})
 
-            const auth = loadAuth();
-            expect(auth.user).toBeNull();
-        });
+		it('returns stored last room id', () => {
+			localStorage.setItem('chat_last_room', '42')
 
-        it('should return stored lastRoomId', () => {
-            localStorage.setItem('chat_last_room', '42');
+			const auth = loadAuth()
+			assert.equal(auth.lastRoomId, 42)
+		})
 
-            const auth = loadAuth();
-            expect(auth.lastRoomId).toBe(42);
-        });
+		it('returns null for invalid last room id', () => {
+			localStorage.setItem('chat_last_room', 'invalid')
 
-        it('should return null for invalid lastRoomId', () => {
-            localStorage.setItem('chat_last_room', 'invalid');
+			const auth = loadAuth()
+			assert.equal(auth.lastRoomId, null)
+		})
+	})
 
-            const auth = loadAuth();
-            expect(auth.lastRoomId).toBeNull();
-        });
-    });
+	describe('saveTokens', () => {
+		it('stores both tokens', () => {
+			saveTokens('access-123', 'refresh-456')
 
-    describe('saveTokens', () => {
-        it('should store both tokens', () => {
-            saveTokens('access-123', 'refresh-456');
+			assert.equal(localStorage.getItem('chat_access'), 'access-123')
+			assert.equal(localStorage.getItem('chat_refresh'), 'refresh-456')
+		})
 
-            expect(localStorage.getItem('chat_access')).toBe('access-123');
-            expect(localStorage.getItem('chat_refresh')).toBe('refresh-456');
-        });
+		it('overwrites existing tokens', () => {
+			saveTokens('old-access', 'old-refresh')
+			saveTokens('new-access', 'new-refresh')
 
-        it('should overwrite existing tokens', () => {
-            saveTokens('old-access', 'old-refresh');
-            saveTokens('new-access', 'new-refresh');
+			assert.equal(localStorage.getItem('chat_access'), 'new-access')
+			assert.equal(localStorage.getItem('chat_refresh'), 'new-refresh')
+		})
+	})
 
-            expect(localStorage.getItem('chat_access')).toBe('new-access');
-            expect(localStorage.getItem('chat_refresh')).toBe('new-refresh');
-        });
-    });
+	describe('saveUser', () => {
+		it('stores user as json', () => {
+			const user: User = { id: 1, username: 'alice' }
+			saveUser(user)
 
-    describe('saveUser', () => {
-        it('should store user as JSON', () => {
-            const user: User = { id: 1, username: 'alice' };
-            saveUser(user);
+			assert.equal(localStorage.getItem('chat_user'), JSON.stringify(user))
+		})
 
-            const stored = localStorage.getItem('chat_user');
-            expect(stored).toBe(JSON.stringify(user));
-        });
+		it('removes user when null', () => {
+			const user: User = { id: 1, username: 'alice' }
+			saveUser(user)
+			saveUser(null)
 
-        it('should remove user when null', () => {
-            const user: User = { id: 1, username: 'alice' };
-            saveUser(user);
-            saveUser(null);
+			assert.equal(localStorage.getItem('chat_user'), null)
+		})
+	})
 
-            expect(localStorage.getItem('chat_user')).toBeNull();
-        });
-    });
+	describe('setLastRoomId', () => {
+		it('stores room id', () => {
+			setLastRoomId(42)
+			assert.equal(localStorage.getItem('chat_last_room'), '42')
+		})
 
-    describe('setLastRoomId', () => {
-        it('should store room id', () => {
-            setLastRoomId(42);
-            expect(localStorage.getItem('chat_last_room')).toBe('42');
-        });
+		it('removes room id when null', () => {
+			setLastRoomId(42)
+			setLastRoomId(null)
+			assert.equal(localStorage.getItem('chat_last_room'), null)
+		})
 
-        it('should remove room id when null', () => {
-            setLastRoomId(42);
-            setLastRoomId(null);
-            expect(localStorage.getItem('chat_last_room')).toBeNull();
-        });
+		it('removes room id when zero or negative', () => {
+			setLastRoomId(42)
+			setLastRoomId(0)
+			assert.equal(localStorage.getItem('chat_last_room'), null)
+		})
+	})
 
-        it('should remove room id when zero or negative', () => {
-            setLastRoomId(42);
-            setLastRoomId(0);
-            expect(localStorage.getItem('chat_last_room')).toBeNull();
-        });
-    });
+	describe('clearAuth', () => {
+		it('removes all auth data', () => {
+			saveTokens('access', 'refresh')
+			saveUser({ id: 1, username: 'test' })
+			setLastRoomId(42)
 
-    describe('clearAuth', () => {
-        it('should remove all auth data', () => {
-            saveTokens('access', 'refresh');
-            saveUser({ id: 1, username: 'test' });
-            setLastRoomId(42);
+			clearAuth()
 
-            clearAuth();
-
-            const auth = loadAuth();
-            expect(auth.accessToken).toBe('');
-            expect(auth.refreshToken).toBe('');
-            expect(auth.user).toBeNull();
-            expect(auth.lastRoomId).toBeNull();
-        });
-    });
-});
+			const auth = loadAuth()
+			assert.equal(auth.accessToken, '')
+			assert.equal(auth.refreshToken, '')
+			assert.equal(auth.user, null)
+			assert.equal(auth.lastRoomId, null)
+		})
+	})
+})

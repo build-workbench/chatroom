@@ -11,9 +11,9 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test": "tsc -p tsconfig.test.json && node -e \"require('node:fs').mkdirSync('.test-dist',{recursive:true});require('node:fs').writeFileSync('.test-dist/package.json', JSON.stringify({type:'commonjs'}));\" && node --test .test-dist/storage.test.js",
+    "test:watch": "tsc -p tsconfig.test.json && node -e \"require('node:fs').mkdirSync('.test-dist',{recursive:true});require('node:fs').writeFileSync('.test-dist/package.json', JSON.stringify({type:'commonjs'}));\" && node --test --watch .test-dist/storage.test.js",
+    "test:coverage": "npm run test"
   },
   "dependencies": {
     "react": "^19.2.0",

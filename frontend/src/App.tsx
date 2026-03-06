@@ -5,7 +5,7 @@ import { ChatRoom } from './components/ChatRoom'
 import { Sidebar } from './components/Sidebar'
 import { AuthScreen } from './screens/AuthScreen'
 import { ChatSocket } from './socket'
-import { useToast } from './toast'
+import { useToast } from './toast-context'
 import { clearAuth, loadAuth, saveTokens, saveUser, setLastRoomId } from './storage'
 import type { ConnectionStatus, Room, User, WsEvent } from './types'
 
@@ -84,6 +84,7 @@ export default function App() {
 
 	const socketRef = useRef<ChatSocket | null>(null)
 	useEffect(() => {
+		const typingTimers = typingTimersRef.current
 		const sock = new ChatSocket({
 			getAccessToken: () => accessRef.current,
 			onStatus: (s, attempt) => {
@@ -137,10 +138,10 @@ export default function App() {
 		socketRef.current = sock
 		return () => {
 			sock.close()
-			for (const id of typingTimersRef.current.values()) {
+			for (const id of typingTimers.values()) {
 				window.clearTimeout(id)
 			}
-			typingTimersRef.current.clear()
+			typingTimers.clear()
 		}
 	}, [toast])
 

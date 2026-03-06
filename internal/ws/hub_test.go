@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+func startTestRoomHub(t *testing.T, roomID uint) *RoomHub {
+	t.Helper()
+	rh := NewRoomHub(roomID)
+	go rh.run()
+	t.Cleanup(rh.Stop)
+	return rh
+}
+
 func TestNewHub(t *testing.T) {
 	hub := NewHub()
 	if hub == nil {
@@ -33,7 +41,7 @@ func TestHub_Online_NonExistentRoom(t *testing.T) {
 }
 
 func TestRoomHub_Register(t *testing.T) {
-	rh := NewRoomHub(1)
+	rh := startTestRoomHub(t, 1)
 
 	// Create a fake client
 	client := &Client{
@@ -42,9 +50,6 @@ func TestRoomHub_Register(t *testing.T) {
 		uname:  "testuser",
 		send:   make(chan []byte, 256),
 	}
-
-	// Start the room hub
-	go rh.run()
 
 	// Register client
 	rh.register <- client
@@ -55,13 +60,10 @@ func TestRoomHub_Register(t *testing.T) {
 	if rh.Online() != 1 {
 		t.Errorf("Online() after register = %d, want 1", rh.Online())
 	}
-
-	// Cleanup
-	close(rh.register)
 }
 
 func TestRoomHub_Unregister(t *testing.T) {
-	rh := NewRoomHub(1)
+	rh := startTestRoomHub(t, 1)
 
 	client := &Client{
 		room:   rh,
@@ -69,8 +71,6 @@ func TestRoomHub_Unregister(t *testing.T) {
 		uname:  "testuser",
 		send:   make(chan []byte, 256),
 	}
-
-	go rh.run()
 
 	// Register then unregister
 	rh.register <- client
@@ -85,7 +85,7 @@ func TestRoomHub_Unregister(t *testing.T) {
 }
 
 func TestRoomHub_Broadcast(t *testing.T) {
-	rh := NewRoomHub(1)
+	rh := startTestRoomHub(t, 1)
 
 	// Create multiple clients
 	clients := make([]*Client, 3)
@@ -97,8 +97,6 @@ func TestRoomHub_Broadcast(t *testing.T) {
 			send:   make(chan []byte, 256),
 		}
 	}
-
-	go rh.run()
 
 	// Register all clients
 	for _, c := range clients {
@@ -118,13 +116,17 @@ func TestRoomHub_Broadcast(t *testing.T) {
 		wg.Add(1)
 		go func(idx int, client *Client) {
 			defer wg.Done()
-			select {
-			case msg := <-client.send:
-				if string(msg) == string(testMsg) {
-					received[idx] = true
+			deadline := time.After(100 * time.Millisecond)
+			for {
+				select {
+				case msg := <-client.send:
+					if string(msg) == string(testMsg) {
+						received[idx] = true
+						return
+					}
+				case <-deadline:
+					return
 				}
-			case <-time.After(100 * time.Millisecond):
-				// Timeout
 			}
 		}(i, c)
 	}
@@ -140,6 +142,7 @@ func TestRoomHub_Broadcast(t *testing.T) {
 
 func TestRoomHub_MultipleRooms(t *testing.T) {
 	hub := NewHub()
+	t.Cleanup(hub.Shutdown)
 
 	// Create clients for different rooms
 	rh1 := hub.GetRoom(1)
@@ -172,7 +175,7 @@ func TestRoomHub_MultipleRooms(t *testing.T) {
 }
 
 func TestClient_Send(t *testing.T) {
-	rh := NewRoomHub(1)
+	rh := startTestRoomHub(t, 1)
 	client := &Client{
 		room:   rh,
 		userID: 1,
@@ -202,8 +205,7 @@ func TestClient_Send(t *testing.T) {
 }
 
 func TestRoomHub_Concurrent(t *testing.T) {
-	rh := NewRoomHub(1)
-	go rh.run()
+	rh := startTestRoomHub(t, 1)
 
 	var wg sync.WaitGroup
 	numClients := 10

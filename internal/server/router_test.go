@@ -16,8 +16,12 @@ import (
 )
 
 func setupTestDB(t *testing.T) *gorm.DB {
+	t.Helper()
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
+		if strings.Contains(err.Error(), "requires cgo") {
+			t.Skipf("skipping router tests in current environment: %v", err)
+		}
 		t.Fatalf("failed to connect to test database: %v", err)
 	}
 
@@ -30,6 +34,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 }
 
 func setupTestRouter(t *testing.T) (*gorm.DB, *http.Handler) {
+	t.Helper()
 	db := setupTestDB(t)
 	cfg := config.Config{
 		Port:                  "8080",
