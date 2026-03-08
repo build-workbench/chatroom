@@ -17,38 +17,39 @@ linters:
     - bodyclose
     - durationcheck
     - errorlint
-    - exportloopref
     - gocritic
     - nilerr
     - prealloc
     - unconvert
     - unparam
+    - copyloopvar
+    - intrange
 
 linters-settings:
   errcheck:
     check-type-assertions: true
     check-blank: true
-  
+
   govet:
     enable-all: true
     disable:
       - fieldalignment
-  
+
   gofmt:
     simplify: true
-  
+
   goimports:
     local-prefixes: chatroom
-  
+
   misspell:
     locale: US
-  
+
   gosec:
     excludes:
-      - G104 # Audit errors not checked
+      - G104
     config:
       G306: "0644"
-  
+
   gocritic:
     enabled-tags:
       - diagnostic
@@ -65,15 +66,15 @@ issues:
         - errcheck
         - gosec
         - gocritic
-    
+
     - path: cmd/
       linters:
         - gocritic
-    
+
     - linters:
         - staticcheck
       text: "SA9003:"
-    
+
     - linters:
         - govet
       text: "shadow:"

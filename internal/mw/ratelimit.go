@@ -69,11 +69,12 @@ func (rl *RL) Stop() {
 	}
 }
 
-// RateLimit 返回一个基于 IP+路径的令牌桶限速中间件。
-func RateLimit(r rate.Limit, burst int) gin.HandlerFunc {
+// RateLimit 返回一个基于 IP+路径的令牌桶限速中间件，以及一个用于优雅停服时
+// 停止 GC goroutine 的 cleanup 函数。
+func RateLimit(r rate.Limit, burst int) (gin.HandlerFunc, func()) {
 	rl := NewRateLimiter(r, burst, 2*time.Minute)
 	go rl.gc()
-	return func(c *gin.Context) {
+	mw := func(c *gin.Context) {
 		ip := clientIP(c.Request.RemoteAddr)
 		key := ip + "|" + c.FullPath()
 		if key == "|" {
@@ -86,6 +87,7 @@ func RateLimit(r rate.Limit, burst int) gin.HandlerFunc {
 		}
 		c.Next()
 	}
+	return mw, rl.Stop
 }
 
 func clientIP(remote string) string {

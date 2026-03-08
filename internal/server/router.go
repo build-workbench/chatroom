@@ -4,11 +4,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 
-	"chatroom/internal/auth"
 	"chatroom/internal/config"
 	"chatroom/internal/metrics"
 	"chatroom/internal/mw"
@@ -21,16 +19,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// Version information, set via ldflags
-var (
-	Version   = "dev"
-	GitCommit = "unknown"
-	BuildTime = "unknown"
-	GoVersion = runtime.Version()
-)
+// BuildInfo 携带构建时注入的版本信息，由 main 包通过 ldflags 设置后传入。
+type BuildInfo struct {
+	Version   string
+	GitCommit string
+	BuildTime string
+	GoVersion string
+}
 
 // SetupRouter 统一初始化 Gin 中间件、REST API 以及 WebSocket 端点。
-func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub) *gin.Engine {
+func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) *gin.Engine {
 	userSvc := service.NewUserService(db, cfg)
 	roomSvc := service.NewRoomService(db, hub)
 	msgSvc := service.NewMessageService(db)
@@ -42,57 +40,15 @@ func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub) *gin.Engine {
 	// 控制单个 IP+路由的速率，避免教学环境被刷爆。
 	r.Use(mw.RateLimit(rate.Every(time.Second/20), 40))
 
-	// Health check endpoints
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":    "ok",
-			"timestamp": time.Now().UTC().Format(time.RFC3339),
-		})
-	})
-	r.GET("/healthz", func(c *gin.Context) { c.JSON(http.StatusOK, gin.H{"status": "ok"}) })
+	h := NewHandler(userSvc, roomSvc, msgSvc, db, bi)
 
-	r.GET("/ready", func(c *gin.Context) {
-		checks := make(map[string]string)
-
-		// Database health check
-		sqlDB, err := db.DB()
-		if err != nil {
-			checks["database"] = "unhealthy"
-			c.JSON(http.StatusServiceUnavailable, gin.H{
-				"status": "not_ready",
-				"checks": checks,
-			})
-			return
-		}
-		if err := sqlDB.Ping(); err != nil {
-			checks["database"] = "unhealthy"
-			c.JSON(http.StatusServiceUnavailable, gin.H{
-				"status": "not_ready",
-				"checks": checks,
-			})
-			return
-		}
-		checks["database"] = "healthy"
-
-		c.JSON(http.StatusOK, gin.H{
-			"status": "ready",
-			"checks": checks,
-		})
-	})
-
-	r.GET("/version", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"version":    Version,
-			"git_commit": GitCommit,
-			"build_time": BuildTime,
-			"go_version": GoVersion,
-		})
-	})
-
+	r.GET("/health", h.Health)
+	r.GET("/healthz", h.Healthz)
+	r.GET("/ready", h.Ready)
+	r.GET("/version", h.Version)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	api := r.Group("/api/v1")
-	h := NewHandler(userSvc, roomSvc, msgSvc)
 
 	api.POST("/auth/register", h.Register)
 	api.POST("/auth/login", h.Login)
@@ -100,7 +56,7 @@ func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub) *gin.Engine {
 
 	// 需要 Bearer Token 的业务接口。
 	authed := api.Group("")
-	authed.Use(auth.AuthMiddleware(cfg, db))
+	authed.Use(mw.AuthMiddleware(cfg, db))
 
 	authed.POST("/rooms", h.CreateRoom)
 	authed.GET("/rooms", h.ListRooms)

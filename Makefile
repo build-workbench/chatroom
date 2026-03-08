@@ -135,13 +135,31 @@ frontend-test:
 	@echo "Testing frontend..."
 	cd frontend && npm run test
 
+# Docs site commands
+docs-install:
+	@echo "Installing docs dependencies..."
+	cd docs && npm install
+
+docs-dev:
+	@echo "Starting docs dev server..."
+	cd docs && npm run docs:dev
+
+docs-build:
+	@echo "Building docs site..."
+	cd docs && npm run docs:build
+
+# Full test (backend + frontend)
+test-all: test frontend-test
+	@echo "All tests passed."
+
 # Help
 help:
 	@echo "Available targets:"
 	@echo "  all            - Run lint, test, and build"
 	@echo "  build          - Build the application"
 	@echo "  build-all      - Build for multiple platforms"
-	@echo "  test           - Run tests"
+	@echo "  test           - Run Go tests"
+	@echo "  test-all       - Run Go + frontend tests"
 	@echo "  test-coverage  - Run tests with coverage report"
 	@echo "  lint           - Run golangci-lint"
 	@echo "  fmt            - Format code"
@@ -155,4 +173,5 @@ help:
 	@echo "  run            - Build and run the application"
 	@echo "  tools          - Install development tools"
 	@echo "  frontend-*     - Frontend related commands"
+	@echo "  docs-*         - Documentation site commands"
 	@echo "  help           - Show this help message"

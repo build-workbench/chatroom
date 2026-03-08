@@ -5,46 +5,133 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
-	"chatroom/internal/auth"
+	"chatroom/internal/mw"
 	"chatroom/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 )
+
+// UserService 定义用户业务接口。
+type UserService interface {
+	Register(username, password string) (*service.RegisterResult, error)
+	Login(username, password string) (*service.LoginResult, error)
+	RefreshTokens(oldRT string) (*service.RefreshResult, error)
+}
+
+// RoomService 定义房间业务接口。
+type RoomService interface {
+	Create(name string, ownerID uint) (*service.RoomDTO, error)
+	List(limit int) ([]service.RoomDTO, error)
+}
+
+// MessageService 定义消息业务接口。
+type MessageService interface {
+	ListByRoom(roomID uint, limit int, beforeID uint) ([]service.MessageDTO, error)
+}
 
 // Handler 聚合所有 HTTP handler，依赖注入 service 层。
 type Handler struct {
-	userSvc *service.UserService
-	roomSvc *service.RoomService
-	msgSvc  *service.MessageService
+	userSvc UserService
+	roomSvc RoomService
+	msgSvc  MessageService
+	db      *gorm.DB
+	bi      BuildInfo
 }
 
-func NewHandler(userSvc *service.UserService, roomSvc *service.RoomService, msgSvc *service.MessageService) *Handler {
-	return &Handler{userSvc: userSvc, roomSvc: roomSvc, msgSvc: msgSvc}
+func NewHandler(userSvc UserService, roomSvc RoomService, msgSvc MessageService, db *gorm.DB, bi BuildInfo) *Handler {
+	return &Handler{userSvc: userSvc, roomSvc: roomSvc, msgSvc: msgSvc, db: db, bi: bi}
 }
+
+// --- 请求结构体 ---
+
+type registerRequest struct {
+	Username string `json:"username" binding:"required,min=2,max=64"`
+	Password string `json:"password" binding:"required,min=4,max=128"`
+}
+
+type loginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type refreshRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+type createRoomRequest struct {
+	Name string `json:"name" binding:"required,max=128"`
+}
+
+// --- 运维端点 ---
+
+// Health 返回存活状态。
+func (h *Handler) Health(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":    "ok",
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	})
+}
+
+// Healthz 返回简洁的存活状态。
+func (h *Handler) Healthz(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+// Ready 检查数据库连通性，返回就绪状态。
+func (h *Handler) Ready(c *gin.Context) {
+	checks := make(map[string]string)
+
+	sqlDB, err := h.db.DB()
+	if err != nil {
+		checks["database"] = "unhealthy"
+		c.JSON(http.StatusServiceUnavailable, gin.H{"status": "not_ready", "checks": checks})
+		return
+	}
+	if err := sqlDB.Ping(); err != nil {
+		checks["database"] = "unhealthy"
+		c.JSON(http.StatusServiceUnavailable, gin.H{"status": "not_ready", "checks": checks})
+		return
+	}
+	checks["database"] = "healthy"
+	c.JSON(http.StatusOK, gin.H{"status": "ready", "checks": checks})
+}
+
+// Version 返回构建版本信息。
+func (h *Handler) Version(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"version":    h.bi.Version,
+		"git_commit": h.bi.GitCommit,
+		"build_time": h.bi.BuildTime,
+		"go_version": h.bi.GoVersion,
+	})
+}
+
+// --- 统一错误响应辅助 ---
+
+func badRequest(c *gin.Context, msg string) {
+	c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+}
+
+func serverError(c *gin.Context, msg string) {
+	c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+}
+
+// --- Handler 方法 ---
 
 // Register 处理用户注册请求。
 func (h *Handler) Register(c *gin.Context) {
-	var req struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
+	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
+		badRequest(c, "invalid payload")
 		return
 	}
 	req.Username = strings.TrimSpace(req.Username)
-	if req.Username == "" || req.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
-		return
-	}
-	if len(req.Username) < 2 || len(req.Username) > 64 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid username"})
-		return
-	}
-	if len(req.Password) < 4 || len(req.Password) > 128 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid password"})
+	if req.Username == "" {
+		badRequest(c, "invalid payload")
 		return
 	}
 	result, err := h.userSvc.Register(req.Username, req.Password)
@@ -54,7 +141,7 @@ func (h *Handler) Register(c *gin.Context) {
 			return
 		}
 		log.Error().Err(err).Str("username", req.Username).Msg("register")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
+		serverError(c, "failed to create user")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"id": result.ID, "username": result.Username})
@@ -62,17 +149,14 @@ func (h *Handler) Register(c *gin.Context) {
 
 // Login 处理用户登录请求。
 func (h *Handler) Login(c *gin.Context) {
-	var req struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
+	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
+		badRequest(c, "invalid payload")
 		return
 	}
 	req.Username = strings.TrimSpace(req.Username)
-	if req.Username == "" || req.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
+	if req.Username == "" {
+		badRequest(c, "invalid payload")
 		return
 	}
 	result, err := h.userSvc.Login(req.Username, req.Password)
@@ -82,7 +166,7 @@ func (h *Handler) Login(c *gin.Context) {
 			return
 		}
 		log.Error().Err(err).Str("username", req.Username).Msg("login")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "login failed"})
+		serverError(c, "login failed")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -94,11 +178,9 @@ func (h *Handler) Login(c *gin.Context) {
 
 // RefreshToken 处理 token 刷新请求。
 func (h *Handler) RefreshToken(c *gin.Context) {
-	var req struct {
-		RefreshToken string `json:"refresh_token"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil || req.RefreshToken == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
+	var req refreshRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "invalid payload")
 		return
 	}
 	result, err := h.userSvc.RefreshTokens(req.RefreshToken)
@@ -112,30 +194,24 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 
 // CreateRoom 处理创建房间请求。
 func (h *Handler) CreateRoom(c *gin.Context) {
-	var req struct {
-		Name string `json:"name"`
-	}
+	var req createRoomRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
+		badRequest(c, "invalid payload")
 		return
 	}
 	req.Name = strings.TrimSpace(req.Name)
 	if req.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
+		badRequest(c, "invalid payload")
 		return
 	}
-	if len(req.Name) > 128 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room name"})
-		return
-	}
-	room, err := h.roomSvc.Create(req.Name, auth.GetUserID(c))
+	room, err := h.roomSvc.Create(req.Name, mw.GetUserID(c))
 	if err != nil {
 		if errors.Is(err, service.ErrRoomNameTaken) {
 			c.JSON(http.StatusConflict, gin.H{"error": "room name taken"})
 			return
 		}
-		log.Error().Err(err).Uint("owner_id", auth.GetUserID(c)).Str("name", req.Name).Msg("create room")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create room"})
+		log.Error().Err(err).Uint("owner_id", mw.GetUserID(c)).Str("name", req.Name).Msg("create room")
+		serverError(c, "failed to create room")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"id": room.ID, "name": room.Name, "room": gin.H{"id": room.ID, "name": room.Name}})
@@ -146,7 +222,7 @@ func (h *Handler) ListRooms(c *gin.Context) {
 	rooms, err := h.roomSvc.List(100)
 	if err != nil {
 		log.Error().Err(err).Msg("list rooms")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list rooms"})
+		serverError(c, "failed to list rooms")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"rooms": rooms})
@@ -156,27 +232,25 @@ func (h *Handler) ListRooms(c *gin.Context) {
 func (h *Handler) ListMessages(c *gin.Context) {
 	roomID, err := strconv.Atoi(c.Param("id"))
 	if err != nil || roomID <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+		badRequest(c, "invalid room id")
 		return
 	}
-	limitStr := c.Query("limit")
-	if limitStr == "" {
-		limitStr = "50"
-	}
-	limit, _ := strconv.Atoi(limitStr)
-	if limit <= 0 || limit > 200 {
-		limit = 50
+	limit := 50
+	if limitStr := c.Query("limit"); limitStr != "" {
+		if v, e := strconv.Atoi(limitStr); e == nil && v > 0 && v <= 200 {
+			limit = v
+		}
 	}
 	var beforeID uint
 	if bid := c.Query("before_id"); bid != "" {
-		if v, err := strconv.Atoi(bid); err == nil && v > 0 {
+		if v, e := strconv.Atoi(bid); e == nil && v > 0 {
 			beforeID = uint(v)
 		}
 	}
 	msgs, err := h.msgSvc.ListByRoom(uint(roomID), limit, beforeID)
 	if err != nil {
 		log.Error().Err(err).Int("room_id", roomID).Msg("list messages")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list messages"})
+		serverError(c, "failed to list messages")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"messages": msgs})

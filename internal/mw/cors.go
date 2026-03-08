@@ -16,7 +16,7 @@ func CORS(env string) gin.HandlerFunc {
 			return
 		}
 
-		if env == "dev" {
+		if env == "dev" { //nolint:gocritic
 			c.Header("Access-Control-Allow-Origin", origin)
 		} else {
 			// 生产环境只允许同源

@@ -6,9 +6,9 @@ type Outbound =
   | { type: 'message'; content: string }
 
 export class ChatSocket {
-	private getAccessToken: () => string
-	private onEvent: (evt: WsEvent) => void
-	private onStatus: (status: ConnectionStatus, attempt?: number) => void
+  private getAccessToken: () => string
+  private onEvent: (evt: WsEvent) => void
+  private onStatus: (status: ConnectionStatus, attempt?: number) => void
 
   private ws: WebSocket | null = null
   private reconnectAttempts = 0
@@ -21,14 +21,14 @@ export class ChatSocket {
   private lastPong = Date.now()
 
   constructor(opts: {
-		getAccessToken: () => string
-		onEvent: (evt: WsEvent) => void
-		onStatus: (status: ConnectionStatus, attempt?: number) => void
-	}) {
-		this.getAccessToken = opts.getAccessToken
-		this.onEvent = opts.onEvent
-		this.onStatus = opts.onStatus
-	}
+    getAccessToken: () => string
+    onEvent: (evt: WsEvent) => void
+    onStatus: (status: ConnectionStatus, attempt?: number) => void
+  }) {
+    this.getAccessToken = opts.getAccessToken
+    this.onEvent = opts.onEvent
+    this.onStatus = opts.onStatus
+  }
 
   connect(roomId: number, accessToken: string): void {
     if (this.ws) this.close(false)
@@ -147,11 +147,11 @@ export class ChatSocket {
   }
 
   reconnect(roomId: number): void {
-		if (!this.shouldReconnect) return
-		const token = this.getAccessToken()
-		if (!token) return
-		this.connect(roomId, token)
-	}
+    if (!this.shouldReconnect) return
+    const token = this.getAccessToken()
+    if (!token) return
+    this.connect(roomId, token)
+  }
 
   private flushQueue(): void {
     while (this.messageQueue.length > 0) {

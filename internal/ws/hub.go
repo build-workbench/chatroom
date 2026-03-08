@@ -77,60 +77,70 @@ func NewRoomHub(roomID uint) *RoomHub {
 	}
 }
 
+// broadcastToClients 向房间内所有客户端发送数据，慢客户端会被清理。
+func (rh *RoomHub) broadcastToClients(data []byte) {
+	for cli := range rh.clients {
+		select {
+		case cli.send <- data:
+		default:
+			close(cli.send)
+			delete(rh.clients, cli)
+			metrics.WsConnections.Dec()
+		}
+	}
+}
+
+// broadcastEvent 序列化事件并广播给房间内所有客户端。
+func (rh *RoomHub) broadcastEvent(evt map[string]interface{}) {
+	b, err := json.Marshal(evt)
+	if err != nil {
+		return
+	}
+	rh.broadcastToClients(b)
+}
+
+// updateOnline 更新并返回当前在线人数。
+func (rh *RoomHub) updateOnline() int {
+	n := int32(len(rh.clients))
+	atomic.StoreInt32(&rh.online, n)
+	return int(n)
+}
+
 func (rh *RoomHub) run() {
 	for {
 		select {
 		case <-rh.stop:
-			// 关闭所有客户端连接
 			for c := range rh.clients {
 				close(c.send)
 				delete(rh.clients, c)
 			}
 			atomic.StoreInt32(&rh.online, 0)
 			return
+
 		case c := <-rh.register:
 			rh.clients[c] = true
-			atomic.StoreInt32(&rh.online, int32(len(rh.clients)))
+			online := rh.updateOnline()
 			metrics.WsConnections.Inc()
-			evt := map[string]interface{}{"type": "join", "room_id": rh.roomID, "user_id": c.userID, "username": c.uname, "online": int(atomic.LoadInt32(&rh.online))}
-			if b, err := json.Marshal(evt); err == nil {
-				for cli := range rh.clients {
-					select {
-					case cli.send <- b:
-					default:
-						close(cli.send)
-						delete(rh.clients, cli)
-					}
-				}
-			}
+			rh.broadcastEvent(map[string]interface{}{
+				"type": "join", "room_id": rh.roomID,
+				"user_id": c.userID, "username": c.uname, "online": online,
+			})
+
 		case c := <-rh.unregister:
-			if _, ok := rh.clients[c]; ok {
-				delete(rh.clients, c)
-				close(c.send)
-				atomic.StoreInt32(&rh.online, int32(len(rh.clients)))
-				metrics.WsConnections.Dec()
-				evt := map[string]interface{}{"type": "leave", "room_id": rh.roomID, "user_id": c.userID, "username": c.uname, "online": int(atomic.LoadInt32(&rh.online))}
-				if b, err := json.Marshal(evt); err == nil {
-					for cli := range rh.clients {
-						select {
-						case cli.send <- b:
-						default:
-							close(cli.send)
-							delete(rh.clients, cli)
-						}
-					}
-				}
+			if _, ok := rh.clients[c]; !ok {
+				break
 			}
+			delete(rh.clients, c)
+			close(c.send)
+			online := rh.updateOnline()
+			metrics.WsConnections.Dec()
+			rh.broadcastEvent(map[string]interface{}{
+				"type": "leave", "room_id": rh.roomID,
+				"user_id": c.userID, "username": c.uname, "online": online,
+			})
+
 		case msg := <-rh.broadcast:
-			for c := range rh.clients {
-				select {
-				case c.send <- msg:
-				default:
-					close(c.send)
-					delete(rh.clients, c)
-					metrics.WsConnections.Dec()
-				}
-			}
+			rh.broadcastToClients(msg)
 		}
 	}
 }
@@ -139,7 +149,6 @@ func (rh *RoomHub) run() {
 func (rh *RoomHub) Stop() {
 	select {
 	case <-rh.stop:
-		// 已停止
 	default:
 		close(rh.stop)
 	}

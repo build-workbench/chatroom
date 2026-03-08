@@ -41,11 +41,14 @@ func setupTestRouter(t *testing.T) (*gorm.DB, *http.Handler) {
 		DatabaseDSN:           "test",
 		JWTSecret:             "test-secret",
 		Env:                   "test",
+		LogLevel:              "info",
+		LogFormat:             "console",
 		AccessTokenTTLMinutes: 15,
 		RefreshTokenTTLDays:   7,
 	}
 	hub := ws.NewHub()
-	router := SetupRouter(cfg, db, hub)
+	bi := BuildInfo{Version: "test", GitCommit: "abc123", BuildTime: "now", GoVersion: "go1.24"}
+	router := SetupRouter(cfg, db, hub, bi)
 	var handler http.Handler = router
 	return db, &handler
 }

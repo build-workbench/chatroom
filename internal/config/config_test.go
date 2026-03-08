@@ -13,6 +13,8 @@ func TestLoad_Defaults(t *testing.T) {
 	os.Unsetenv("APP_ENV")
 	os.Unsetenv("ACCESS_TOKEN_TTL_MINUTES")
 	os.Unsetenv("REFRESH_TOKEN_TTL_DAYS")
+	os.Unsetenv("LOG_LEVEL")
+	os.Unsetenv("LOG_FORMAT")
 
 	cfg := Load()
 
@@ -27,6 +29,12 @@ func TestLoad_Defaults(t *testing.T) {
 	}
 	if cfg.RefreshTokenTTLDays != 7 {
 		t.Errorf("Load() RefreshTokenTTLDays = %v, want 7", cfg.RefreshTokenTTLDays)
+	}
+	if cfg.LogLevel != "info" {
+		t.Errorf("Load() LogLevel = %v, want info", cfg.LogLevel)
+	}
+	if cfg.LogFormat != "console" {
+		t.Errorf("Load() LogFormat = %v, want console", cfg.LogFormat)
 	}
 }
 
@@ -100,6 +108,7 @@ func TestValidate(t *testing.T) {
 				DatabaseDSN: "postgres://localhost/test",
 				JWTSecret:   "dev-secret-change-me",
 				Env:         "dev",
+				LogLevel:    "info",
 			},
 			wantErr: false,
 		},
@@ -110,6 +119,7 @@ func TestValidate(t *testing.T) {
 				DatabaseDSN: "postgres://localhost/test",
 				JWTSecret:   "production-secret-key",
 				Env:         "prod",
+				LogLevel:    "info",
 			},
 			wantErr: false,
 		},
@@ -120,6 +130,7 @@ func TestValidate(t *testing.T) {
 				DatabaseDSN: "postgres://localhost/test",
 				JWTSecret:   "secret",
 				Env:         "dev",
+				LogLevel:    "info",
 			},
 			wantErr: true,
 		},
@@ -130,6 +141,7 @@ func TestValidate(t *testing.T) {
 				DatabaseDSN: "",
 				JWTSecret:   "secret",
 				Env:         "dev",
+				LogLevel:    "info",
 			},
 			wantErr: true,
 		},
@@ -140,6 +152,7 @@ func TestValidate(t *testing.T) {
 				DatabaseDSN: "postgres://localhost/test",
 				JWTSecret:   "dev-secret-change-me",
 				Env:         "prod",
+				LogLevel:    "info",
 			},
 			wantErr: true,
 		},
@@ -150,6 +163,18 @@ func TestValidate(t *testing.T) {
 				DatabaseDSN: "postgres://localhost/test",
 				JWTSecret:   "dev-secret-change-me",
 				Env:         "test",
+				LogLevel:    "info",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid log level",
+			cfg: Config{
+				Port:        "8080",
+				DatabaseDSN: "postgres://localhost/test",
+				JWTSecret:   "dev-secret-change-me",
+				Env:         "dev",
+				LogLevel:    "invalid",
 			},
 			wantErr: true,
 		},
@@ -172,6 +197,7 @@ func TestValidate_ProductionJWTSecret(t *testing.T) {
 		DatabaseDSN: "postgres://localhost/test",
 		JWTSecret:   "dev-secret-change-me", // Default value
 		Env:         "prod",
+		LogLevel:    "info",
 	}
 
 	err := Validate(cfg)

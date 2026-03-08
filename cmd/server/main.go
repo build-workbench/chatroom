@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -17,10 +18,17 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// 构建时通过 ldflags 注入的版本信息。
+var (
+	Version   = "dev"
+	GitCommit = "unknown"
+	BuildTime = "unknown"
+)
+
 func main() {
 	// main 函数负责加载配置、初始化日志、连接数据库并启动 Gin 服务。
 	cfg := config.Load()
-	clog.Init(cfg.Env)
+	clog.Init(cfg)
 	if err := config.Validate(cfg); err != nil {
 		log.Fatal().Err(err).Msg("config validate")
 	}
@@ -34,7 +42,13 @@ func main() {
 	}
 
 	hub := ws.NewHub()
-	r := server.SetupRouter(cfg, gdb, hub)
+	bi := server.BuildInfo{
+		Version:   Version,
+		GitCommit: GitCommit,
+		BuildTime: BuildTime,
+		GoVersion: runtime.Version(),
+	}
+	r := server.SetupRouter(cfg, gdb, hub, bi)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

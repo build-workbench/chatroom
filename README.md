@@ -223,6 +223,8 @@ make build
 | `JWT_SECRET` | `dev-secret-change-me` | JWT 签名密钥 |
 | `ACCESS_TOKEN_TTL_MINUTES` | `15` | Access Token 有效期 |
 | `REFRESH_TOKEN_TTL_DAYS` | `7` | Refresh Token 有效期 |
+| `LOG_LEVEL` | `info` | 日志级别（trace/debug/info/warn/error/fatal） |
+| `LOG_FORMAT` | `console` | 日志格式（console/json） |
 
 ## 项目结构
 

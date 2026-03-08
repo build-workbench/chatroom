@@ -20,6 +20,21 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	// maxMessageSize 单条 WebSocket 消息最大字节数。
+	maxMessageSize = 1 << 20 // 1 MB
+	// maxContentLength 单条聊天消息最大字符数。
+	maxContentLength = 2000
+	// pongWait 等待客户端 Pong 的超时时间。
+	pongWait = 60 * time.Second
+	// pingInterval 向客户端发送 Ping 的间隔，必须小于 pongWait。
+	pingInterval = 30 * time.Second
+	// writeWait 每次写操作的截止时间。
+	writeWait = 10 * time.Second
+	// sendBufSize 每个客户端发送缓冲区大小。
+	sendBufSize = 256
+)
+
 type Client struct {
 	room   *RoomHub
 	conn   *websocket.Conn
@@ -41,7 +56,7 @@ var (
 
 func initUpgrader(cfg config.Config) {
 	upgraderOnce.Do(func() {
-		allowAllOrigin = cfg.Env == "dev"
+		allowAllOrigin = cfg.IsDev()
 	})
 }
 
@@ -119,7 +134,7 @@ func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 			return
 		}
 		rh := h.GetRoom(uint(rid64))
-		client := &Client{room: rh, conn: conn, send: make(chan []byte, 256), db: db, userID: user.ID, uname: user.Username}
+		client := &Client{room: rh, conn: conn, send: make(chan []byte, sendBufSize), db: db, userID: user.ID, uname: user.Username}
 		rh.register <- client
 
 		go client.writePump()
@@ -133,11 +148,10 @@ func (c *Client) readPump() {
 		c.room.unregister <- c
 		_ = c.conn.Close()
 	}()
-	c.conn.SetReadLimit(1 << 20) // 1MB
-	c.conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	c.conn.SetReadLimit(maxMessageSize)
+	_ = c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error {
-		c.conn.SetReadDeadline(time.Now().Add(60 * time.Second))
-		return nil
+		return c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	})
 	for {
 		_, data, err := c.conn.ReadMessage()
@@ -182,7 +196,7 @@ func (c *Client) handleMessage(content string) {
 	if content == "" {
 		return
 	}
-	if len(content) > 2000 {
+	if len(content) > maxContentLength {
 		errMsg := map[string]string{"type": "error", "content": "消息长度不能超过2000字符"}
 		if b, err := json.Marshal(errMsg); err == nil {
 			select {
@@ -213,7 +227,7 @@ func (c *Client) handleMessage(content string) {
 // writePump 周期性发送服务端数据与心跳，防止浏览器断线。
 // 每次写入时会批量排空 send channel 中的待发消息，减少系统调用次数。
 func (c *Client) writePump() {
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(pingInterval)
 	defer func() {
 		ticker.Stop()
 		_ = c.conn.Close()
@@ -221,7 +235,7 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
-			c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				_ = c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
@@ -240,13 +254,13 @@ func (c *Client) writePump() {
 				if !ok {
 					return
 				}
-				c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+				_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 				if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 					return
 				}
 			}
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
