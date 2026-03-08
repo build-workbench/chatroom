@@ -1,319 +1,103 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
-import { Api } from './api'
 import { ChatRoom } from './components/ChatRoom'
 import { Sidebar } from './components/Sidebar'
+import { useAuth } from './hooks/useAuth'
+import { useChat } from './hooks/useChat'
+import { useChatSocket } from './hooks/useChatSocket'
+import { loadAuth } from './storage'
 import { AuthScreen } from './screens/AuthScreen'
-import { ChatSocket } from './socket'
 import { useToast } from './toast-context'
-import { clearAuth, loadAuth, saveTokens, saveUser, setLastRoomId } from './storage'
-import type { ConnectionStatus, Room, User, WsEvent } from './types'
-
-type ChatItem = WsEvent
 
 export default function App() {
 	const toast = useToast()
-	const snapshot = useMemo(() => loadAuth(), [])
 
-	const [user, setUser] = useState<User | null>(snapshot.user)
-	const [accessToken, setAccessToken] = useState<string>(snapshot.accessToken)
-	const [refreshToken, setRefreshToken] = useState<string>(snapshot.refreshToken)
+	// 用 ref 打破 hooks 之间的循环依赖：socket 需要 auth/chat，auth 需要 socket/chat
+	const chatResetRef = useRef<() => void>(() => {})
+	const socketCloseRef = useRef<() => void>(() => {})
 
-	const [rooms, setRooms] = useState<Room[]>([])
-	const [roomQuery, setRoomQuery] = useState('')
-	const [newRoomName, setNewRoomName] = useState('')
+	const auth = useAuth(useCallback(() => {
+		socketCloseRef.current()
+		chatResetRef.current()
+	}, []))
 
-	const [currentRoomId, setCurrentRoomId] = useState<number | null>(snapshot.lastRoomId)
-	const [currentRoomName, setCurrentRoomName] = useState<string>('')
-	const [onlineCount, setOnlineCount] = useState<number>(0)
-	const [connStatus, setConnStatus] = useState<ConnectionStatus>('idle')
+	const { socketRef, connStatus, typingNames } = useChatSocket({
+		getAccessToken: () => auth.accessRef.current,
+		userRef: auth.userRef,
+		onJoinLeave: (evt) => chatAddItemRef.current(evt),
+		onMessage: (evt) => chatAddMessageRef.current(evt),
+	})
 
-	const [items, setItems] = useState<ChatItem[]>([])
-	const [draft, setDraft] = useState('')
-	const [earliestMsgId, setEarliestMsgId] = useState<number | null>(null)
-	const [loadingHistory, setLoadingHistory] = useState(false)
+	const chatAddItemRef = useRef<(evt: import('./types').WsEvent) => void>(() => {})
+	const chatAddMessageRef = useRef<(evt: import('./types').WsEvent) => void>(() => {})
 
-	const accessRef = useRef(accessToken)
-	const refreshRef = useRef(refreshToken)
-	const userRef = useRef<User | null>(user)
+	const chat = useChat({
+		api: auth.api,
+		accessRef: auth.accessRef,
+		socketRef,
+		initialRoomId: loadAuth().lastRoomId,
+	})
+
+	// 连接 ref 以打破循环依赖
+	chatResetRef.current = chat.resetChat
+	socketCloseRef.current = () => socketRef.current?.close()
+	chatAddItemRef.current = chat.addItem
+	chatAddMessageRef.current = chat.addMessage
+
+	// 登录后加载房间列表
 	useEffect(() => {
-		accessRef.current = accessToken
-	}, [accessToken])
+		if (!auth.user || !auth.accessToken) return
+		void chat.reloadRooms()
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [auth.user, auth.accessToken])
+
+	// 恢复上次进入的房间名称
 	useEffect(() => {
-		refreshRef.current = refreshToken
-	}, [refreshToken])
-	useEffect(() => {
-		userRef.current = user
-	}, [user])
-
-	const typingTimersRef = useRef<Map<string, number>>(new Map())
-	const [typingNames, setTypingNames] = useState<string[]>([])
-
-	function logout(): void {
-		socketRef.current?.close()
-		clearAuth()
-		setUser(null)
-		setAccessToken('')
-		setRefreshToken('')
-		setRooms([])
-		setCurrentRoomId(null)
-		setCurrentRoomName('')
-		setOnlineCount(0)
-		setItems([])
-		setDraft('')
-		setEarliestMsgId(null)
-		setTypingNames([])
-		setConnStatus('idle')
-	}
-
-	const api = useMemo(() => {
-		return new Api({
-			getAccessToken: () => accessRef.current,
-			getRefreshToken: () => refreshRef.current,
-			callbacks: {
-				onTokens: (at, rt) => {
-					setAccessToken(at)
-					setRefreshToken(rt)
-				},
-				onUnauthorized: () => {
-					logout()
-				},
-			},
-		})
-	}, [])
-
-	const socketRef = useRef<ChatSocket | null>(null)
-	useEffect(() => {
-		const typingTimers = typingTimersRef.current
-		const sock = new ChatSocket({
-			getAccessToken: () => accessRef.current,
-			onStatus: (s, attempt) => {
-				setConnStatus(s)
-				if (s === 'reconnecting' && attempt) {
-					return
-				}
-			},
-			onEvent: (evt) => {
-				if (!evt || typeof evt !== 'object') return
-				switch (evt.type) {
-					case 'pong':
-						return
-					case 'error':
-						toast.error(evt.content || '发生错误')
-						return
-					case 'typing': {
-						const u = evt.username
-						if (!u || u === userRef.current?.username) return
-						const timers = typingTimersRef.current
-						const old = timers.get(u)
-						if (old) window.clearTimeout(old)
-						if (evt.is_typing) {
-							const id = window.setTimeout(() => {
-								timers.delete(u)
-								setTypingNames(Array.from(timers.keys()))
-							}, 3000)
-							timers.set(u, id)
-						} else {
-							timers.delete(u)
-						}
-						setTypingNames(Array.from(timers.keys()))
-						return
-					}
-					case 'join':
-					case 'leave':
-						setItems((prev) => [...prev, evt])
-						if (typeof evt.online === 'number') setOnlineCount(evt.online)
-						return
-					case 'message':
-						setItems((prev) => {
-							if (evt.id && prev.some((m) => m.type === 'message' && m.id === evt.id)) return prev
-							return [...prev, evt]
-						})
-						return
-					default:
-						return
-				}
-			},
-		})
-		socketRef.current = sock
-		return () => {
-			sock.close()
-			for (const id of typingTimers.values()) {
-				window.clearTimeout(id)
-			}
-			typingTimers.clear()
-		}
-	}, [toast])
-
-	useEffect(() => {
-		if (!user || !accessToken) return
-		void (async () => {
-			try {
-				const data = await api.listRooms()
-				setRooms(data.rooms || [])
-			} catch {
-				return
-			}
-		})()
-	}, [api, user, accessToken])
-
-	useEffect(() => {
-		if (!user || !accessToken) return
-		if (!currentRoomId) return
-		if (currentRoomName) return
-		const found = rooms.find((r) => r.id === currentRoomId)
+		if (!auth.user || !auth.accessToken) return
+		if (!chat.currentRoomId || chat.currentRoomName) return
+		const found = chat.rooms.find((r) => r.id === chat.currentRoomId)
 		if (found) {
-			setCurrentRoomName(found.name)
-			setOnlineCount(found.online)
+			chat.setOnlineCount(found.online)
 		}
-	}, [rooms, user, accessToken, currentRoomId, currentRoomName])
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [chat.rooms, chat.currentRoomId, chat.currentRoomName])
 
-	async function handleLogin(username: string, password: string): Promise<void> {
-		try {
-			const data = await api.login(username, password)
-			saveTokens(data.access_token, data.refresh_token)
-			saveUser(data.user)
-			setAccessToken(data.access_token)
-			setRefreshToken(data.refresh_token)
-			setUser(data.user)
-			toast.success(`欢迎回来，${data.user.username}！`)
-		} catch {
-			toast.error('登录失败，请检查用户名和密码')
-		}
-	}
-
-	async function handleRegister(username: string, password: string): Promise<void> {
-		try {
-			await api.register(username, password)
-		} catch {
-			toast.error('注册失败: 用户名可能已存在')
-		}
-	}
-
-	async function reloadRooms(): Promise<void> {
-		if (!user) return
-		try {
-			const data = await api.listRooms()
-			setRooms(data.rooms || [])
-		} catch {
-			return
-		}
-	}
-
-	async function createRoom(): Promise<void> {
-		const name = newRoomName.trim()
-		if (!name) {
-			toast.info('请输入房间名')
-			return
-		}
-		if (name.length > 50) {
-			toast.error('房间名不能超过50个字符')
-			return
-		}
-		try {
-			const data = await api.createRoom(name)
-			setNewRoomName('')
-			toast.success('房间创建成功')
-			await reloadRooms()
-			const rid = data.room?.id ?? data.id
-			const rname = data.room?.name ?? data.name
-			await joinRoom(rid, rname, 0)
-		} catch {
-			toast.error('创建失败')
-		}
-	}
-
-	async function joinRoom(id: number, name: string, online: number): Promise<void> {
-		if (currentRoomId === id) return
-		setCurrentRoomId(id)
-		setLastRoomId(id)
-		setCurrentRoomName(name)
-		setOnlineCount(typeof online === 'number' ? online : 0)
-		setItems([])
-		setTypingNames([])
-		setEarliestMsgId(null)
-		setLoadingHistory(true)
-
-		try {
-			const data = await api.listMessages(id, 50)
-			const msgs = data.messages || []
-			if (msgs.length > 0) setEarliestMsgId(msgs[0].id)
-			setItems(msgs)
-		} catch {
-			toast.error('加载历史消息失败')
-		} finally {
-			setLoadingHistory(false)
-		}
-
-		const token = accessRef.current
-		if (token) {
-			socketRef.current?.connect(id, token)
-		}
-	}
-
-	async function loadMoreHistory(): Promise<void> {
-		if (!currentRoomId || !earliestMsgId || loadingHistory) return
-		setLoadingHistory(true)
-		try {
-			const data = await api.listMessages(currentRoomId, 50, earliestMsgId)
-			const msgs = data.messages || []
-			if (msgs.length > 0) {
-				setEarliestMsgId(msgs[0].id)
-				setItems((prev) => [...msgs, ...prev])
-			}
-		} finally {
-			setLoadingHistory(false)
-		}
-	}
-
-	function sendMessage(): void {
-		const content = draft.trim()
-		if (!content) return
-		if (content.length > 2000) {
-			toast.error('消息不能超过2000个字符')
-			return
-		}
-		const ok = socketRef.current?.sendMessage(content) ?? false
-		if (!ok) toast.info('消息已加入发送队列')
-		setDraft('')
-	}
-
-	if (!user) {
-		return <AuthScreen onLogin={handleLogin} onRegister={handleRegister} />
+	if (!auth.user) {
+		return <AuthScreen onLogin={auth.handleLogin} onRegister={auth.handleRegister} />
 	}
 
 	return (
 		<div className="h-full flex">
 			<Sidebar
-				user={user}
-				rooms={rooms}
-				currentRoomId={currentRoomId}
-				roomQuery={roomQuery}
-				newRoomName={newRoomName}
-				onRoomQueryChange={setRoomQuery}
-				onNewRoomNameChange={setNewRoomName}
-				onCreateRoom={() => void createRoom()}
-				onJoinRoom={(id, name, online) => void joinRoom(id, name, online)}
+				user={auth.user}
+				rooms={chat.rooms}
+				currentRoomId={chat.currentRoomId}
+				roomQuery={chat.roomQuery}
+				newRoomName={chat.newRoomName}
+				onRoomQueryChange={chat.setRoomQuery}
+				onNewRoomNameChange={chat.setNewRoomName}
+				onCreateRoom={() => void chat.createRoom()}
+				onJoinRoom={(id, name, online) => void chat.joinRoom(id, name, online)}
 				onLogout={() => {
-					logout()
+					auth.logout()
 					toast.info('已退出登录')
 				}}
 			/>
 
 			<div className="flex-1 flex flex-col bg-dark-950">
 				<ChatRoom
-					user={user}
-					currentRoomId={currentRoomId}
-					currentRoomName={currentRoomName}
-					onlineCount={onlineCount}
+					user={auth.user}
+					currentRoomId={chat.currentRoomId}
+					currentRoomName={chat.currentRoomName}
+					onlineCount={chat.onlineCount}
 					connStatus={connStatus}
-					items={items}
-					draft={draft}
+					items={chat.items}
+					draft={chat.draft}
 					typingNames={typingNames}
-					onDraftChange={setDraft}
-					onSend={sendMessage}
+					onDraftChange={chat.setDraft}
+					onSend={chat.sendMessage}
 					onTyping={() => socketRef.current?.sendTyping(true)}
-					onLoadMore={() => void loadMoreHistory()}
+					onLoadMore={() => void chat.loadMoreHistory()}
 				/>
 			</div>
 		</div>
