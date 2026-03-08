@@ -48,7 +48,8 @@ func setupTestRouter(t *testing.T) (*gorm.DB, *http.Handler) {
 	}
 	hub := ws.NewHub()
 	bi := BuildInfo{Version: "test", GitCommit: "abc123", BuildTime: "now", GoVersion: "go1.24"}
-	router := SetupRouter(cfg, db, hub, bi)
+	router, rlStop := SetupRouter(cfg, db, hub, bi)
+	t.Cleanup(rlStop)
 	var handler http.Handler = router
 	return db, &handler
 }

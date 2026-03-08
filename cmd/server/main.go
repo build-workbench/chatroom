@@ -48,7 +48,7 @@ func main() {
 		BuildTime: BuildTime,
 		GoVersion: runtime.Version(),
 	}
-	r := server.SetupRouter(cfg, gdb, hub, bi)
+	r, cleanup := server.SetupRouter(cfg, gdb, hub, bi)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,
@@ -74,6 +74,8 @@ func main() {
 
 	// 关闭 Hub 中所有 RoomHub goroutine。
 	hub.Shutdown()
+	// 释放限速器等后台 goroutine。
+	cleanup()
 
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Error().Err(err).Msg("server forced to shutdown")

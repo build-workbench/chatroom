@@ -28,7 +28,8 @@ type BuildInfo struct {
 }
 
 // SetupRouter 统一初始化 Gin 中间件、REST API 以及 WebSocket 端点。
-func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) *gin.Engine {
+// 返回的 cleanup 函数应在优雅停服时调用，用于释放后台 goroutine。
+func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) (*gin.Engine, func()) {
 	userSvc := service.NewUserService(db, cfg)
 	roomSvc := service.NewRoomService(db, hub)
 	msgSvc := service.NewMessageService(db)
@@ -38,7 +39,8 @@ func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) *gin
 	r.Use(mw.CORS(cfg.Env))
 	r.Use(metrics.GinMiddleware())
 	// 控制单个 IP+路由的速率，避免教学环境被刷爆。
-	r.Use(mw.RateLimit(rate.Every(time.Second/20), 40))
+	rlMW, rlStop := mw.RateLimit(rate.Every(time.Second/20), 40)
+	r.Use(rlMW)
 
 	h := NewHandler(userSvc, roomSvc, msgSvc, db, bi)
 
@@ -96,5 +98,5 @@ func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) *gin
 	} else {
 		r.Static("/", "./web")
 	}
-	return r
+	return r, rlStop
 }
