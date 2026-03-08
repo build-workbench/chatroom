@@ -82,4 +82,3 @@ func RevokeRefreshToken(db *gorm.DB, token string) error {
 	now := time.Now()
 	return db.Model(&models.RefreshToken{}).Where("token = ?", token).Update("revoked_at", &now).Error
 }
-
