@@ -90,8 +90,17 @@ func (rh *RoomHub) broadcastToClients(data []byte) {
 	}
 }
 
+// wsPresenceEvent 用于 join/leave 广播的类型安全结构体。
+type wsPresenceEvent struct {
+	Type     string `json:"type"`
+	RoomID   uint   `json:"room_id"`
+	UserID   uint   `json:"user_id"`
+	Username string `json:"username"`
+	Online   int    `json:"online"`
+}
+
 // broadcastEvent 序列化事件并广播给房间内所有客户端。
-func (rh *RoomHub) broadcastEvent(evt map[string]interface{}) {
+func (rh *RoomHub) broadcastEvent(evt interface{}) {
 	b, err := json.Marshal(evt)
 	if err != nil {
 		return
@@ -121,9 +130,9 @@ func (rh *RoomHub) run() {
 			rh.clients[c] = true
 			online := rh.updateOnline()
 			metrics.WsConnections.Inc()
-			rh.broadcastEvent(map[string]interface{}{
-				"type": "join", "room_id": rh.roomID,
-				"user_id": c.userID, "username": c.uname, "online": online,
+			rh.broadcastEvent(wsPresenceEvent{
+				Type: "join", RoomID: rh.roomID,
+				UserID: c.userID, Username: c.uname, Online: online,
 			})
 
 		case c := <-rh.unregister:
@@ -134,9 +143,9 @@ func (rh *RoomHub) run() {
 			close(c.send)
 			online := rh.updateOnline()
 			metrics.WsConnections.Dec()
-			rh.broadcastEvent(map[string]interface{}{
-				"type": "leave", "room_id": rh.roomID,
-				"user_id": c.userID, "username": c.uname, "online": online,
+			rh.broadcastEvent(wsPresenceEvent{
+				Type: "leave", RoomID: rh.roomID,
+				UserID: c.userID, Username: c.uname, Online: online,
 			})
 
 		case msg := <-rh.broadcast:

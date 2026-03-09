@@ -12,15 +12,24 @@ import (
 	"gorm.io/gorm"
 )
 
+// ExtractBearerToken 从 Authorization 头或查询参数中提取 Bearer Token。
+// 同时支持 "Bearer xxx" 头部和 "?token=xxx" 查询参数，方便 WebSocket 调试。
+func ExtractBearerToken(c *gin.Context) string {
+	authz := c.GetHeader("Authorization")
+	if len(authz) > 7 && strings.EqualFold(authz[:7], "bearer ") {
+		return strings.TrimSpace(authz[7:])
+	}
+	return c.Query("token")
+}
+
 // AuthMiddleware 校验 Bearer Token 并把用户信息塞进 Gin 上下文。
 func AuthMiddleware(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authz := c.GetHeader("Authorization")
-		if authz == "" || !strings.HasPrefix(strings.ToLower(authz), "bearer ") {
+		tokenStr := ExtractBearerToken(c)
+		if tokenStr == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing bearer token"})
 			return
 		}
-		tokenStr := strings.TrimSpace(authz[len("Bearer "):])
 		claims, err := auth.ParseAccessToken(tokenStr, cfg.JWTSecret)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})

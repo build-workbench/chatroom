@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -26,10 +27,14 @@ var (
 		Help:    "HTTP request duration in seconds",
 		Buckets: prometheus.DefBuckets,
 	}, []string{"method", "path", "status"})
+
+	registerOnce sync.Once
 )
 
 func init() {
-	prometheus.MustRegister(WsConnections, WsMessagesTotal, HttpRequestsTotal, HttpRequestDuration)
+	registerOnce.Do(func() {
+		prometheus.MustRegister(WsConnections, WsMessagesTotal, HttpRequestsTotal, HttpRequestDuration)
+	})
 }
 
 // GinMiddleware 统计基础请求指标，供 Prometheus 拉取。

@@ -28,20 +28,17 @@ type RegisterResult struct {
 }
 
 // Register 注册新用户，返回用户 ID 和用户名。
+// 依赖数据库唯一索引检测重复用户名，避免 check-then-create 竞态。
 func (s *UserService) Register(username, password string) (*RegisterResult, error) {
-	var count int64
-	if err := s.db.Model(&models.User{}).Where("username = ?", username).Count(&count).Error; err != nil {
-		return nil, err
-	}
-	if count > 0 {
-		return nil, ErrUsernameTaken
-	}
 	hash, err := auth.HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
 	user := models.User{Username: username, PasswordHash: hash}
 	if err := s.db.Create(&user).Error; err != nil {
+		if isUniqueViolation(err) {
+			return nil, ErrUsernameTaken
+		}
 		return nil, err
 	}
 	return &RegisterResult{ID: user.ID, Username: user.Username}, nil

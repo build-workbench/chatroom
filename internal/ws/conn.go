@@ -13,6 +13,7 @@ import (
 	"chatroom/internal/config"
 	"chatroom/internal/metrics"
 	"chatroom/internal/models"
+	"chatroom/internal/mw"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -91,6 +92,19 @@ type OutboundMessage struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type wsTypingEvent struct {
+	Type     string `json:"type"`
+	RoomID   uint   `json:"room_id"`
+	UserID   uint   `json:"user_id"`
+	Username string `json:"username"`
+	IsTyping bool   `json:"is_typing"`
+}
+
+type wsSimpleMsg struct {
+	Type    string `json:"type"`
+	Content string `json:"content,omitempty"`
+}
+
 // Serve 返回 Gin 处理函数，用于校验用户、加入房间并启动读写循环。
 func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 	initUpgrader(cfg)
@@ -107,12 +121,7 @@ func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 			return
 		}
 
-		// 兼容 Authorization 头与 token 查询参数两种传递方式，方便调试。
-		authz := c.GetHeader("Authorization")
-		token := c.Query("token")
-		if token == "" && len(authz) > 7 && (authz[:7] == "Bearer " || authz[:7] == "bearer ") {
-			token = authz[7:]
-		}
+		token := mw.ExtractBearerToken(c)
 		if token == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
 			return
@@ -156,6 +165,9 @@ func (c *Client) readPump() {
 	for {
 		_, data, err := c.conn.ReadMessage()
 		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
+				log.Warn().Err(err).Uint("user_id", c.userID).Uint("room_id", c.room.roomID).Msg("ws unexpected close")
+			}
 			break
 		}
 		var in InboundMessage
@@ -166,8 +178,7 @@ func (c *Client) readPump() {
 		switch in.Type {
 		case "ping":
 			// 响应客户端心跳检测
-			pong := map[string]string{"type": "pong"}
-			if b, err := json.Marshal(pong); err == nil {
+			if b, err := json.Marshal(wsSimpleMsg{Type: "pong"}); err == nil {
 				select {
 				case c.send <- b:
 				default:
@@ -176,7 +187,7 @@ func (c *Client) readPump() {
 
 		case "typing":
 			// 输入法提示只做广播，不入库
-			evt := map[string]interface{}{"type": "typing", "room_id": c.room.roomID, "user_id": c.userID, "username": c.uname, "is_typing": in.IsTyping}
+			evt := wsTypingEvent{Type: "typing", RoomID: c.room.roomID, UserID: c.userID, Username: c.uname, IsTyping: in.IsTyping}
 			if b, err := json.Marshal(evt); err == nil {
 				c.room.broadcast <- b
 			}
@@ -197,8 +208,7 @@ func (c *Client) handleMessage(content string) {
 		return
 	}
 	if len(content) > maxContentLength {
-		errMsg := map[string]string{"type": "error", "content": "消息长度不能超过2000字符"}
-		if b, err := json.Marshal(errMsg); err == nil {
+		if b, err := json.Marshal(wsSimpleMsg{Type: "error", Content: "消息长度不能超过2000字符"}); err == nil {
 			select {
 			case c.send <- b:
 			default:
@@ -209,8 +219,7 @@ func (c *Client) handleMessage(content string) {
 	msg := models.Message{RoomID: c.room.roomID, UserID: c.userID, Content: content}
 	if err := c.db.Create(&msg).Error; err != nil {
 		log.Error().Err(err).Uint("room_id", c.room.roomID).Uint("user_id", c.userID).Msg("ws persist message")
-		errMsg := map[string]string{"type": "error", "content": "消息发送失败"}
-		if b, err := json.Marshal(errMsg); err == nil {
+		if b, err := json.Marshal(wsSimpleMsg{Type: "error", Content: "消息发送失败"}); err == nil {
 			select {
 			case c.send <- b:
 			default:

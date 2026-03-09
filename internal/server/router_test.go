@@ -151,7 +151,7 @@ func TestRegisterEndpoint(t *testing.T) {
 		{
 			name:       "valid registration",
 			body:       `{"username":"testuser","password":"testpass"}`,
-			wantStatus: http.StatusOK,
+			wantStatus: http.StatusCreated,
 		},
 		{
 			name:       "empty username",
@@ -206,7 +206,7 @@ func TestRegisterDuplicateUsername(t *testing.T) {
 	w1 := httptest.NewRecorder()
 	(*handler).ServeHTTP(w1, req1)
 
-	if w1.Code != http.StatusOK {
+	if w1.Code != http.StatusCreated {
 		t.Fatalf("First registration failed: %d", w1.Code)
 	}
 

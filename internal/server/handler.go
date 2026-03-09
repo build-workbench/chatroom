@@ -144,7 +144,7 @@ func (h *Handler) Register(c *gin.Context) {
 		serverError(c, "failed to create user")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"id": result.ID, "username": result.Username})
+	c.JSON(http.StatusCreated, gin.H{"id": result.ID, "username": result.Username})
 }
 
 // Login 处理用户登录请求。
@@ -214,7 +214,7 @@ func (h *Handler) CreateRoom(c *gin.Context) {
 		serverError(c, "failed to create room")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"id": room.ID, "name": room.Name, "room": gin.H{"id": room.ID, "name": room.Name}})
+	c.JSON(http.StatusCreated, gin.H{"room": gin.H{"id": room.ID, "name": room.Name}})
 }
 
 // ListRooms 处理获取房间列表请求。

@@ -25,16 +25,13 @@ type RoomDTO struct {
 }
 
 // Create 创建新房间，房间名不可重复。
+// 依赖数据库唯一索引检测重复房间名，避免 check-then-create 竞态。
 func (s *RoomService) Create(name string, ownerID uint) (*RoomDTO, error) {
-	var count int64
-	if err := s.db.Model(&models.Room{}).Where("name = ?", name).Count(&count).Error; err != nil {
-		return nil, err
-	}
-	if count > 0 {
-		return nil, ErrRoomNameTaken
-	}
 	room := models.Room{Name: name, OwnerID: ownerID}
 	if err := s.db.Create(&room).Error; err != nil {
+		if isUniqueViolation(err) {
+			return nil, ErrRoomNameTaken
+		}
 		return nil, err
 	}
 	return &RoomDTO{ID: room.ID, Name: room.Name, Online: 0}, nil
