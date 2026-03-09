@@ -84,9 +84,13 @@ export default defineConfig({
     },
   },
   themeConfig: {
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/LessUp/chatroom' },
+    ],
     search: {
       provider: 'local',
     },
+    externalLinkIcon: true,
     locales: {
       root: {
         label: '简体中文',
@@ -101,9 +105,13 @@ export default defineConfig({
           prev: '上一页',
           next: '下一页',
         },
+        editLink: {
+          pattern: 'https://github.com/LessUp/chatroom/edit/main/docs/:path',
+          text: '在 GitHub 上编辑此页',
+        },
         footer: {
           message: '教学与练手优先，不做过度生产化设计。',
-          copyright: 'Released under the MIT License.',
+          copyright: 'Copyright © 2025-2026 LessUp — MIT License',
         },
         returnToTopLabel: '回到顶部',
         sidebarMenuLabel: '目录',
@@ -124,9 +132,13 @@ export default defineConfig({
           prev: 'Previous page',
           next: 'Next page',
         },
+        editLink: {
+          pattern: 'https://github.com/LessUp/chatroom/edit/main/docs/:path',
+          text: 'Edit this page on GitHub',
+        },
         footer: {
           message: 'Teaching-first and practice-first, without unnecessary production complexity.',
-          copyright: 'Released under the MIT License.',
+          copyright: 'Copyright © 2025-2026 LessUp — MIT License',
         },
         returnToTopLabel: 'Return to top',
         sidebarMenuLabel: 'Menu',

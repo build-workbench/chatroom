@@ -1,5 +1,10 @@
 # ChatRoom
 
+[![Docs](https://img.shields.io/badge/Docs-GitHub%20Pages-blue?logo=github)](https://lessup.github.io/chatroom/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+简体中文 | [English](README.en.md)
+
 一个用于个人练手与教学的实时聊天室示例项目。
 
 后端使用 Go、Gin、GORM 与 WebSocket，前端使用 React + TypeScript。项目目标是帮助你快速理解以下内容：
