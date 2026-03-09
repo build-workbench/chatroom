@@ -15,13 +15,31 @@ hero:
       text: 查看 API
       link: /API
 features:
-  - title: 先跑起来
+  - icon: 🚀
+    title: 先跑起来
     details: 用最短路径启动数据库、后端和前端，快速得到一个可用的聊天室演示环境。
-  - title: 再看原理
+  - icon: 🔍
+    title: 再看原理
     details: 通过架构文档、设计文档和 API 文档，理解 REST、JWT 和 WebSocket 的协作方式。
-  - title: 最后做实验
+  - icon: 🧪
+    title: 最后做实验
     details: 按照手动测试实验清单，一步步验证注册、登录、房间、消息、在线人数和输入状态。
+  - icon: 🔐
+    title: JWT 鉴权
+    details: Access Token + Refresh Token 双令牌体系，Gin 中间件统一校验，前端自动续期。
+  - icon: ⚡
+    title: WebSocket 实时通信
+    details: 房间级 Hub 广播、加入/离开事件、输入状态提示、消息持久化与分页查询。
+  - icon: 📊
+    title: Prometheus 监控
+    details: 内置 HTTP 请求、WebSocket 连接和业务指标采集，配套 Grafana 仪表盘模板。
 ---
+
+## 技术栈
+
+| 后端 | 前端 | 数据库 | 监控 | 自动化 |
+|------|------|--------|------|--------|
+| Go 1.24 · Gin · GORM · gorilla/websocket | React 19 · TypeScript · Vite | PostgreSQL 16 | Prometheus · Grafana | GitHub Actions |
 
 ## 这份文档适合谁
 
@@ -31,13 +49,13 @@ features:
 
 ## 推荐阅读顺序
 
-1. [快速开始](/getting-started)
-2. [手动测试实验](/manual-testing)
-3. [API 文档](/API)
-4. [架构文档](/ARCHITECTURE)
-5. [设计文档](/DESIGN)
-6. [监控指南](/monitoring/README)
-7. [常见问题](/FAQ)
+1. [快速开始](/getting-started) — 用最少步骤把项目跑起来
+2. [手动测试实验](/manual-testing) — 验证核心功能的实验清单
+3. [API 文档](/API) — REST + WebSocket 接口说明
+4. [架构文档](/ARCHITECTURE) — 系统分层与数据流
+5. [设计文档](/DESIGN) — 模块拆分与关键流程
+6. [监控指南](/monitoring/README) — Prometheus + Grafana 配置
+7. [常见问题](/FAQ) — 项目定位与技术选型
 
 ## 你将学到什么
 

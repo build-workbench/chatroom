@@ -1,6 +1,7 @@
 # ChatRoom
 
-[![Docs](https://img.shields.io/badge/Docs-GitHub%20Pages-blue?logo=github)](https://lessup.github.io/chatroom/)
+[![CI](https://github.com/LessUp/chatroom/actions/workflows/ci.yml/badge.svg)](https://github.com/LessUp/chatroom/actions/workflows/ci.yml)
+[![Docs](https://github.com/LessUp/chatroom/actions/workflows/pages.yml/badge.svg)](https://lessup.github.io/chatroom/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 [English](README.md) | 简体中文
@@ -288,7 +289,7 @@ npm --prefix docs run docs:build
 
 ### 在线发布
 
-- 文档站通过 `.github/workflows/docs.yml` 自动发布到 GitHub Pages
+- 文档站通过 `.github/workflows/pages.yml` 自动发布到 GitHub Pages
 - 推送 `main` 分支中的文档改动后会自动触发构建与部署
 - 首次使用时需要在仓库设置中启用 GitHub Pages
 
