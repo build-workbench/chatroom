@@ -51,17 +51,6 @@ export default function App() {
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [auth.user, auth.accessToken])
 
-	// 恢复上次进入的房间名称
-	useEffect(() => {
-		if (!auth.user || !auth.accessToken) return
-		if (!chat.currentRoomId || chat.currentRoomName) return
-		const found = chat.rooms.find((r) => r.id === chat.currentRoomId)
-		if (found) {
-			chat.setOnlineCount(found.online)
-		}
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [chat.rooms, chat.currentRoomId, chat.currentRoomName])
-
 	if (!auth.user) {
 		return <AuthScreen onLogin={auth.handleLogin} onRegister={auth.handleRegister} />
 	}

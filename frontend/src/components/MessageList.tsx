@@ -80,6 +80,8 @@ export function MessageList({ items, user, currentRoomId, onLoadMore }: MessageL
     }
   })
 
+  const hasRenderableItems = items.some((m) => m.type === 'message' || m.type === 'join' || m.type === 'leave')
+
   useEffect(() => {
     const box = boxRef.current
     if (!box) return
@@ -87,20 +89,17 @@ export function MessageList({ items, user, currentRoomId, onLoadMore }: MessageL
     prevItemCountRef.current = items.length
 
     if (prevCount === 0) {
-      // 首次加载或切换房间，滚动到底部
       box.scrollTop = box.scrollHeight
       return
     }
 
-    const addedToTop = items.length > prevCount && prevScrollHeightRef.current > 0
-    const wasNearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80
+    const addedItems = items.length > prevCount && prevScrollHeightRef.current > 0
+    const wasNearBottom = prevScrollHeightRef.current - box.scrollTop - box.clientHeight < 80
 
-    if (addedToTop && !wasNearBottom) {
-      // 加载旧消息：保持当前视口位置
+    if (addedItems && !wasNearBottom) {
       const delta = box.scrollHeight - prevScrollHeightRef.current
       box.scrollTop += delta
     } else {
-      // 新消息到达且用户在底部附近，自动滚动
       box.scrollTop = box.scrollHeight
     }
   }, [items, currentRoomId])
@@ -115,6 +114,14 @@ export function MessageList({ items, user, currentRoomId, onLoadMore }: MessageL
         if (box.scrollTop <= 20) onLoadMore()
       }}
     >
+      {!hasRenderableItems ? (
+        <div className="h-full min-h-[220px] flex items-center justify-center">
+          <div className="max-w-sm text-center px-6 py-8 rounded-2xl border border-dashed border-dark-700 bg-dark-900/40">
+            <p className="text-sm text-gray-300">这个房间还没有消息</p>
+            <p className="mt-2 text-xs text-gray-500">可以先发一条消息，验证实时推送、历史记录和输入状态是否正常。</p>
+          </div>
+        </div>
+      ) : null}
       {items.map((m) => {
         if (m.type === 'join' || m.type === 'leave') {
           return (

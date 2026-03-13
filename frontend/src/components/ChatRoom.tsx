@@ -34,7 +34,7 @@ export function ChatRoom({
   if (!currentRoomId) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md px-6">
           <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary-500/20 to-purple-500/20 flex items-center justify-center">
             <svg className="w-12 h-12 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -45,8 +45,9 @@ export function ChatRoom({
               />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold gradient-text mb-2">欢迎回来!</h2>
-          <p className="text-gray-500 mb-6">选择一个房间开始聊天</p>
+          <h2 className="text-2xl font-bold gradient-text mb-2">选择一个房间开始聊天</h2>
+          <p className="text-gray-500 mb-4">创建新房间，或从左侧列表进入一个已有房间。</p>
+          <p className="text-xs text-gray-600">这是一个用于练手和教学演示的聊天室示例，适合本地体验实时消息、在线人数和历史记录加载流程。</p>
         </div>
       </div>
     )

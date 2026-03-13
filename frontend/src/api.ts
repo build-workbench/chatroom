@@ -6,10 +6,45 @@ export interface ApiAuthCallbacks {
   onUnauthorized?: () => void
 }
 
+export interface RequestError extends Error {
+  status?: number
+  responseMessage?: string
+  code?: string
+}
+
 async function safeJson<T>(res: Response): Promise<T> {
   const txt = await res.text()
   if (!txt) return {} as T
   return JSON.parse(txt) as T
+}
+
+function createRequestError(
+  message: string,
+  extras: Partial<Pick<RequestError, 'status' | 'responseMessage' | 'code'>> = {},
+): RequestError {
+  const err = new Error(message) as RequestError
+  err.status = extras.status
+  err.responseMessage = extras.responseMessage
+  err.code = extras.code
+  return err
+}
+
+export function getRequestErrorStatus(error: unknown): number | undefined {
+  return typeof error === 'object' && error !== null && 'status' in error
+    ? (error as RequestError).status
+    : undefined
+}
+
+export function getRequestErrorMessage(error: unknown): string | undefined {
+  return typeof error === 'object' && error !== null && 'responseMessage' in error
+    ? (error as RequestError).responseMessage
+    : undefined
+}
+
+export function isNetworkRequestError(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'code' in error
+    ? (error as RequestError).code === 'NETWORK_ERROR'
+    : false
 }
 
 export class Api {
@@ -31,11 +66,16 @@ export class Api {
     const refreshToken = this.getRefreshToken()
     if (!refreshToken) return false
 
-    const res = await fetch('/api/v1/auth/refresh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: refreshToken }),
-    })
+    let res: Response
+    try {
+      res = await fetch('/api/v1/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      })
+    } catch {
+      return false
+    }
 
     if (!res.ok) return false
 
@@ -59,32 +99,56 @@ export class Api {
       if (at) headers.Authorization = `Bearer ${at}`
     }
 
-    let res = await fetch(path, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : null,
-    })
+    let res: Response
+    try {
+      res = await fetch(path, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : null,
+      })
+    } catch (error) {
+      throw createRequestError(error instanceof Error ? error.message : 'network error', {
+        code: 'NETWORK_ERROR',
+      })
+    }
 
     if (authRequired && res.status === 401) {
       const ok = await this.refresh()
       if (!ok) {
         clearAuth()
         this.callbacks.onUnauthorized?.()
-        throw new Error('unauthorized')
+        throw createRequestError('unauthorized', {
+          status: 401,
+          responseMessage: 'invalid refresh token',
+        })
       }
       const at = this.getAccessToken()
       if (at) headers.Authorization = `Bearer ${at}`
-      res = await fetch(path, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : null,
-      })
+      try {
+        res = await fetch(path, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : null,
+        })
+      } catch (error) {
+        throw createRequestError(error instanceof Error ? error.message : 'network error', {
+          code: 'NETWORK_ERROR',
+        })
+      }
     }
 
     if (!res.ok) {
-      const err = new Error(`request failed: ${res.status}`)
-      ;(err as { status?: number }).status = res.status
-      throw err
+      let responseMessage: string | undefined
+      try {
+        const data = await safeJson<{ error?: string; message?: string }>(res)
+        responseMessage = data.error || data.message
+      } catch {
+        responseMessage = undefined
+      }
+      throw createRequestError(responseMessage || `request failed: ${res.status}`, {
+        status: res.status,
+        responseMessage,
+      })
     }
 
     return safeJson<T>(res)

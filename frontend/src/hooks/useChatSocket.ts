@@ -32,6 +32,7 @@ export function useChatSocket({
 
   const onJoinLeaveRef = useRef(onJoinLeave)
   const onMessageRef = useRef(onMessage)
+  const lastSocketErrorRef = useRef<string>('')
   useEffect(() => { onJoinLeaveRef.current = onJoinLeave }, [onJoinLeave])
   useEffect(() => { onMessageRef.current = onMessage }, [onMessage])
 
@@ -40,9 +41,19 @@ export function useChatSocket({
     switch (evt.type) {
       case 'pong':
         return
-      case 'error':
-        toast.error((evt as { content?: string }).content || '发生错误')
+      case 'error': {
+        const message = (evt as { content?: string }).content || '发生错误'
+        if (lastSocketErrorRef.current !== message) {
+          toast.error(message)
+          lastSocketErrorRef.current = message
+          window.setTimeout(() => {
+            if (lastSocketErrorRef.current === message) {
+              lastSocketErrorRef.current = ''
+            }
+          }, 3000)
+        }
         return
+      }
       case 'typing': {
         const u = (evt as { username?: string }).username
         if (!u || u === userRef.current?.username) return

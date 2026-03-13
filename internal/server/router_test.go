@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -11,6 +13,7 @@ import (
 	"chatroom/internal/models"
 	"chatroom/internal/ws"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -33,10 +36,20 @@ func setupTestDB(t *testing.T) *gorm.DB {
 	return db
 }
 
-func setupTestRouter(t *testing.T) (*gorm.DB, *http.Handler) {
+func setupTestRouterWithConfig(t *testing.T, cfg config.Config) (*gorm.DB, *http.Handler) {
 	t.Helper()
 	db := setupTestDB(t)
-	cfg := config.Config{
+	hub := ws.NewHub()
+	bi := BuildInfo{Version: "test", GitCommit: "abc123", BuildTime: "now", GoVersion: "go1.24"}
+	router, rlStop := SetupRouter(cfg, db, hub, bi)
+	t.Cleanup(rlStop)
+	var handler http.Handler = router
+	return db, &handler
+}
+
+func setupTestRouter(t *testing.T) (*gorm.DB, *http.Handler) {
+	t.Helper()
+	return setupTestRouterWithConfig(t, config.Config{
 		Port:                  "8080",
 		DatabaseDSN:           "test",
 		JWTSecret:             "test-secret",
@@ -45,13 +58,7 @@ func setupTestRouter(t *testing.T) (*gorm.DB, *http.Handler) {
 		LogFormat:             "console",
 		AccessTokenTTLMinutes: 15,
 		RefreshTokenTTLDays:   7,
-	}
-	hub := ws.NewHub()
-	bi := BuildInfo{Version: "test", GitCommit: "abc123", BuildTime: "now", GoVersion: "go1.24"}
-	router, rlStop := SetupRouter(cfg, db, hub, bi)
-	t.Cleanup(rlStop)
-	var handler http.Handler = router
-	return db, &handler
+	})
 }
 
 func TestHealthEndpoint(t *testing.T) {
@@ -77,6 +84,137 @@ func TestHealthEndpoint(t *testing.T) {
 
 	if _, ok := resp["timestamp"]; !ok {
 		t.Error("GET /health should include timestamp")
+	}
+}
+
+func TestCORSAllowsConfiguredOrigin(t *testing.T) {
+	_, handler := setupTestRouterWithConfig(t, config.Config{
+		Port:                  "8080",
+		DatabaseDSN:           "test",
+		JWTSecret:             "test-secret",
+		Env:                   "prod",
+		LogLevel:              "info",
+		LogFormat:             "console",
+		AccessTokenTTLMinutes: 15,
+		RefreshTokenTTLDays:   7,
+		AllowedOrigins:        []string{"https://app.example.com"},
+	})
+
+	req := httptest.NewRequest(http.MethodOptions, "/api/v1/auth/login", nil)
+	req.Host = "chat.example.com"
+	req.Header.Set("Origin", "https://app.example.com")
+	req.Header.Set("Access-Control-Request-Method", http.MethodPost)
+	w := httptest.NewRecorder()
+
+	(*handler).ServeHTTP(w, req)
+
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("OPTIONS /api/v1/auth/login status = %d, want %d", w.Code, http.StatusNoContent)
+	}
+	if got := w.Header().Get("Access-Control-Allow-Origin"); got != "https://app.example.com" {
+		t.Errorf("Access-Control-Allow-Origin = %q, want %q", got, "https://app.example.com")
+	}
+}
+
+func TestCORSRejectsSubstringOrigin(t *testing.T) {
+	_, handler := setupTestRouterWithConfig(t, config.Config{
+		Port:                  "8080",
+		DatabaseDSN:           "test",
+		JWTSecret:             "test-secret",
+		Env:                   "prod",
+		LogLevel:              "info",
+		LogFormat:             "console",
+		AccessTokenTTLMinutes: 15,
+		RefreshTokenTTLDays:   7,
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	req.Host = "chat.example.com"
+	req.Header.Set("X-Forwarded-Proto", "https")
+	req.Header.Set("Origin", "https://chat.example.com.evil.test")
+	w := httptest.NewRecorder()
+
+	(*handler).ServeHTTP(w, req)
+
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("GET /health status = %d, want %d", w.Code, http.StatusForbidden)
+	}
+}
+
+func TestCORSAllowsSameOrigin(t *testing.T) {
+	_, handler := setupTestRouterWithConfig(t, config.Config{
+		Port:                  "8080",
+		DatabaseDSN:           "test",
+		JWTSecret:             "test-secret",
+		Env:                   "prod",
+		LogLevel:              "info",
+		LogFormat:             "console",
+		AccessTokenTTLMinutes: 15,
+		RefreshTokenTTLDays:   7,
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	req.Host = "chat.example.com"
+	req.Header.Set("X-Forwarded-Proto", "https")
+	req.Header.Set("Origin", "https://chat.example.com")
+	w := httptest.NewRecorder()
+
+	(*handler).ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("GET /health status = %d, want %d", w.Code, http.StatusOK)
+	}
+	if got := w.Header().Get("Access-Control-Allow-Origin"); got != "https://chat.example.com" {
+		t.Errorf("Access-Control-Allow-Origin = %q, want %q", got, "https://chat.example.com")
+	}
+}
+
+func TestServeAppRejectsReservedRoutes(t *testing.T) {
+	tmpDir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(tmpDir, "index.html"), []byte("<html>spa</html>"), 0o600); err != nil {
+		t.Fatalf("failed to write index.html: %v", err)
+	}
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.NoRoute(func(c *gin.Context) {
+		serveApp(c, tmpDir)
+	})
+
+	for _, path := range []string{"/api/v1/auth/login", "/health", "/ready", "/metrics", "/ws"} {
+		t.Run(path, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, path, nil)
+			w := httptest.NewRecorder()
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusNotFound {
+				t.Fatalf("GET %s status = %d, want %d", path, w.Code, http.StatusNotFound)
+			}
+		})
+	}
+}
+
+func TestServeAppServesSPAIndexForUnknownRoute(t *testing.T) {
+	tmpDir := t.TempDir()
+	indexPath := filepath.Join(tmpDir, "index.html")
+	if err := os.WriteFile(indexPath, []byte("<html>spa</html>"), 0o600); err != nil {
+		t.Fatalf("failed to write index.html: %v", err)
+	}
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.NoRoute(func(c *gin.Context) {
+		serveApp(c, tmpDir)
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/rooms/general", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("GET /rooms/general status = %d, want %d", w.Code, http.StatusOK)
+	}
+	if body := w.Body.String(); !strings.Contains(body, "spa") {
+		t.Fatalf("GET /rooms/general body = %q, want SPA index content", body)
 	}
 }
 

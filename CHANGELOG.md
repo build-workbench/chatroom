@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Hardened production CORS and WebSocket origin validation with strict same-origin / allowlist checks
+- Improved frontend auth, room, history, and socket error feedback for release-readiness
+- Stabilized SPA static asset fallback resolution and added regression tests for reserved route handling
+
 ## [0.2.0] - 2026-03-08
 
 ### Added

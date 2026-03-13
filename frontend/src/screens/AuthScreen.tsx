@@ -48,20 +48,32 @@ export function AuthScreen(props: {
       return
     }
 
+    if (u.length > 64) {
+      toast.error('用户名不能超过64个字符')
+      return
+    }
+
     if (p.length < 4) {
       toast.error('密码至少4个字符')
+      return
+    }
+
+    if (p.length > 128) {
+      toast.error('密码不能超过128个字符')
       return
     }
 
     setBusy(true)
     try {
       await props.onRegister(u, p)
-      toast.success('注册成功！')
+      toast.success('注册成功，请使用新账号登录')
       setRegUsername('')
       setRegPassword('')
       setTab('login')
       setLoginUsername(u)
       setLoginPassword('')
+    } catch {
+      return
     } finally {
       setBusy(false)
     }
@@ -217,6 +229,7 @@ export function AuthScreen(props: {
                   disabled={busy}
                 />
               </div>
+              <p className="text-xs text-gray-500">用户名长度 2-64 个字符</p>
             </div>
 
             <div className="space-y-2">
@@ -244,6 +257,7 @@ export function AuthScreen(props: {
                   disabled={busy}
                 />
               </div>
+              <p className="text-xs text-gray-500">密码长度 4-128 个字符</p>
             </div>
 
             <button
@@ -267,7 +281,7 @@ export function AuthScreen(props: {
           </div>
         )}
 
-        <p className="mt-6 text-center text-xs text-gray-600">安全加密 · 实时同步 · 多端支持</p>
+        <p className="mt-6 text-center text-xs text-gray-600">练手项目 · 实时消息演示 · 本地可运行</p>
       </div>
     </div>
   )

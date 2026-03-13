@@ -2,13 +2,14 @@ package mw
 
 import (
 	"net/http"
-	"strings"
+
+	"chatroom/internal/config"
 
 	"github.com/gin-gonic/gin"
 )
 
 // CORS 返回一个支持跨域请求的中间件，dev 环境允许所有来源。
-func CORS(env string) gin.HandlerFunc {
+func CORS(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.GetHeader("Origin")
 		if origin == "" {
@@ -16,16 +17,13 @@ func CORS(env string) gin.HandlerFunc {
 			return
 		}
 
-		if env == "dev" { //nolint:gocritic
-			c.Header("Access-Control-Allow-Origin", origin)
-		} else {
-			// 生产环境只允许同源
-			host := c.Request.Host
-			if strings.Contains(origin, host) {
-				c.Header("Access-Control-Allow-Origin", origin)
-			}
+		if !cfg.AllowsOrigin(origin, c.Request) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "origin not allowed"})
+			return
 		}
 
+		c.Header("Vary", "Origin")
+		c.Header("Access-Control-Allow-Origin", origin)
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		c.Header("Access-Control-Allow-Credentials", "true")

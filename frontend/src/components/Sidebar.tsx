@@ -33,11 +33,12 @@ export function Sidebar({
   onJoinRoom,
   onLogout,
 }: SidebarProps) {
+  const query = roomQuery.trim().toLowerCase()
   const filteredRooms = rooms.filter((r) => {
-    const q = roomQuery.trim().toLowerCase()
-    if (!q) return true
-    return r.name.toLowerCase().includes(q)
+    if (!query) return true
+    return r.name.toLowerCase().includes(query)
   })
+  const hasQuery = query.length > 0
 
   return (
     <div className="w-80 bg-dark-900/95 glass border-r border-dark-800 flex flex-col">
@@ -176,6 +177,18 @@ export function Sidebar({
                 </div>
               )
             })}
+            {rooms.length === 0 ? (
+              <div className="px-3 py-8 text-center rounded-xl border border-dashed border-dark-700 bg-dark-900/40">
+                <p className="text-sm text-gray-300">还没有可用房间</p>
+                <p className="mt-1 text-xs text-gray-500">创建一个新房间，开始本次演示或测试。</p>
+              </div>
+            ) : null}
+            {rooms.length > 0 && filteredRooms.length === 0 && hasQuery ? (
+              <div className="px-3 py-8 text-center rounded-xl border border-dashed border-dark-700 bg-dark-900/40">
+                <p className="text-sm text-gray-300">没有找到匹配的房间</p>
+                <p className="mt-1 text-xs text-gray-500">试试其他关键词，或清空搜索后查看全部房间。</p>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

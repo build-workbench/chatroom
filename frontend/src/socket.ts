@@ -17,8 +17,10 @@ export class ChatSocket {
   private currentRoomId: number | null = null
   private heartbeatInterval: number | null = null
   private heartbeatTimeout: number | null = null
+  private reconnectTimer: number | null = null
   private messageQueue: Outbound[] = []
   private lastPong = Date.now()
+  private sawOpen = false
 
   constructor(opts: {
     getAccessToken: () => string
@@ -31,42 +33,72 @@ export class ChatSocket {
   }
 
   connect(roomId: number, accessToken: string): void {
-    if (this.ws) this.close(false)
+    if (this.reconnectTimer) {
+      window.clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
+    if (this.ws) {
+      const current = this.ws
+      current.onopen = null
+      current.onclose = null
+      current.onerror = null
+      current.onmessage = null
+      current.close()
+      this.ws = null
+    }
 
     this.currentRoomId = roomId
     this.shouldReconnect = true
+    this.sawOpen = false
 
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:'
     const url = `${proto}//${location.host}/ws?room_id=${roomId}&token=${encodeURIComponent(accessToken)}`
 
     this.onStatus('connecting')
 
+    let socket: WebSocket
     try {
-      this.ws = new WebSocket(url)
+      socket = new WebSocket(url)
+      this.ws = socket
     } catch {
+      this.emitSocketError('无法建立实时连接，请检查服务是否可用')
       this.scheduleReconnect()
       return
     }
 
-    this.ws.onopen = () => {
+    socket.onopen = () => {
+      if (this.ws !== socket) return
       this.reconnectAttempts = 0
       this.lastPong = Date.now()
+      this.sawOpen = true
       this.onStatus('connected')
       this.startHeartbeat()
       this.flushQueue()
     }
 
-    this.ws.onclose = () => {
+    socket.onclose = (event) => {
+      if (this.ws !== socket) return
       this.stopHeartbeat()
+      this.ws = null
       this.onStatus('disconnected')
-      if (this.shouldReconnect) this.scheduleReconnect()
+
+      if (!this.shouldReconnect) return
+
+      if (!this.sawOpen && event.code === 1006) {
+        this.emitSocketError('实时连接被拒绝，请重新进入房间或重新登录')
+      } else if (event.code === 1008) {
+        this.emitSocketError('实时连接已失效，请重新登录')
+      }
+      this.scheduleReconnect()
     }
 
-    this.ws.onerror = () => {
+    socket.onerror = () => {
+      if (this.ws !== socket) return
       this.onStatus('disconnected')
     }
 
-    this.ws.onmessage = (ev) => {
+    socket.onmessage = (ev) => {
+      if (this.ws !== socket) return
       try {
         const msg = JSON.parse(ev.data) as unknown
         if (typeof msg === 'object' && msg !== null && 'type' in msg) {
@@ -81,7 +113,7 @@ export class ChatSocket {
         }
         this.onEvent(msg as WsEvent)
       } catch {
-        return
+        this.emitSocketError('收到无法识别的实时消息，请稍后重试')
       }
     }
   }
@@ -90,12 +122,21 @@ export class ChatSocket {
     this.shouldReconnect = false
     this.stopHeartbeat()
 
+    if (this.reconnectTimer) {
+      window.clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
+
     if (this.ws) {
       this.ws.close()
       this.ws = null
     }
 
     if (clearQueue) this.messageQueue = []
+  }
+
+  private emitSocketError(content: string): void {
+    this.onEvent({ type: 'error', content })
   }
 
   private startHeartbeat(): void {
@@ -106,6 +147,7 @@ export class ChatSocket {
         this.send({ type: 'ping' }, true)
         this.heartbeatTimeout = window.setTimeout(() => {
           if (Date.now() - this.lastPong > 35000) {
+            this.emitSocketError('实时连接超时，正在尝试重新连接')
             this.ws?.close()
           }
         }, 5000)
@@ -127,6 +169,7 @@ export class ChatSocket {
   private scheduleReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnect) {
       this.onStatus('disconnected')
+      this.emitSocketError('实时连接恢复失败，请刷新页面或重新进入房间')
       return
     }
 
@@ -135,11 +178,13 @@ export class ChatSocket {
 
     this.onStatus('reconnecting', this.reconnectAttempts)
 
-    window.setTimeout(() => {
+    this.reconnectTimer = window.setTimeout(() => {
+      this.reconnectTimer = null
       if (!this.shouldReconnect || !this.currentRoomId) return
       const token = this.getAccessToken()
       if (!token) {
         this.onStatus('disconnected')
+        this.emitSocketError('登录状态已失效，无法恢复实时连接')
         return
       }
       this.connect(this.currentRoomId, token)

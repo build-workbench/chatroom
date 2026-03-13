@@ -27,6 +27,78 @@ type BuildInfo struct {
 	GoVersion string
 }
 
+func resolveAppRoot() string {
+	baseDirs := []string{"."}
+	if exePath, err := os.Executable(); err == nil {
+		baseDirs = append(baseDirs, filepath.Dir(exePath))
+	}
+	baseDirs = append(baseDirs, "..", filepath.Join("..", ".."))
+
+	seen := make(map[string]struct{}, len(baseDirs))
+	for _, baseDir := range baseDirs {
+		absBase, err := filepath.Abs(baseDir)
+		if err != nil {
+			continue
+		}
+		if _, ok := seen[absBase]; ok {
+			continue
+		}
+		seen[absBase] = struct{}{}
+
+		distDir := filepath.Join(absBase, "frontend", "dist")
+		if _, err := os.Stat(filepath.Join(distDir, "index.html")); err == nil {
+			return distDir
+		}
+	}
+	for _, baseDir := range baseDirs {
+		absBase, err := filepath.Abs(baseDir)
+		if err != nil {
+			continue
+		}
+		webDir := filepath.Join(absBase, "web")
+		if _, err := os.Stat(filepath.Join(webDir, "index.html")); err == nil {
+			return webDir
+		}
+	}
+	return filepath.Join(".", "web")
+}
+
+func serveApp(c *gin.Context, rootDir string) {
+	if c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	indexFile := filepath.Join(rootDir, "index.html")
+	path := strings.TrimPrefix(filepath.Clean(c.Request.URL.Path), "/")
+	if path == "." {
+		path = ""
+	}
+
+	if path == "" {
+		c.File(indexFile)
+		return
+	}
+
+	if strings.HasPrefix(path, "api/") || path == "metrics" || path == "health" || path == "healthz" || path == "ready" || path == "version" || strings.HasPrefix(path, "ws") {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	target := filepath.Join(rootDir, path)
+	if fi, err := os.Stat(target); err == nil && !fi.IsDir() {
+		c.File(target)
+		return
+	}
+
+	if strings.Contains(path, ".") {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	c.File(indexFile)
+}
+
 // SetupRouter 统一初始化 Gin 中间件、REST API 以及 WebSocket 端点。
 // 返回的 cleanup 函数应在优雅停服时调用，用于释放后台 goroutine。
 func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) (*gin.Engine, func()) {
@@ -36,7 +108,7 @@ func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) (*gi
 
 	r := gin.New()
 	r.Use(gin.Recovery())
-	r.Use(mw.CORS(cfg.Env))
+	r.Use(mw.CORS(cfg))
 	r.Use(metrics.GinMiddleware())
 	// 控制单个 IP+路由的速率，避免教学环境被刷爆。
 	rlMW, rlStop := mw.RateLimit(rate.Every(time.Second/20), 40)
@@ -66,37 +138,9 @@ func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) (*gi
 
 	r.GET("/ws", ws.Serve(hub, db, cfg))
 
-	distDir := filepath.Join(".", "frontend", "dist")
-	if _, err := os.Stat(filepath.Join(distDir, "index.html")); err == nil {
-		r.GET("/*filepath", func(c *gin.Context) {
-			path := c.Param("filepath")
-			if path == "" || path == "/" {
-				c.File(filepath.Join(distDir, "index.html"))
-				return
-			}
-			clean := filepath.Clean(path)
-			rel := strings.TrimPrefix(clean, "/")
-			if rel == "" {
-				c.File(filepath.Join(distDir, "index.html"))
-				return
-			}
-			if strings.HasPrefix(rel, "api/") || rel == "metrics" || rel == "healthz" || strings.HasPrefix(rel, "ws") {
-				c.Status(http.StatusNotFound)
-				return
-			}
-			target := filepath.Join(distDir, rel)
-			if fi, err := os.Stat(target); err == nil && !fi.IsDir() {
-				c.File(target)
-				return
-			}
-			if strings.Contains(rel, ".") {
-				c.Status(http.StatusNotFound)
-				return
-			}
-			c.File(filepath.Join(distDir, "index.html"))
-		})
-	} else {
-		r.Static("/", "./web")
-	}
+	appRoot := resolveAppRoot()
+	r.NoRoute(func(c *gin.Context) {
+		serveApp(c, appRoot)
+	})
 	return r, rlStop
 }

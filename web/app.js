@@ -1,16 +1,13 @@
 /**
- * ChatRoom Frontend - Modern IM System
+ * ChatRoom Frontend - Teaching Demo Fallback UI
  * Architecture: Utility -> State -> API -> Socket -> UI -> Actions -> Init
- * Features: Real-time messaging, typing indicators, emoji support, search, high availability
+ * Features: real-time messaging, history loading, typing indicators, room search, auto reconnect
  */
 
 // --- 1. Utility & UI Components ---
 
 const $ = (id) => document.getElementById(id);
 const $$ = (sel) => document.querySelectorAll(sel);
-
-// Common emoji set for quick access
-const EMOJI_SET = ['😀','😂','🥰','😎','🤔','👍','👎','❤️','🔥','✨','🎉','👏','🙏','💪','😊','😢','😡','🤣','😍','🥺','😭','😤','🤗','🤩','😴','🤮','💀','👀','🙄','😏','🥳','😇','🤝','💯','⭐','🌟','💫','🚀','💬','📝'];
 
 class Toast {
   static show(message, type = 'info', duration = 3000) {
@@ -60,9 +57,13 @@ const State = {
   user: null,
   accessToken: localStorage.getItem('chat_access') || '',
   refreshToken: localStorage.getItem('chat_refresh') || '',
+  rooms: [],
+  onlineUsers: [],
   currentRoomId: null,
+  currentRoomName: '',
+  currentRoomOnline: 0,
   lastRoomId: localStorage.getItem('chat_last_room'),
-  
+
   setUser(user) {
     this.user = user;
     if (user) localStorage.setItem('chat_user', JSON.stringify(user));
@@ -77,17 +78,28 @@ const State = {
     localStorage.setItem('chat_refresh', this.refreshToken);
   },
 
+  setLastRoomId(roomId) {
+    this.lastRoomId = roomId == null ? null : String(roomId);
+    if (this.lastRoomId) localStorage.setItem('chat_last_room', this.lastRoomId);
+    else localStorage.removeItem('chat_last_room');
+  },
+
   clearAuth() {
     this.accessToken = '';
     this.refreshToken = '';
     this.user = null;
+    this.rooms = [];
+    this.onlineUsers = [];
     this.currentRoomId = null;
+    this.currentRoomName = '';
+    this.currentRoomOnline = 0;
+    this.lastRoomId = null;
     localStorage.removeItem('chat_access');
     localStorage.removeItem('chat_refresh');
     localStorage.removeItem('chat_user');
     localStorage.removeItem('chat_last_room');
   },
-  
+
   loadUserFromStorage() {
     try {
       const u = localStorage.getItem('chat_user');
@@ -99,40 +111,66 @@ const State = {
 // --- 3. API Layer ---
 
 class API {
+  static createError(message, extras = {}) {
+    const error = new Error(message);
+    Object.assign(error, extras);
+    return error;
+  }
+
+  static async safeJson(res) {
+    const text = await res.text();
+    if (!text) return {};
+    return JSON.parse(text);
+  }
+
   static async request(path, method = 'GET', body = null, auth = false) {
     const headers = { 'Content-Type': 'application/json' };
-    if (auth && State.accessToken) headers['Authorization'] = 'Bearer ' + State.accessToken;
+    if (auth && State.accessToken) headers.Authorization = 'Bearer ' + State.accessToken;
 
+    let res;
     try {
-      let res = await fetch(path, {
+      res = await fetch(path, {
         method,
         headers,
         body: body ? JSON.stringify(body) : null,
       });
-
-      // Token Refresh Logic
-      if (auth && res.status === 401 && State.refreshToken) {
-        const refreshOk = await this.refreshToken();
-        if (refreshOk) {
-          headers['Authorization'] = 'Bearer ' + State.accessToken;
-          res = await fetch(path, { method, headers, body: body ? JSON.stringify(body) : null });
-        } else {
-          State.clearAuth();
-          UI.updateAuth();
-          throw new Error('Session expired');
-        }
-      }
-
-      if (!res.ok) {
-        const error = new Error(`Request failed: ${res.status}`);
-        error.status = res.status;
-        throw error;
-      }
-      return res.json();
     } catch (e) {
-      console.error("API Error:", e);
-      throw e;
+      console.error('API Error:', e);
+      throw this.createError(e instanceof Error ? e.message : 'network error', { code: 'NETWORK_ERROR' });
     }
+
+    if (auth && res.status === 401 && State.refreshToken) {
+      const refreshOk = await this.refreshToken();
+      if (refreshOk) {
+        headers.Authorization = 'Bearer ' + State.accessToken;
+        try {
+          res = await fetch(path, { method, headers, body: body ? JSON.stringify(body) : null });
+        } catch (e) {
+          console.error('API Error:', e);
+          throw this.createError(e instanceof Error ? e.message : 'network error', { code: 'NETWORK_ERROR' });
+        }
+      } else {
+        State.clearAuth();
+        UI.updateAuth();
+        throw this.createError('unauthorized', { status: 401, responseMessage: 'invalid refresh token' });
+      }
+    }
+
+    if (!res.ok) {
+      let responseMessage;
+      try {
+        const data = await this.safeJson(res);
+        responseMessage = data.error || data.message;
+      } catch {
+        responseMessage = undefined;
+      }
+      throw this.createError(responseMessage || `request failed: ${res.status}`, {
+        status: res.status,
+        responseMessage,
+      });
+    }
+
+    return this.safeJson(res);
   }
 
   static async refreshToken() {
@@ -142,13 +180,14 @@ class API {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh_token: State.refreshToken })
       });
-      if (res.ok) {
-        const data = await res.json();
-        State.setTokens(data.access_token, data.refresh_token);
-        return true;
-      }
-    } catch {}
-    return false;
+      if (!res.ok) return false;
+      const data = await this.safeJson(res);
+      if (!data.access_token || !data.refresh_token) return false;
+      State.setTokens(data.access_token, data.refresh_token);
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 
@@ -332,54 +371,46 @@ const Socket = new ChatSocket();
 
 const UI = {
   typingUsers: new Map(),
-  typingTimeout: null,
   earliestMsgId: null,
   loadingHistory: false,
-  emojiPickerVisible: false,
-  searchMode: false,
 
   init() {
-    // Auth Tab switching
     $('tab-login')?.addEventListener('click', () => this.switchAuthTab('login'));
     $('tab-register')?.addEventListener('click', () => this.switchAuthTab('register'));
 
-    // Auth buttons
-    $('btn-login').onclick = Actions.login;
-    $('btn-register').onclick = Actions.register;
-    $('btn-create-room').onclick = Actions.createRoom;
-    $('btn-send').onclick = Actions.sendMessage;
-    $('btn-logout').onclick = Actions.logout;
+    $('btn-login')?.addEventListener('click', () => Actions.login());
+    $('btn-register')?.addEventListener('click', () => Actions.register());
+    $('btn-create-room')?.addEventListener('click', () => Actions.createRoom());
+    $('btn-send')?.addEventListener('click', () => Actions.sendMessage());
+    $('btn-logout')?.addEventListener('click', () => Actions.logout());
+    $('btn-room-info')?.addEventListener('click', () => this.showRoomInfo());
 
-    // Enter to submit on auth forms
-    ['login-username', 'login-password'].forEach(id => {
+    ['login-username', 'login-password'].forEach((id) => {
       $(id)?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') Actions.login();
       });
     });
-    ['reg-username', 'reg-password'].forEach(id => {
+    ['reg-username', 'reg-password'].forEach((id) => {
       $(id)?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') Actions.register();
       });
     });
 
-    // Message input handling
     const input = $('msg-input');
-    input.addEventListener('keydown', (e) => {
+    input?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         Actions.sendMessage();
       }
     });
 
-    // Auto-resize textarea
-    input.addEventListener('input', () => {
+    input?.addEventListener('input', () => {
       input.style.height = 'auto';
       input.style.height = Math.min(input.scrollHeight, 120) + 'px';
     });
 
-    // Typing indicator throttling
     let typingStopTimer = null;
-    input.addEventListener('input', () => {
+    input?.addEventListener('input', () => {
       if (typingStopTimer) clearTimeout(typingStopTimer);
       Socket.send('typing', { is_typing: true });
       typingStopTimer = setTimeout(() => {
@@ -387,48 +418,29 @@ const UI = {
       }, 1500);
     });
 
-    // Infinite scroll for history
     const msgBox = $('messages');
-    msgBox.addEventListener('scroll', () => {
+    msgBox?.addEventListener('scroll', () => {
       if (msgBox.scrollTop <= 20 && !this.loadingHistory) {
         Actions.loadMoreHistory();
       }
     });
 
-    // Emoji picker
-    $('btn-emoji')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.toggleEmojiPicker();
-    });
-    this.initEmojiPicker();
-
-    // Close emoji picker on outside click
-    document.addEventListener('click', (e) => {
-      if (this.emojiPickerVisible && !$('emoji-picker').contains(e.target)) {
-        this.hideEmojiPicker();
-      }
-    });
-
-    // Room search
     $('search-rooms')?.addEventListener('input', (e) => {
       this.filterRooms(e.target.value);
     });
 
-    // Room name enter to create
     $('room-name')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') Actions.createRoom();
     });
 
-    // Initialize state
     State.loadUserFromStorage();
     this.updateAuth();
-    
-    // Restore session
-    if (State.accessToken) {
-      Actions.loadRooms();
-      if (State.lastRoomId) {
-        setTimeout(() => Actions.joinRoom(State.lastRoomId, '...'), 100);
-      }
+    this.showWelcomeState();
+    this.renderRooms(State.rooms);
+    this.updateOnlineUsers([]);
+
+    if (State.accessToken && State.user) {
+      void Actions.loadRooms({ restoreRoom: true });
     }
   },
 
@@ -451,61 +463,151 @@ const UI = {
     }
   },
 
-  initEmojiPicker() {
-    const picker = $('emoji-picker');
-    if (!picker) return;
-    
-    const grid = picker.querySelector('.grid');
-    grid.innerHTML = EMOJI_SET.map(e => 
-      `<button class="emoji-btn w-8 h-8 flex items-center justify-center text-xl hover:bg-dark-700 rounded-lg transition-transform" data-emoji="${e}">${e}</button>`
-    ).join('');
-
-    grid.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-emoji]');
-      if (btn) {
-        const emoji = btn.dataset.emoji;
-        const input = $('msg-input');
-        const pos = input.selectionStart;
-        input.value = input.value.slice(0, pos) + emoji + input.value.slice(pos);
-        input.focus();
-        input.selectionStart = input.selectionEnd = pos + emoji.length;
-        this.hideEmojiPicker();
-      }
-    });
-  },
-
-  toggleEmojiPicker() {
-    if (this.emojiPickerVisible) {
-      this.hideEmojiPicker();
-    } else {
-      this.showEmojiPicker();
+  showRoomInfo() {
+    if (!State.currentRoomId || !State.currentRoomName) {
+      Toast.info('请先选择一个房间');
+      return;
     }
+    Toast.info(`当前房间：${State.currentRoomName} · 在线人数：${State.currentRoomOnline || 0}`);
   },
 
-  showEmojiPicker() {
-    const picker = $('emoji-picker');
-    const btn = $('btn-emoji');
-    if (!picker || !btn) return;
-
-    const rect = btn.getBoundingClientRect();
-    picker.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
-    picker.style.left = rect.left + 'px';
-    picker.classList.remove('hidden');
-    this.emojiPickerVisible = true;
+  updateCurrentRoomHeader(name, online = 0) {
+    State.currentRoomName = name || '';
+    State.currentRoomOnline = typeof online === 'number' ? online : 0;
+    const roomName = $('current-room-name');
+    const roomAvatar = $('room-avatar');
+    const roomOnline = $('room-online');
+    if (roomName) roomName.textContent = State.currentRoomName || 'Room Name';
+    if (roomAvatar) roomAvatar.textContent = (State.currentRoomName || '#').charAt(0).toUpperCase();
+    if (roomOnline) roomOnline.textContent = String(State.currentRoomOnline);
   },
 
-  hideEmojiPicker() {
-    $('emoji-picker')?.classList.add('hidden');
-    this.emojiPickerVisible = false;
+  showChatArea() {
+    $('welcome-message')?.classList.add('hidden');
+    $('chat-area')?.classList.remove('hidden');
+  },
+
+  showWelcomeState() {
+    $('welcome-message')?.classList.remove('hidden');
+    $('chat-area')?.classList.add('hidden');
+  },
+
+  clearMessages() {
+    const box = $('messages');
+    if (box) box.innerHTML = '';
+    this.earliestMsgId = null;
+    const input = $('msg-input');
+    if (input) {
+      input.value = '';
+      input.style.height = 'auto';
+    }
+    for (const timer of this.typingUsers.values()) clearTimeout(timer);
+    this.typingUsers.clear();
+    this.renderTyping();
+  },
+
+  renderEmptyMessages() {
+    const box = $('messages');
+    if (!box) return;
+    box.innerHTML = `
+      <div id="messages-empty" class="h-full min-h-[220px] flex items-center justify-center">
+        <div class="max-w-sm text-center px-6 py-8 rounded-2xl border border-dashed border-dark-700 bg-dark-900/40">
+          <p class="text-sm text-gray-300">这个房间还没有消息</p>
+          <p class="mt-2 text-xs text-gray-500">可以先发一条消息，验证实时推送、历史记录和输入状态是否正常。</p>
+        </div>
+      </div>
+    `;
+  },
+
+  removeMessagePlaceholder() {
+    $('messages-empty')?.remove();
+  },
+
+  clearCurrentRoom(clearPersistedRoom = false) {
+    Socket.close(false);
+    State.currentRoomId = null;
+    State.currentRoomName = '';
+    State.currentRoomOnline = 0;
+    State.onlineUsers = [];
+    if (clearPersistedRoom) State.setLastRoomId(null);
+    this.updateCurrentRoomHeader('', 0);
+    this.clearMessages();
+    this.showWelcomeState();
+    this.updateOnlineUsers([]);
+    this.renderRooms(State.rooms);
   },
 
   filterRooms(query) {
-    const items = $('rooms-list')?.querySelectorAll('[data-room-name]') || [];
-    const q = query.toLowerCase().trim();
-    
-    items.forEach(item => {
-      const name = item.dataset.roomName?.toLowerCase() || '';
-      item.style.display = !q || name.includes(q) ? '' : 'none';
+    this.renderRooms(State.rooms, query);
+  },
+
+  renderRooms(rooms, query = $('search-rooms')?.value || '') {
+    const wrap = $('rooms-list');
+    if (!wrap) return;
+
+    State.rooms = Array.isArray(rooms) ? rooms : [];
+    const normalizedQuery = String(query).trim().toLowerCase();
+    const filteredRooms = State.rooms.filter((room) => {
+      if (!normalizedQuery) return true;
+      return (room.name || '').toLowerCase().includes(normalizedQuery);
+    });
+
+    wrap.innerHTML = '';
+
+    if (State.rooms.length === 0) {
+      wrap.innerHTML = `
+        <div class="px-3 py-8 text-center rounded-xl border border-dashed border-dark-700 bg-dark-900/40">
+          <p class="text-sm text-gray-300">还没有可用房间</p>
+          <p class="mt-1 text-xs text-gray-500">创建一个新房间，开始本次演示或测试。</p>
+        </div>
+      `;
+      return;
+    }
+
+    if (filteredRooms.length === 0) {
+      wrap.innerHTML = `
+        <div class="px-3 py-8 text-center rounded-xl border border-dashed border-dark-700 bg-dark-900/40">
+          <p class="text-sm text-gray-300">没有找到匹配的房间</p>
+          <p class="mt-1 text-xs text-gray-500">试试其他关键词，或清空搜索后查看全部房间。</p>
+        </div>
+      `;
+      return;
+    }
+
+    filteredRooms.forEach((r) => {
+      const active = State.currentRoomId === r.id;
+      const div = document.createElement('div');
+      div.dataset.roomName = r.name;
+      div.dataset.roomId = r.id;
+
+      div.className = `room-item group flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${
+        active
+          ? 'active bg-primary-500/10 border-l-2 border-primary-500'
+          : 'hover:bg-dark-800/50 border-l-2 border-transparent'
+      }`;
+
+      const colors = ['from-violet-500 to-purple-600', 'from-blue-500 to-cyan-500', 'from-emerald-500 to-teal-500', 'from-orange-500 to-red-500', 'from-pink-500 to-rose-500'];
+      const colorClass = colors[r.id % colors.length];
+
+      div.innerHTML = `
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${colorClass} flex items-center justify-center text-white font-bold text-sm shadow-lg flex-shrink-0">
+          ${this.escape((r.name || '#').charAt(0).toUpperCase())}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-sm truncate ${active ? 'text-white' : 'text-gray-300 group-hover:text-white'}">${this.escape(r.name)}</span>
+          </div>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span class="w-1.5 h-1.5 rounded-full ${(r.online || 0) > 0 ? 'bg-emerald-500' : 'bg-gray-600'}"></span>
+            <span class="text-xs text-gray-500">${r.online || 0} 在线</span>
+          </div>
+        </div>
+      `;
+
+      div.onclick = () => {
+        void Actions.joinRoom(r.id, r.name, r.online);
+      };
+      wrap.appendChild(div);
     });
   },
 

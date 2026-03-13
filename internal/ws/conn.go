@@ -3,10 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"net/http"
-	"net/url"
 	"strconv"
-	"strings"
-	"sync"
 	"time"
 
 	"chatroom/internal/auth"
@@ -45,35 +42,16 @@ type Client struct {
 	uname  string
 }
 
-// upgrader 将 HTTP 请求升级为 WebSocket 连接（教学场景放宽跨域校验）。
-var upgrader = websocket.Upgrader{
-	CheckOrigin: checkOrigin,
-}
-
-var (
-	upgraderOnce   sync.Once
-	allowAllOrigin bool
-)
-
-func initUpgrader(cfg config.Config) {
-	upgraderOnce.Do(func() {
-		allowAllOrigin = cfg.IsDev()
-	})
-}
-
-func checkOrigin(r *http.Request) bool {
-	if allowAllOrigin {
-		return true
+func newUpgrader(cfg config.Config) websocket.Upgrader {
+	return websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			origin := r.Header.Get("Origin")
+			if origin == "" {
+				return false
+			}
+			return cfg.AllowsOrigin(origin, r)
+		},
 	}
-	origin := r.Header.Get("Origin")
-	if origin == "" {
-		return false
-	}
-	u, err := url.Parse(origin)
-	if err != nil {
-		return false
-	}
-	return strings.EqualFold(u.Host, r.Host)
 }
 
 type InboundMessage struct {
@@ -107,7 +85,7 @@ type wsSimpleMsg struct {
 
 // Serve 返回 Gin 处理函数，用于校验用户、加入房间并启动读写循环。
 func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
-	initUpgrader(cfg)
+	upgrader := newUpgrader(cfg)
 	return func(c *gin.Context) {
 		roomIDStr := c.Query("room_id")
 		rid64, err := strconv.ParseUint(roomIDStr, 10, 64)

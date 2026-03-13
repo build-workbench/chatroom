@@ -11,6 +11,7 @@ data:
   APP_ENV: "prod"
   LOG_LEVEL: "info"
   LOG_FORMAT: "json"
+  ALLOWED_ORIGINS: "https://chat.example.com"
   ACCESS_TOKEN_TTL_MINUTES: "15"
   REFRESH_TOKEN_TTL_DAYS: "7"
   RATE_LIMIT_RPS: "100"
