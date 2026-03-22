@@ -6,88 +6,93 @@
 
 English | [简体中文](README.zh-CN.md)
 
-A real-time chat room project for hands-on practice and teaching.
+A teaching-oriented real-time chat room project built with Go, React, PostgreSQL, REST, and WebSocket.
 
-Backend: Go, Gin, GORM, WebSocket. Frontend: React + TypeScript. Designed to help you quickly understand:
+It is designed for hands-on learning rather than product-grade feature breadth, while still keeping the project runnable, testable, and easy to inspect.
 
-- Account registration, login, and JWT authentication
-- REST API + WebSocket collaboration patterns
-- Rooms, messages, online counts, typing indicators
-- Go backend tests, frontend unit tests, CI & GitHub Release basics
+## What’s Included
 
-## Features
+- User registration, login, and JWT authentication
+- Access token + refresh token flow
+- Room creation, room listing, and message history pagination
+- Real-time messaging, join/leave events, online counts, and typing indicators
+- React frontend in `frontend/` and static fallback UI in `web/`
+- Docker Compose, Kubernetes manifests, GitHub Actions, and GitHub Release workflow
+- Teaching docs site powered by VitePress under `docs/`
 
-- User registration / login / token refresh
-- Room creation and listing
-- WebSocket real-time messaging
-- Online count and join/leave events
-- Typing indicators
-- Message history pagination
-- Health check, version info, Prometheus metrics
+## Run Modes
 
-## Tech Stack
+| Mode | What runs | Entry URL | Notes |
+|------|-----------|-----------|-------|
+| Local dev | Go backend + Vite dev server | `http://localhost:5173` | Best for daily development |
+| Built frontend | Go backend + `frontend/dist` | `http://localhost:8080` | Closer to release bundle behavior |
+| Static fallback | Go backend + `web/` | `http://localhost:8080` | Used when `frontend/dist` is unavailable |
+| Docker Compose | PostgreSQL + app container | `http://localhost:8080` | Fast end-to-end local environment |
 
-| Component | Technology |
-|-----------|-----------|
-| Backend | Go 1.24, Gin, GORM, gorilla/websocket |
-| Frontend | React 19, TypeScript, Vite |
-| Database | PostgreSQL 16 |
-| Logging | Zerolog |
-| Monitoring | Prometheus |
-| Automation | GitHub Actions |
+The backend serves `frontend/dist` first. If the built frontend is not present, it falls back to `web/`.
 
 ## Quick Start
 
 ### Prerequisites
 
-- Go 1.24+, Node.js 20+, Docker & Docker Compose
+- Go 1.24+
+- Node.js 20+
+- Docker and Docker Compose
 
-### Option 1: Local Dev (Recommended)
+### Recommended local setup
 
 ```bash
 docker compose up -d postgres
-cp .env.example .env
 go run ./cmd/server
 # In another terminal:
-npm --prefix frontend ci && npm --prefix frontend run dev
+npm --prefix frontend ci
+npm --prefix frontend run dev
 ```
 
-- Frontend: http://localhost:5173
-- Backend health: http://localhost:8080/health
+Open:
 
-### Option 2: Docker Compose
+- Frontend dev server: `http://localhost:5173`
+- Backend health: `http://localhost:8080/health`
+- Backend ready: `http://localhost:8080/ready`
+- Backend version: `http://localhost:8080/version`
 
-```bash
-docker compose up -d
-# Visit http://localhost:8080
-```
+### Configuration note
 
-## Testing
+The backend reads configuration from process environment variables. `.env.example` is a reference template, but `go run ./cmd/server` does **not** auto-load a `.env` file.
 
-```bash
-go test ./...                      # Backend
-npm --prefix frontend run test     # Frontend
-npm --prefix frontend run build    # Frontend build
-```
+For production-like deployments, pay special attention to:
 
-## Project Structure
-
-```
-chatroom/
-├── cmd/server/          # Backend entry
-├── internal/            # Backend business logic
-├── frontend/            # React main frontend
-├── web/                 # Static fallback UI
-├── docs/                # Design & API docs
-├── deploy/              # Docker / K8s files
-├── changelog/           # Change records
-└── .github/workflows/   # CI / Release / Security
-```
+- `JWT_SECRET`
+- `ALLOWED_ORIGINS`
+- `DATABASE_DSN`
 
 ## Documentation
 
-- [API Docs](docs/API.md) · [Architecture](docs/ARCHITECTURE.md) · [Design](docs/DESIGN.md)
-- [Monitoring](docs/monitoring/README.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
+- [中文主说明](README.zh-CN.md)
+- [Docs site source](docs/)
+- [Getting Started](docs/getting-started.md)
+- [Manual Testing](docs/manual-testing.md)
+- [API](docs/API.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Design](docs/DESIGN.md)
+- [Monitoring](docs/monitoring/README.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
+- [Changelog](CHANGELOG.md)
+
+## Repository Layout
+
+```text
+chatroom/
+├── cmd/server/          # Backend entry
+├── internal/            # Backend services, middleware, config, WebSocket, metrics
+├── frontend/            # React main frontend
+├── web/                 # Static fallback UI
+├── docs/                # VitePress teaching docs
+├── deploy/              # Docker and Kubernetes assets
+├── changelog/           # Detailed change records
+└── .github/workflows/   # CI / release / security / docs automation
+```
 
 ## License
 

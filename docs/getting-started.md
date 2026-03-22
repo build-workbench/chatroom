@@ -25,11 +25,14 @@ ChatRoom 是一个用于个人练手和教学演示的实时聊天室。
   - 静态回退界面
   - 当 `frontend/dist` 不存在时，由后端直接托管
 
+后端会优先服务 `frontend/dist`；如果构建产物不存在，则回退到 `web/`。
+
 后端代码主要在：
 
 - `cmd/server/`
-- `internal/auth/`
+- `internal/config/`
 - `internal/server/`
+- `internal/service/`
 - `internal/ws/`
 
 ## 前置要求
@@ -46,11 +49,15 @@ ChatRoom 是一个用于个人练手和教学演示的实时聊天室。
 docker compose up -d postgres
 ```
 
-### 2. 准备环境变量
+### 2. 了解配置来源
 
-```bash
-cp .env.example .env
-```
+项目后端直接读取进程环境变量。仓库根目录中的 `.env.example` 是配置模板与说明清单，但 `go run ./cmd/server` **不会自动加载** `.env` 文件。
+
+这意味着：
+
+- 你可以把 `.env.example` 当作配置参考
+- 也可以在 Docker / Compose / CI / 部署平台中按同名环境变量注入配置
+- 开发环境下，大多数配置已有默认值；生产相关参数不能依赖默认值
 
 ### 3. 启动后端
 
@@ -69,7 +76,10 @@ npm --prefix frontend run dev
 
 - 前端开发页：`http://localhost:5173`
 - 健康检查：`http://localhost:8080/health`
+- 就绪检查：`http://localhost:8080/ready`
+- 兼容健康检查：`http://localhost:8080/healthz`
 - 版本信息：`http://localhost:8080/version`
+- 指标端点：`http://localhost:8080/metrics`
 
 ## 如果你想模拟发布包运行方式
 
@@ -85,6 +95,21 @@ go run ./cmd/server
 然后访问：
 
 - `http://localhost:8080`
+
+## 生产部署前你至少要关注什么
+
+最少需要确认下面这些配置：
+
+- `JWT_SECRET`：非 `dev` 环境必须替换默认值
+- `DATABASE_DSN`：指向真实数据库
+- `ALLOWED_ORIGINS`：非 `dev` 环境下用于 CORS 与 WebSocket 来源校验
+
+`ALLOWED_ORIGINS` 的书写规则：
+
+- 必须是完整 origin，例如 `https://chat.example.com`
+- 可带端口，例如 `https://app.example.com:8443`
+- 多个值用逗号分隔
+- 不能带 path、query、fragment
 
 ## 推荐学习路径
 
@@ -112,6 +137,8 @@ go run ./cmd/server
 go test ./...
 npm --prefix frontend run test
 npm --prefix frontend run build
+npm --prefix docs ci
+npm --prefix docs run docs:build
 make lint
 make fmt
 ```

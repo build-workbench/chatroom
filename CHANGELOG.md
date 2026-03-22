@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Aligned README, docs, contribution guide, roadmap references, and workflow branch references with the current `master` default branch
+- Clarified that `.env.example` is a configuration template and that the backend reads process environment variables directly
+- Expanded README coverage for run modes, `ALLOWED_ORIGINS`, docs entry points, and deployment guidance
+- Updated docs site metadata and edit links for the current GitHub Pages deployment
 - Hardened production CORS and WebSocket origin validation with strict same-origin / allowlist checks
 - Improved frontend auth, room, history, and socket error feedback for release-readiness
 - Stabilized SPA static asset fallback resolution and added regression tests for reserved route handling

@@ -41,7 +41,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-username/chatroom.git
+git clone https://github.com/LessUp/chatroom.git
 cd chatroom
 
 # 启动数据库
@@ -51,7 +51,8 @@ docker compose up -d postgres
 go run ./cmd/server
 
 # 运行前端（另一个终端）
-cd frontend && npm install && npm run dev
+npm --prefix frontend ci
+npm --prefix frontend run dev
 ```
 
 ### 常用命令
@@ -61,7 +62,7 @@ make build      # 构建项目
 make test       # 运行测试
 make lint       # 代码检查
 make fmt        # 格式化代码
-make docker     # 构建 Docker 镜像
+make docker-build # 构建 Docker 镜像
 ```
 
 ## 代码风格

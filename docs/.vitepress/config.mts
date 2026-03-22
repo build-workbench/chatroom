@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 
 const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? 'chatroom'
 const base = process.env.GITHUB_ACTIONS === 'true' ? `/${repoName}/` : '/'
+const siteUrl = `https://lessup.github.io/${repoName}/`
 
 export default defineConfig({
   lang: 'zh-CN',
@@ -12,10 +13,15 @@ export default defineConfig({
   lastUpdated: true,
   ignoreDeadLinks: [/^http:\/\/localhost:\d+(?:\/.*)?$/],
   head: [
+    ['link', { rel: 'canonical', href: siteUrl }],
     ['meta', { name: 'theme-color', content: '#2563eb' }],
-    ['meta', { name: 'og:type', content: 'website' }],
-    ['meta', { name: 'og:title', content: 'ChatRoom 教学文档' }],
-    ['meta', { name: 'og:description', content: '面向练手与教学的 Go + React + WebSocket 聊天室文档站' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:title', content: 'ChatRoom 教学文档' }],
+    ['meta', { property: 'og:description', content: '面向练手与教学的 Go + React + WebSocket 聊天室文档站' }],
+    ['meta', { property: 'og:url', content: siteUrl }],
+    ['meta', { name: 'twitter:card', content: 'summary' }],
+    ['meta', { name: 'twitter:title', content: 'ChatRoom 教学文档' }],
+    ['meta', { name: 'twitter:description', content: '面向练手与教学的 Go + React + WebSocket 聊天室文档站' }],
   ],
   themeConfig: {
     siteTitle: 'ChatRoom 教学文档',
@@ -62,7 +68,7 @@ export default defineConfig({
       next: '下一页',
     },
     editLink: {
-      pattern: 'https://github.com/LessUp/chatroom/edit/main/docs/:path',
+      pattern: 'https://github.com/LessUp/chatroom/edit/master/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
     footer: {

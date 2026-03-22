@@ -6,66 +6,38 @@
 
 [English](README.md) | 简体中文
 
-一个用于个人练手与教学的实时聊天室示例项目。
+一个面向个人练手与教学演示的实时聊天室项目，使用 Go、React、PostgreSQL、REST API 与 WebSocket 构建。
 
-后端使用 Go、Gin、GORM 与 WebSocket，前端使用 React + TypeScript。项目目标是帮助你快速理解以下内容：
+它不是以“功能越多越好”为目标的 IM 产品，而是一个强调**可运行、可理解、可验证、可继续扩展**的教学型工程样板。
 
-- 账号注册、登录与 JWT 鉴权
-- REST API + WebSocket 的协作方式
-- 房间、消息、在线人数、输入状态等聊天场景
-- Go 后端测试、前端单元测试、CI 与 GitHub Release 的基础实践
+## 你能从这个仓库学到什么
 
-## 项目定位
+- Go 后端如何组织 Gin 路由、中间件、服务层与数据库访问
+- JWT + Refresh Token 的基础鉴权流程
+- REST API 与 WebSocket 如何协作完成实时聊天
+- React 前端如何管理登录态、房间、消息与连接状态
+- 一个小项目如何逐步配齐测试、文档、CI、Release、Compose 与 Kubernetes 清单
 
-本项目的定位是：
-
-- 个人练手
-- 教学演示
-- 开箱即可运行和观察
-
-它不是生产项目，因此这里更强调：
-
-- 文档真实可信
-- 本地体验清晰
-- 测试可以直接跑通
-- 发布流程简单可理解
-
-而不是过度追求复杂部署或生产级治理。
-
-## 功能概览
+## 核心能力
 
 - 用户注册 / 登录 / 刷新令牌
-- 房间创建与列表获取
-- WebSocket 实时消息推送
-- 在线人数与加入 / 离开事件
-- 输入中提示
-- 消息历史分页读取
-- 健康检查、版本信息、Prometheus 指标
+- 房间创建与房间列表
+- 历史消息分页读取
+- WebSocket 实时消息、加入 / 离开事件、在线人数、输入中提示
+- `frontend/` React 主前端 + `web/` 静态回退界面
+- 健康检查、就绪检查、版本信息、Prometheus 指标
+- Docker Compose、Kubernetes 清单、GitHub Release、GitHub Pages 文档站
 
-## 界面说明
+## 运行模式总览
 
-仓库里有两套前端资源：
+| 模式 | 实际运行内容 | 访问地址 | 适用场景 |
+|------|--------------|----------|----------|
+| 本地开发模式 | Go 后端 + Vite 开发服务器 | `http://localhost:5173` | 日常开发与调试 |
+| 构建产物模式 | Go 后端托管 `frontend/dist` | `http://localhost:8080` | 更接近发布包的运行方式 |
+| 静态回退模式 | Go 后端托管 `web/` | `http://localhost:8080` | `frontend/dist` 不存在时的演示方式 |
+| Docker Compose 模式 | PostgreSQL + 应用容器 | `http://localhost:8080` | 快速体验完整本地环境 |
 
-- `frontend/`
-  - React + TypeScript 主前端
-  - 日常开发、测试和构建都以它为主
-
-- `web/`
-  - 静态 HTML + JavaScript 回退界面
-  - 当 `frontend/dist` 不存在时，后端会自动回退到这套界面
-
-后端启动后会优先服务 `frontend/dist`，否则回退到 `web/`。
-
-## 技术栈
-
-| 组件 | 技术 |
-|------|------|
-| 后端 | Go 1.24, Gin, GORM, gorilla/websocket |
-| 前端 | React 19, TypeScript, Vite |
-| 数据库 | PostgreSQL 16 |
-| 日志 | Zerolog |
-| 监控 | Prometheus |
-| 自动化 | GitHub Actions |
+后端会优先服务 `frontend/dist`。如果构建产物不存在，会自动回退到 `web/`。
 
 ## 快速开始
 
@@ -75,42 +47,48 @@
 - Node.js 20+
 - Docker 与 Docker Compose
 
-### 方式一：本地开发（推荐）
+### 推荐路径：本地开发模式
 
-先启动数据库：
+#### 1. 启动数据库
 
 ```bash
 docker compose up -d postgres
 ```
 
-复制环境变量示例并按需调整：
+#### 2. 了解配置来源
 
-```bash
-cp .env.example .env
-```
+项目后端直接读取**进程环境变量**。仓库中的 [`.env.example`](.env.example) 是配置模板与说明清单，但 `go run ./cmd/server` **不会自动加载** `.env` 文件。
 
-启动后端：
+这意味着：
+
+- 你可以把 `.env.example` 当作配置参考
+- 也可以在 Docker / Compose / CI / 部署平台中按同名环境变量注入配置
+- 开发环境下，大多数参数已有默认值；生产相关参数不能依赖默认值
+
+#### 3. 启动后端
 
 ```bash
 go run ./cmd/server
 ```
 
-另开一个终端，启动 React 前端：
+#### 4. 启动 React 前端
 
 ```bash
 npm --prefix frontend ci
 npm --prefix frontend run dev
 ```
 
-访问地址：
+#### 5. 打开页面
 
-- 前端开发界面：`http://localhost:5173`
-- 后端健康检查：`http://localhost:8080/health`
-- 后端版本信息：`http://localhost:8080/version`
+- 前端开发页：`http://localhost:5173`
+- 后端首页（构建产物模式 / 回退模式）：`http://localhost:8080`
+- 健康检查：`http://localhost:8080/health`
+- 就绪检查：`http://localhost:8080/ready`
+- 兼容健康检查：`http://localhost:8080/healthz`
+- 版本信息：`http://localhost:8080/version`
+- Prometheus 指标：`http://localhost:8080/metrics`
 
-### 方式二：仅运行后端 + 构建后的前端
-
-如果你想体验更接近发布包的方式，可以先构建前端，再启动后端：
+### 如果你想模拟发布包运行方式
 
 ```bash
 docker compose up -d postgres
@@ -119,11 +97,11 @@ npm --prefix frontend run build
 go run ./cmd/server
 ```
 
-此时直接访问：
+然后访问：
 
 - `http://localhost:8080`
 
-### 方式三：Docker Compose
+### Docker Compose 方式
 
 ```bash
 docker compose up -d
@@ -133,188 +111,155 @@ docker compose up -d
 
 - `http://localhost:8080`
 
-## 实际手动测试方法
-
-下面是一套适合教学与演示的最小手测流程。
-
-### 1. 验证服务是否启动
-
-浏览器或命令行访问：
+如果你还想同时启用监控组件：
 
 ```bash
-curl http://localhost:8080/health
-curl http://localhost:8080/version
+docker compose --profile monitoring up -d
 ```
 
-你应该看到健康状态与版本信息 JSON。
+## 核心能力与接口边界
 
-### 2. 注册并登录第一个用户
+### 认证
 
-- 打开 `http://localhost:5173`（开发模式）或 `http://localhost:8080`（构建模式）
-- 注册一个账号，例如 `alice / testpass`
-- 使用该账号登录
-- 登录后应能看到房间列表区域与当前用户信息
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
 
-### 3. 创建房间
+认证模型为：
 
-- 在左侧输入框中输入房间名，例如 `general`
-- 点击“创建”
-- 创建成功后应自动进入该房间
+- Access Token：JWT
+- Refresh Token：数据库持久化并支持轮换刷新
+- 前端在 REST 请求遇到 401 时会尝试自动刷新令牌
+- WebSocket 同样受鉴权保护
 
-### 4. 验证双人实时通信
+### 聊天功能
 
-- 打开第二个浏览器窗口或无痕窗口
-- 再注册并登录一个账号，例如 `bob / testpass`
-- 进入同一个房间
-- 在任一窗口发送消息
-- 预期结果：两个窗口都能看到消息、加入/离开提示以及在线人数变化
+- `POST /api/v1/rooms`
+- `GET /api/v1/rooms`
+- `GET /api/v1/rooms/:id/messages`
+- `GET /ws`
 
-### 5. 验证“正在输入”状态
+其中：
 
-- 两个用户同时在同一房间
-- 其中一个用户开始输入但暂不发送
-- 另一个用户应看到“正在输入”提示
+- REST API 负责注册、登录、查房间、查历史消息
+- WebSocket 负责实时消息、在线状态与输入事件
+- 房间级 Hub 负责广播与在线人数维护
 
-### 6. 验证历史消息
+## 配置说明
 
-- 在房间里先发送几条消息
-- 刷新页面并重新进入该房间
-- 预期结果：历史消息仍可加载
+环境变量清单见 [`.env.example`](.env.example)。下面列出最常用、最需要关注的项：
 
-### 7. 验证后端回退静态界面
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `APP_PORT` | `8080` | HTTP 监听端口 |
+| `APP_ENV` | `dev` | 运行环境 |
+| `DATABASE_DSN` | 本地 PostgreSQL 连接串 | 数据库连接配置 |
+| `JWT_SECRET` | `dev-secret-change-me` | JWT 签名密钥，非 `dev` 环境必须修改 |
+| `ALLOWED_ORIGINS` | 空 | 允许的前端来源列表，多个值用逗号分隔 |
+| `ACCESS_TOKEN_TTL_MINUTES` | `15` | Access Token 有效期（分钟） |
+| `REFRESH_TOKEN_TTL_DAYS` | `7` | Refresh Token 有效期（天） |
+| `LOG_LEVEL` | `info` | 日志级别 |
+| `LOG_FORMAT` | `console` | 日志格式（`console` / `json`） |
 
-- 先删除或临时移走 `frontend/dist`
-- 启动后端
-- 访问 `http://localhost:8080`
-- 预期结果：后端回退服务 `web/` 目录中的静态界面
+### 关于 `ALLOWED_ORIGINS`
 
-## 测试与质量检查
+这项配置对生产环境尤其重要：
 
-### 后端测试
+- `APP_ENV=dev` 时，来源校验相对宽松
+- 非 `dev` 环境下，HTTP CORS 与 WebSocket 升级都会校验来源
+- 未命中允许列表时，仅允许严格同源请求
 
-```bash
-go test ./...
+书写规则：
+
+- 必须是完整 origin，例如 `https://chat.example.com`
+- 可带端口，例如 `https://app.example.com:8443`
+- 不能带 path、query、fragment
+- 多个值用逗号分隔
+
+示例：
+
+```env
+ALLOWED_ORIGINS=https://chat.example.com,https://app.example.com:8443
 ```
 
-### 前端测试
+## 部署与交付能力
+
+仓库已经提供以下交付路径：
+
+- [Docker Compose](docker-compose.yml)：快速起数据库、应用与可选监控
+- [Dockerfile](deploy/docker/Dockerfile)：三阶段构建镜像
+- [Kubernetes 清单](deploy/k8s/README.md)：Deployment、Service、Ingress、HPA 等示例
+- [GitHub Release workflow](.github/workflows/release.yml)：多平台构建与发布包生成
+- [GitHub Pages workflow](.github/workflows/pages.yml)：文档站自动构建与发布
+
+## 最小验证清单
+
+如果你想快速确认项目主链路正常，建议至少验证下面 5 步：
+
+1. 访问 `/health`、`/ready`、`/version`
+2. 注册并登录一个用户
+3. 创建房间并进入房间
+4. 用两个浏览器窗口验证实时消息、在线人数、加入 / 离开事件与输入中提示
+5. 刷新页面并重新进入房间，确认历史消息仍可加载
+
+更详细的实验步骤见：[手动测试实验](docs/manual-testing.md)
+
+## 常用命令
 
 ```bash
-npm --prefix frontend run test
-```
-
-### 前端构建
-
-```bash
-npm --prefix frontend run build
-```
-
-### 代码格式与常用命令
-
-```bash
+make dev
+make db
 make test
+make test-coverage
 make lint
 make fmt
 make build
+npm --prefix frontend run test
+npm --prefix frontend run build
+npm --prefix docs ci
+npm --prefix docs run docs:build
 ```
 
-## 配置项
+## 进一步阅读
 
-环境变量示例见：[`/.env.example`](.env.example)
-
-| 变量 | 默认值 | 描述 |
-|------|--------|------|
-| `APP_PORT` | `8080` | HTTP 端口 |
-| `APP_ENV` | `dev` | 运行环境 |
-| `DATABASE_DSN` | 本地 PostgreSQL 连接串 | 数据库连接 |
-| `JWT_SECRET` | `dev-secret-change-me` | JWT 签名密钥 |
-| `ACCESS_TOKEN_TTL_MINUTES` | `15` | Access Token 有效期 |
-| `REFRESH_TOKEN_TTL_DAYS` | `7` | Refresh Token 有效期 |
-| `LOG_LEVEL` | `info` | 日志级别（trace/debug/info/warn/error/fatal） |
-| `LOG_FORMAT` | `console` | 日志格式（console/json） |
+- [教学文档首页](docs/index.md)
+- [快速开始](docs/getting-started.md)
+- [手动测试实验](docs/manual-testing.md)
+- [API 文档](docs/API.md)
+- [架构文档](docs/ARCHITECTURE.md)
+- [设计文档](docs/DESIGN.md)
+- [监控说明](docs/monitoring/README.md)
+- [常见问题](docs/FAQ.md)
+- [贡献指南](CONTRIBUTING.md)
+- [安全策略](SECURITY.md)
+- [项目路线图](PROJECT_ROADMAP.md)
+- [变更日志](CHANGELOG.md)
 
 ## 项目结构
 
 ```text
 chatroom/
 ├── cmd/server/          # 后端入口
-├── internal/            # 后端业务代码
+├── internal/            # 配置、服务层、中间件、WebSocket、监控等核心代码
 ├── frontend/            # React 主前端
 ├── web/                 # 静态回退界面
-├── docs/                # 设计与 API 文档
+├── docs/                # VitePress 教学文档站
 ├── deploy/              # Docker / Kubernetes 相关文件
-├── changelog/           # 变更记录
-└── .github/workflows/   # CI / Release / Security 自动化
+├── changelog/           # 细粒度变更记录
+└── .github/workflows/   # CI / Release / Security / Docs 自动化
 ```
 
-## GitHub Release
+## 项目边界说明
 
-仓库已经配置 GitHub Actions 自动发布流程。
+这个项目的重点是教学与练手，所以它优先保证：
 
-当你推送符合语义化版本的标签时，例如：
+- 文档真实可信
+- 本地体验清晰
+- 核心链路可验证
+- 工程化能力足够演示与扩展
 
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-Release workflow 会自动：
-
-- 运行必要的校验
-- 构建多平台后端二进制
-- 构建前端静态资源
-- 生成 GitHub Release 附件
-
-发布产物会尽量保持“下载后即可本地运行”的结构。
-
-## 教学文档站
-
-仓库现在包含一个基于 `VitePress` 的教学型在线文档站，文档源文件直接复用 `docs/` 目录。
-
-### 本地启动文档站
-
-```bash
-npm --prefix docs install
-npm --prefix docs run docs:dev
-```
-
-默认本地预览地址通常为：
-
-- `http://localhost:5173`
-
-### 构建文档站
-
-```bash
-npm --prefix docs run docs:build
-```
-
-### 在线发布
-
-- 文档站通过 `.github/workflows/pages.yml` 自动发布到 GitHub Pages
-- 推送 `main` 分支中的文档改动后会自动触发构建与部署
-- 首次使用时需要在仓库设置中启用 GitHub Pages
-
-## 相关文档
-
-- [API 文档](docs/API.md)
-- [架构设计](docs/ARCHITECTURE.md)
-- [系统设计](docs/DESIGN.md)
-- [监控说明](docs/monitoring/README.md)
-- [贡献指南](CONTRIBUTING.md)
-- [变更日志](CHANGELOG.md)
-- [项目路线图](PROJECT_ROADMAP.md)
-- [安全策略](SECURITY.md)
+如果你想把它继续推向更强的生产使用场景，仍然需要进一步补足更细致的安全治理、配置管理、审计、告警、多实例扩展与运维策略。
 
 ## 许可证
 
 本项目使用 [MIT License](LICENSE)。
-
-## 最后说明
-
-如果你想把它作为教学项目继续扩展，建议优先做这些事情：
-
-- 增加更多业务测试和接口测试
-- 补充截图或 GIF 演示
-- 在 README 中补充接口调用示例
-- 用 Issue / PR 模板规范练习流程
-
-如果你想把它真正推向生产，则需要额外补足安全、部署、配置管理、审计、限流、持久化策略等能力。
