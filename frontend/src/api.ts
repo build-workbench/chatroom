@@ -1,5 +1,5 @@
 import { clearAuth, saveTokens } from './storage'
-import type { AuthLoginResponse, AuthRegisterResponse, CreateRoomResponse, MessageDTO, Room } from './types'
+import type { AuthLoginResponse, AuthRegisterResponse, CreateRoomResponse, MessageDTO, Room, WSTicketResponse } from './types'
 
 export interface ApiAuthCallbacks {
   onTokens?: (accessToken: string, refreshToken: string) => void
@@ -174,5 +174,9 @@ export class Api {
     const qs = new URLSearchParams({ limit: String(limit) })
     if (beforeId && beforeId > 0) qs.set('before_id', String(beforeId))
     return this.request<{ messages: MessageDTO[] }>(`/api/v1/rooms/${roomId}/messages?${qs.toString()}`, 'GET', null, true)
+  }
+
+  createWSTicket(roomId: number): Promise<WSTicketResponse> {
+    return this.request<WSTicketResponse>('/api/v1/ws/tickets', 'POST', { room_id: roomId }, true)
   }
 }

@@ -3,6 +3,11 @@ package auth
 import (
 	"testing"
 	"time"
+
+	"chatroom/internal/models"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func TestHashPassword(t *testing.T) {
@@ -183,13 +188,40 @@ func TestTokenExpiration(t *testing.T) {
 		t.Fatalf("GenerateAccessToken() error = %v", err)
 	}
 
-	// Token should be valid immediately
 	_, err = ParseAccessToken(token, secret)
 	if err != nil {
 		t.Errorf("ParseAccessToken() should succeed for fresh token: %v", err)
 	}
 
-	// Note: We can't easily test expiration without mocking time
-	// In production, use a clock interface for testability
-	_ = time.Now() // placeholder for time-based testing
+	_ = time.Now()
+}
+
+func TestValidateAndConsumeWSTicket(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	if err := db.AutoMigrate(&models.WSTicket{}); err != nil {
+		t.Fatalf("failed to migrate ws tickets: %v", err)
+	}
+
+	secret := "test-secret"
+	token, ticketID, expiresAt, err := GenerateWSTicket(7, 9, secret, 60)
+	if err != nil {
+		t.Fatalf("GenerateWSTicket() error = %v", err)
+	}
+	if err := SaveWSTicket(db, ticketID, 7, 9, expiresAt); err != nil {
+		t.Fatalf("SaveWSTicket() error = %v", err)
+	}
+
+	claims, err := ValidateAndConsumeWSTicket(db, token, secret, 9)
+	if err != nil {
+		t.Fatalf("ValidateAndConsumeWSTicket() error = %v", err)
+	}
+	if claims.UserID != 7 || claims.RoomID != 9 {
+		t.Fatalf("unexpected claims: %+v", claims)
+	}
+	if _, err := ValidateAndConsumeWSTicket(db, token, secret, 9); err == nil {
+		t.Fatal("expected second ws ticket consume to fail")
+	}
 }

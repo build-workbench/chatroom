@@ -1,14 +1,17 @@
-import type { User } from './types'
-
 const ACCESS_KEY = 'chat_access'
+
+export interface StoredUser {
+  id: number
+  username: string
+}
+
 const REFRESH_KEY = 'chat_refresh'
 const USER_KEY = 'chat_user'
 const LAST_ROOM_KEY = 'chat_last_room'
-
 export interface AuthSnapshot {
   accessToken: string
   refreshToken: string
-  user: User | null
+  user: StoredUser | null
   lastRoomId: number | null
 }
 
@@ -16,7 +19,7 @@ export function loadAuth(): AuthSnapshot {
   const accessToken = localStorage.getItem(ACCESS_KEY) || ''
   const refreshToken = localStorage.getItem(REFRESH_KEY) || ''
 
-  let user: User | null = null
+  let user: StoredUser | null = null
   try {
     const raw = localStorage.getItem(USER_KEY)
     if (raw) {
@@ -29,7 +32,7 @@ export function loadAuth(): AuthSnapshot {
         typeof (parsed as { id: unknown }).id === 'number' &&
         typeof (parsed as { username: unknown }).username === 'string'
       ) {
-        user = parsed as User
+        user = parsed as StoredUser
       }
     }
   } catch {
@@ -52,7 +55,7 @@ export function saveTokens(accessToken: string, refreshToken: string): void {
   localStorage.setItem(REFRESH_KEY, refreshToken)
 }
 
-export function saveUser(user: User | null): void {
+export function saveUser(user: StoredUser | null): void {
   if (user) {
     localStorage.setItem(USER_KEY, JSON.stringify(user))
     return

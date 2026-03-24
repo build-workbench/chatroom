@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -28,7 +29,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("failed to connect to test database: %v", err)
 	}
 
-	err = db.AutoMigrate(&models.User{}, &models.Room{}, &models.Message{}, &models.RefreshToken{})
+	err = db.AutoMigrate(&models.User{}, &models.Room{}, &models.Message{}, &models.RefreshToken{}, &models.WSTicket{})
 	if err != nil {
 		t.Fatalf("failed to migrate test database: %v", err)
 	}
@@ -445,6 +446,158 @@ func TestLoginReturnsTokens(t *testing.T) {
 	}
 	if _, ok := resp["user"]; !ok {
 		t.Error("Login response missing user")
+	}
+}
+
+func TestListMessagesReturnsNotFoundForMissingRoom(t *testing.T) {
+	_, handler := setupTestRouter(t)
+
+	regBody := `{"username":"alice","password":"testpass"}`
+	regReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", strings.NewReader(regBody))
+	regReq.Header.Set("Content-Type", "application/json")
+	regW := httptest.NewRecorder()
+	(*handler).ServeHTTP(regW, regReq)
+
+	loginBody := `{"username":"alice","password":"testpass"}`
+	loginReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", strings.NewReader(loginBody))
+	loginReq.Header.Set("Content-Type", "application/json")
+	loginW := httptest.NewRecorder()
+	(*handler).ServeHTTP(loginW, loginReq)
+
+	var loginResp struct {
+		AccessToken string `json:"access_token"`
+	}
+	if err := json.Unmarshal(loginW.Body.Bytes(), &loginResp); err != nil {
+		t.Fatalf("failed to parse login response: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/rooms/999/messages", nil)
+	req.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
+	w := httptest.NewRecorder()
+	(*handler).ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("GET missing room messages status = %d, want %d, body = %s", w.Code, http.StatusNotFound, w.Body.String())
+	}
+}
+
+func TestListMessagesReturnsEmptyArrayForExistingRoomWithoutMessages(t *testing.T) {
+	_, handler := setupTestRouter(t)
+
+	regBody := `{"username":"bob","password":"testpass"}`
+	regReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", strings.NewReader(regBody))
+	regReq.Header.Set("Content-Type", "application/json")
+	regW := httptest.NewRecorder()
+	(*handler).ServeHTTP(regW, regReq)
+
+	loginBody := `{"username":"bob","password":"testpass"}`
+	loginReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", strings.NewReader(loginBody))
+	loginReq.Header.Set("Content-Type", "application/json")
+	loginW := httptest.NewRecorder()
+	(*handler).ServeHTTP(loginW, loginReq)
+
+	var loginResp struct {
+		AccessToken string `json:"access_token"`
+	}
+	if err := json.Unmarshal(loginW.Body.Bytes(), &loginResp); err != nil {
+		t.Fatalf("failed to parse login response: %v", err)
+	}
+
+	createReq := httptest.NewRequest(http.MethodPost, "/api/v1/rooms", strings.NewReader(`{"name":"general"}`))
+	createReq.Header.Set("Content-Type", "application/json")
+	createReq.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
+	createW := httptest.NewRecorder()
+	(*handler).ServeHTTP(createW, createReq)
+
+	var createResp struct {
+		Room struct {
+			ID uint `json:"id"`
+		} `json:"room"`
+	}
+	if err := json.Unmarshal(createW.Body.Bytes(), &createResp); err != nil {
+		t.Fatalf("failed to parse room response: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/rooms/"+strconv.FormatUint(uint64(createResp.Room.ID), 10)+"/messages", nil)
+	req.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
+	w := httptest.NewRecorder()
+	(*handler).ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("GET room messages status = %d, want %d, body = %s", w.Code, http.StatusOK, w.Body.String())
+	}
+	var resp struct {
+		Messages []any `json:"messages"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("failed to parse response: %v", err)
+	}
+	if len(resp.Messages) != 0 {
+		t.Fatalf("messages len = %d, want 0", len(resp.Messages))
+	}
+}
+
+func TestCreateWSTicket(t *testing.T) {
+	db, handler := setupTestRouter(t)
+
+	regBody := `{"username":"carol","password":"testpass"}`
+	regReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", strings.NewReader(regBody))
+	regReq.Header.Set("Content-Type", "application/json")
+	regW := httptest.NewRecorder()
+	(*handler).ServeHTTP(regW, regReq)
+
+	loginBody := `{"username":"carol","password":"testpass"}`
+	loginReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", strings.NewReader(loginBody))
+	loginReq.Header.Set("Content-Type", "application/json")
+	loginW := httptest.NewRecorder()
+	(*handler).ServeHTTP(loginW, loginReq)
+
+	var loginResp struct {
+		AccessToken string `json:"access_token"`
+	}
+	if err := json.Unmarshal(loginW.Body.Bytes(), &loginResp); err != nil {
+		t.Fatalf("failed to parse login response: %v", err)
+	}
+
+	createReq := httptest.NewRequest(http.MethodPost, "/api/v1/rooms", strings.NewReader(`{"name":"tickets"}`))
+	createReq.Header.Set("Content-Type", "application/json")
+	createReq.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
+	createW := httptest.NewRecorder()
+	(*handler).ServeHTTP(createW, createReq)
+
+	var createResp struct {
+		Room struct {
+			ID uint `json:"id"`
+		} `json:"room"`
+	}
+	if err := json.Unmarshal(createW.Body.Bytes(), &createResp); err != nil {
+		t.Fatalf("failed to parse room response: %v", err)
+	}
+
+	ticketReq := httptest.NewRequest(http.MethodPost, "/api/v1/ws/tickets", strings.NewReader(`{"room_id":`+strconv.FormatUint(uint64(createResp.Room.ID), 10)+`}`))
+	ticketReq.Header.Set("Content-Type", "application/json")
+	ticketReq.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
+	ticketW := httptest.NewRecorder()
+	(*handler).ServeHTTP(ticketW, ticketReq)
+
+	if ticketW.Code != http.StatusOK {
+		t.Fatalf("POST /api/v1/ws/tickets status = %d, want %d, body = %s", ticketW.Code, http.StatusOK, ticketW.Body.String())
+	}
+	var ticketResp struct {
+		Ticket string `json:"ticket"`
+	}
+	if err := json.Unmarshal(ticketW.Body.Bytes(), &ticketResp); err != nil {
+		t.Fatalf("failed to parse ticket response: %v", err)
+	}
+	if ticketResp.Ticket == "" {
+		t.Fatal("expected non-empty ws ticket")
+	}
+	var count int64
+	if err := db.Model(&models.WSTicket{}).Count(&count).Error; err != nil {
+		t.Fatalf("failed to count ws tickets: %v", err)
+	}
+	if count != 1 {
+		t.Fatalf("ws ticket count = %d, want 1", count)
 	}
 }
 

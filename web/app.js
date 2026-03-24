@@ -206,18 +206,34 @@ class ChatSocket {
     this.lastPong = Date.now();
   }
 
-  connect(roomId) {
+  async fetchTicket(roomId) {
+    const data = await API.request('/api/v1/ws/tickets', 'POST', { room_id: roomId }, true);
+    if (!data.ticket) throw API.createError('missing ws ticket');
+    return data.ticket;
+  }
+
+  async connect(roomId) {
     if (this.ws) this.close(false);
-    
+
     this.currentRoomId = roomId;
     this.shouldReconnect = true;
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const url = `${proto}//${location.host}/ws?room_id=${roomId}&token=${encodeURIComponent(State.accessToken)}`;
-    
+    const url = `${proto}//${location.host}/ws?room_id=${roomId}`;
+
     UI.setConnectionStatus('connecting');
-    
+
+    let ticket;
     try {
-      this.ws = new WebSocket(url);
+      ticket = await this.fetchTicket(roomId);
+    } catch (e) {
+      console.error('WS ticket failed', e);
+      Toast.error('无法获取实时连接凭证，请重新进入房间或重新登录');
+      this.scheduleReconnect();
+      return;
+    }
+
+    try {
+      this.ws = new WebSocket(url, ['chatroom.v1', `ticket.${ticket}`]);
     } catch (e) {
       console.error('WS creation failed', e);
       this.scheduleReconnect();
@@ -304,7 +320,7 @@ class ChatSocket {
     
     setTimeout(() => {
       if (this.shouldReconnect && this.currentRoomId) {
-        this.connect(this.currentRoomId);
+        void this.connect(this.currentRoomId);
       }
     }, delay);
   }
@@ -660,48 +676,6 @@ const UI = {
     }
   },
 
-  renderRooms(rooms) {
-    const wrap = $('rooms-list');
-    if (!wrap) return;
-    wrap.innerHTML = '';
-    State.rooms = rooms; // Cache for search
-    
-    rooms.forEach(r => {
-      const active = State.currentRoomId == r.id;
-      const div = document.createElement('div');
-      div.dataset.roomName = r.name;
-      div.dataset.roomId = r.id;
-      
-      div.className = `room-item group flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${
-        active 
-          ? 'active bg-primary-500/10 border-l-2 border-primary-500' 
-          : 'hover:bg-dark-800/50 border-l-2 border-transparent'
-      }`;
-      
-      // Room avatar with gradient
-      const colors = ['from-violet-500 to-purple-600', 'from-blue-500 to-cyan-500', 'from-emerald-500 to-teal-500', 'from-orange-500 to-red-500', 'from-pink-500 to-rose-500'];
-      const colorClass = colors[r.id % colors.length];
-      
-      div.innerHTML = `
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${colorClass} flex items-center justify-center text-white font-bold text-sm shadow-lg flex-shrink-0">
-          ${this.escape(r.name.charAt(0).toUpperCase())}
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center justify-between">
-            <span class="font-medium text-sm truncate ${active ? 'text-white' : 'text-gray-300 group-hover:text-white'}">${this.escape(r.name)}</span>
-            ${r.unread ? `<span class="unread-badge w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center">${r.unread > 99 ? '99+' : r.unread}</span>` : ''}
-          </div>
-          <div class="flex items-center gap-2 mt-0.5">
-            <span class="w-1.5 h-1.5 rounded-full ${(r.online || 0) > 0 ? 'bg-emerald-500' : 'bg-gray-600'}"></span>
-            <span class="text-xs text-gray-500">${r.online || 0} 在线</span>
-          </div>
-        </div>
-      `;
-      
-      div.onclick = () => Actions.joinRoom(r.id, r.name, r.online);
-      wrap.appendChild(div);
-    });
-  },
 
   updateOnlineUsers(users) {
     const panel = $('online-users');
@@ -1056,7 +1030,7 @@ const Actions = {
     }
 
     // Connect WebSocket
-    Socket.connect(id);
+    void Socket.connect(id);
   },
 
   async loadMoreHistory() {

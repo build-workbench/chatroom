@@ -32,6 +32,12 @@ func TestLoad_Defaults(t *testing.T) {
 	if cfg.RefreshTokenTTLDays != 7 {
 		t.Errorf("Load() RefreshTokenTTLDays = %v, want 7", cfg.RefreshTokenTTLDays)
 	}
+	if cfg.WSTicketTTLSeconds != 60 {
+		t.Errorf("Load() WSTicketTTLSeconds = %v, want 60", cfg.WSTicketTTLSeconds)
+	}
+	if cfg.PodID == "" {
+		t.Error("Load() PodID should not be empty")
+	}
 	if cfg.LogLevel != "info" {
 		t.Errorf("Load() LogLevel = %v, want info", cfg.LogLevel)
 	}
@@ -50,6 +56,8 @@ func TestLoad_FromEnv(t *testing.T) {
 	os.Setenv("APP_ENV", "prod")
 	os.Setenv("ACCESS_TOKEN_TTL_MINUTES", "30")
 	os.Setenv("REFRESH_TOKEN_TTL_DAYS", "14")
+	os.Setenv("WS_TICKET_TTL_SECONDS", "90")
+	os.Setenv("APP_INSTANCE_ID", "pod-a")
 	os.Setenv("ALLOWED_ORIGINS", "https://chat.example.com, https://app.example.com:8443")
 	defer func() {
 		os.Unsetenv("APP_PORT")
@@ -58,6 +66,8 @@ func TestLoad_FromEnv(t *testing.T) {
 		os.Unsetenv("APP_ENV")
 		os.Unsetenv("ACCESS_TOKEN_TTL_MINUTES")
 		os.Unsetenv("REFRESH_TOKEN_TTL_DAYS")
+		os.Unsetenv("WS_TICKET_TTL_SECONDS")
+		os.Unsetenv("APP_INSTANCE_ID")
 		os.Unsetenv("ALLOWED_ORIGINS")
 	}()
 
@@ -80,6 +90,12 @@ func TestLoad_FromEnv(t *testing.T) {
 	}
 	if cfg.RefreshTokenTTLDays != 14 {
 		t.Errorf("Load() RefreshTokenTTLDays = %v, want 14", cfg.RefreshTokenTTLDays)
+	}
+	if cfg.WSTicketTTLSeconds != 90 {
+		t.Errorf("Load() WSTicketTTLSeconds = %v, want 90", cfg.WSTicketTTLSeconds)
+	}
+	if cfg.PodID != "pod-a" {
+		t.Errorf("Load() PodID = %v, want pod-a", cfg.PodID)
 	}
 	if len(cfg.AllowedOrigins) != 2 {
 		t.Fatalf("Load() AllowedOrigins len = %d, want 2", len(cfg.AllowedOrigins))
@@ -178,23 +194,27 @@ func TestValidate(t *testing.T) {
 		{
 			name: "valid dev config",
 			cfg: Config{
-				Port:        "8080",
-				DatabaseDSN: "postgres://localhost/test",
-				JWTSecret:   "dev-secret-change-me",
-				Env:         "dev",
-				LogLevel:    "info",
+				Port:               "8080",
+				DatabaseDSN:        "postgres://localhost/test",
+				JWTSecret:          "dev-secret-change-me",
+				Env:                "dev",
+				LogLevel:           "info",
+				WSTicketTTLSeconds: 60,
+				PodID:              "test-pod",
 			},
 			wantErr: false,
 		},
 		{
 			name: "valid prod config",
 			cfg: Config{
-				Port:           "8080",
-				DatabaseDSN:    "postgres://localhost/test",
-				JWTSecret:      "production-secret-key",
-				Env:            "prod",
-				LogLevel:       "info",
-				AllowedOrigins: []string{"https://chat.example.com"},
+				Port:               "8080",
+				DatabaseDSN:        "postgres://localhost/test",
+				JWTSecret:          "production-secret-key",
+				Env:                "prod",
+				LogLevel:           "info",
+				WSTicketTTLSeconds: 60,
+				PodID:              "test-pod",
+				AllowedOrigins:     []string{"https://chat.example.com"},
 			},
 			wantErr: false,
 		},
@@ -256,12 +276,14 @@ func TestValidate(t *testing.T) {
 		{
 			name: "invalid allowed origin",
 			cfg: Config{
-				Port:           "8080",
-				DatabaseDSN:    "postgres://localhost/test",
-				JWTSecret:      "production-secret-key",
-				Env:            "prod",
-				LogLevel:       "info",
-				AllowedOrigins: []string{"https://chat.example.com/app"},
+				Port:               "8080",
+				DatabaseDSN:        "postgres://localhost/test",
+				JWTSecret:          "production-secret-key",
+				Env:                "prod",
+				LogLevel:           "info",
+				WSTicketTTLSeconds: 60,
+				PodID:              "test-pod",
+				AllowedOrigins:     []string{"https://chat.example.com/app"},
 			},
 			wantErr: true,
 		},
@@ -280,11 +302,13 @@ func TestValidate(t *testing.T) {
 func TestValidate_ProductionJWTSecret(t *testing.T) {
 	// This test specifically validates Property 6: Production JWT Secret Validation
 	cfg := Config{
-		Port:        "8080",
-		DatabaseDSN: "postgres://localhost/test",
-		JWTSecret:   "dev-secret-change-me", // Default value
-		Env:         "prod",
-		LogLevel:    "info",
+		Port:               "8080",
+		DatabaseDSN:        "postgres://localhost/test",
+		JWTSecret:          "dev-secret-change-me", // Default value
+		Env:                "prod",
+		LogLevel:           "info",
+		WSTicketTTLSeconds: 60,
+		PodID:              "test-pod",
 	}
 
 	err := Validate(cfg)

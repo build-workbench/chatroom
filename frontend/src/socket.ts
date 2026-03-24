@@ -1,3 +1,4 @@
+import type { Api } from './api'
 import type { ConnectionStatus, WsEvent } from './types'
 
 type Outbound =
@@ -6,6 +7,7 @@ type Outbound =
   | { type: 'message'; content: string }
 
 export class ChatSocket {
+  private api: Api
   private getAccessToken: () => string
   private onEvent: (evt: WsEvent) => void
   private onStatus: (status: ConnectionStatus, attempt?: number) => void
@@ -23,16 +25,18 @@ export class ChatSocket {
   private sawOpen = false
 
   constructor(opts: {
+    api: Api
     getAccessToken: () => string
     onEvent: (evt: WsEvent) => void
     onStatus: (status: ConnectionStatus, attempt?: number) => void
   }) {
+    this.api = opts.api
     this.getAccessToken = opts.getAccessToken
     this.onEvent = opts.onEvent
     this.onStatus = opts.onStatus
   }
 
-  connect(roomId: number, accessToken: string): void {
+  async connect(roomId: number, accessToken: string): Promise<void> {
     if (this.reconnectTimer) {
       window.clearTimeout(this.reconnectTimer)
       this.reconnectTimer = null
@@ -50,15 +54,31 @@ export class ChatSocket {
     this.currentRoomId = roomId
     this.shouldReconnect = true
     this.sawOpen = false
+    this.onStatus('connecting')
+
+    if (!accessToken) {
+      this.emitSocketError('登录状态已失效，无法建立实时连接')
+      this.onStatus('disconnected')
+      return
+    }
+
+    let ticket: string
+    try {
+      const result = await this.api.createWSTicket(roomId)
+      ticket = result.ticket
+    } catch {
+      this.emitSocketError('无法获取实时连接凭证，请重新进入房间或重新登录')
+      this.onStatus('disconnected')
+      this.scheduleReconnect()
+      return
+    }
 
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const url = `${proto}//${location.host}/ws?room_id=${roomId}&token=${encodeURIComponent(accessToken)}`
-
-    this.onStatus('connecting')
+    const url = `${proto}//${location.host}/ws?room_id=${roomId}`
 
     let socket: WebSocket
     try {
-      socket = new WebSocket(url)
+      socket = new WebSocket(url, ['chatroom.v1', `ticket.${ticket}`])
       this.ws = socket
     } catch {
       this.emitSocketError('无法建立实时连接，请检查服务是否可用')
@@ -187,7 +207,7 @@ export class ChatSocket {
         this.emitSocketError('登录状态已失效，无法恢复实时连接')
         return
       }
-      this.connect(this.currentRoomId, token)
+      void this.connect(this.currentRoomId, token)
     }, delay)
   }
 
@@ -195,7 +215,7 @@ export class ChatSocket {
     if (!this.shouldReconnect) return
     const token = this.getAccessToken()
     if (!token) return
-    this.connect(roomId, token)
+    void this.connect(roomId, token)
   }
 
   private flushQueue(): void {

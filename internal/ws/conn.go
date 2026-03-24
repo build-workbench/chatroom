@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"chatroom/internal/auth"
 	"chatroom/internal/config"
 	"chatroom/internal/metrics"
 	"chatroom/internal/models"
-	"chatroom/internal/mw"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -34,12 +34,14 @@ const (
 )
 
 type Client struct {
-	room   *RoomHub
-	conn   *websocket.Conn
-	send   chan []byte
-	db     *gorm.DB
-	userID uint
-	uname  string
+	room      *RoomHub
+	conn      *websocket.Conn
+	send      chan []byte
+	db        *gorm.DB
+	hub       *Hub
+	sessionID string
+	userID    uint
+	uname     string
 }
 
 func newUpgrader(cfg config.Config) websocket.Upgrader {
@@ -51,6 +53,7 @@ func newUpgrader(cfg config.Config) websocket.Upgrader {
 			}
 			return cfg.AllowsOrigin(origin, r)
 		},
+		Subprotocols: []string{"chatroom.v1"},
 	}
 }
 
@@ -83,6 +86,15 @@ type wsSimpleMsg struct {
 	Content string `json:"content,omitempty"`
 }
 
+func extractWSTicket(r *http.Request) string {
+	for _, proto := range websocket.Subprotocols(r) {
+		if strings.HasPrefix(proto, "ticket.") {
+			return strings.TrimPrefix(proto, "ticket.")
+		}
+	}
+	return ""
+}
+
 // Serve 返回 Gin 处理函数，用于校验用户、加入房间并启动读写循环。
 func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 	upgrader := newUpgrader(cfg)
@@ -99,29 +111,39 @@ func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 			return
 		}
 
-		token := mw.ExtractBearerToken(c)
-		if token == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+		ticket := extractWSTicket(c.Request)
+		if ticket == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing ws ticket"})
 			return
 		}
-		claims, err := auth.ParseAccessToken(token, cfg.JWTSecret)
+		claims, err := auth.ValidateAndConsumeWSTicket(db, ticket, cfg.JWTSecret, uint(rid64))
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid ws ticket"})
 			return
 		}
+
 		var user models.User
 		if err := db.First(&user, claims.UserID).Error; err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
 			return
 		}
 
-		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+		conn, err := upgrader.Upgrade(c.Writer, c.Request, http.Header{"Sec-WebSocket-Protocol": []string{"chatroom.v1"}})
 		if err != nil {
 			log.Error().Err(err).Uint64("room_id", rid64).Str("remote", c.Request.RemoteAddr).Msg("ws upgrade")
 			return
 		}
 		rh := h.GetRoom(uint(rid64))
-		client := &Client{room: rh, conn: conn, send: make(chan []byte, sendBufSize), db: db, userID: user.ID, uname: user.Username}
+		client := &Client{
+			room:      rh,
+			conn:      conn,
+			send:      make(chan []byte, sendBufSize),
+			db:        db,
+			hub:       h,
+			sessionID: claims.ID,
+			userID:    user.ID,
+			uname:     user.Username,
+		}
 		rh.register <- client
 
 		go client.writePump()
@@ -138,6 +160,9 @@ func (c *Client) readPump() {
 	c.conn.SetReadLimit(maxMessageSize)
 	_ = c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error {
+		if c.hub != nil {
+			c.hub.trackHeartbeat(c.sessionID)
+		}
 		return c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	})
 	for {
@@ -155,7 +180,9 @@ func (c *Client) readPump() {
 
 		switch in.Type {
 		case "ping":
-			// 响应客户端心跳检测
+			if c.hub != nil {
+				c.hub.trackHeartbeat(c.sessionID)
+			}
 			if b, err := json.Marshal(wsSimpleMsg{Type: "pong"}); err == nil {
 				select {
 				case c.send <- b:
@@ -164,17 +191,18 @@ func (c *Client) readPump() {
 			}
 
 		case "typing":
-			// 输入法提示只做广播，不入库
 			evt := wsTypingEvent{Type: "typing", RoomID: c.room.roomID, UserID: c.userID, Username: c.uname, IsTyping: in.IsTyping}
 			if b, err := json.Marshal(evt); err == nil {
 				c.room.broadcast <- b
+				if c.hub != nil {
+					c.hub.publish(c.room.roomID, b)
+				}
 			}
 
 		case "message":
 			c.handleMessage(in.Content)
 
 		default:
-			// 向后兼容：无type时当作message处理
 			c.handleMessage(in.Content)
 		}
 	}
@@ -209,10 +237,12 @@ func (c *Client) handleMessage(content string) {
 	b, _ := json.Marshal(out)
 	metrics.WsMessagesTotal.Inc()
 	c.room.broadcast <- b
+	if c.hub != nil {
+		c.hub.publish(c.room.roomID, b)
+	}
 }
 
 // writePump 周期性发送服务端数据与心跳，防止浏览器断线。
-// 每次写入时会批量排空 send channel 中的待发消息，减少系统调用次数。
 func (c *Client) writePump() {
 	ticker := time.NewTicker(pingInterval)
 	defer func() {
@@ -234,7 +264,6 @@ func (c *Client) writePump() {
 			_, _ = w.Write(message)
 			_ = w.Close()
 
-			// 批量排空 channel 中积压的消息，每条单独帧发送以保证客户端逐条解析。
 			n := len(c.send)
 			for i := 0; i < n; i++ {
 				msg, ok := <-c.send

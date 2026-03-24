@@ -21,7 +21,9 @@ type Config struct {
 	LogFormat             string
 	AccessTokenTTLMinutes int
 	RefreshTokenTTLDays   int
+	WSTicketTTLSeconds    int
 	AllowedOrigins        []string
+	PodID                 string
 }
 
 // IsDev 返回当前是否处于开发环境。
@@ -184,7 +186,9 @@ func Load() Config {
 		LogFormat:             strings.ToLower(getenv("LOG_FORMAT", "console")),
 		AccessTokenTTLMinutes: getenvInt("ACCESS_TOKEN_TTL_MINUTES", 15),
 		RefreshTokenTTLDays:   getenvInt("REFRESH_TOKEN_TTL_DAYS", 7),
+		WSTicketTTLSeconds:    getenvInt("WS_TICKET_TTL_SECONDS", 60),
 		AllowedOrigins:        getenvCSV("ALLOWED_ORIGINS"),
+		PodID:                 getenv("APP_INSTANCE_ID", getenv("HOSTNAME", "local")),
 	}
 }
 
@@ -195,6 +199,12 @@ func Validate(cfg Config) error {
 	}
 	if cfg.DatabaseDSN == "" {
 		return errors.New("DATABASE_DSN must not be empty")
+	}
+	if cfg.WSTicketTTLSeconds <= 0 {
+		return errors.New("WS_TICKET_TTL_SECONDS must be greater than zero")
+	}
+	if strings.TrimSpace(cfg.PodID) == "" {
+		return errors.New("APP_INSTANCE_ID must not be empty")
 	}
 	if cfg.Env != "dev" && cfg.JWTSecret == "dev-secret-change-me" {
 		return errors.New("JWT_SECRET is using the default value")

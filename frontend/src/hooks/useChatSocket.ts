@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
+import type { Api } from '../api'
 import { ChatSocket } from '../socket'
 import { useToast } from '../toast-context'
 import type { ConnectionStatus, User, WsEvent } from '../types'
@@ -12,6 +13,7 @@ export interface ChatSocketState {
 }
 
 interface UseChatSocketOptions {
+  api: Api
   getAccessToken: () => string
   userRef: React.RefObject<User | null>
   onJoinLeave: (evt: WsEvent) => void
@@ -19,6 +21,7 @@ interface UseChatSocketOptions {
 }
 
 export function useChatSocket({
+  api,
   getAccessToken,
   userRef,
   onJoinLeave,
@@ -87,6 +90,7 @@ export function useChatSocket({
   useEffect(() => {
     const typingTimers = typingTimersRef.current
     const sock = new ChatSocket({
+      api,
       getAccessToken,
       onStatus: (s) => { setConnStatus(s) },
       onEvent: handleWsEvent,

@@ -114,7 +114,9 @@ func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) (*gi
 	rlMW, rlStop := mw.RateLimit(rate.Every(time.Second/20), 40)
 	r.Use(rlMW)
 
-	h := NewHandler(userSvc, roomSvc, msgSvc, db, bi)
+	rt := ws.NewRealtime(db, hub, cfg)
+	hub.SetRealtime(rt)
+	h := NewHandler(userSvc, roomSvc, msgSvc, db, cfg, bi)
 
 	r.GET("/health", h.Health)
 	r.GET("/healthz", h.Healthz)
@@ -135,6 +137,7 @@ func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) (*gi
 	authed.POST("/rooms", h.CreateRoom)
 	authed.GET("/rooms", h.ListRooms)
 	authed.GET("/rooms/:id/messages", h.ListMessages)
+	authed.POST("/ws/tickets", h.CreateWSTicket)
 
 	r.GET("/ws", ws.Serve(hub, db, cfg))
 
@@ -142,5 +145,8 @@ func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) (*gi
 	r.NoRoute(func(c *gin.Context) {
 		serveApp(c, appRoot)
 	})
-	return r, rlStop
+	return r, func() {
+		rt.Close()
+		rlStop()
+	}
 }

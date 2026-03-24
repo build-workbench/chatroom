@@ -22,6 +22,7 @@ export default function App() {
 	}, []))
 
 	const { socketRef, connStatus, typingNames } = useChatSocket({
+		api: auth.api,
 		getAccessToken: () => auth.accessRef.current,
 		userRef: auth.userRef,
 		onJoinLeave: (evt) => chatAddItemRef.current(evt),

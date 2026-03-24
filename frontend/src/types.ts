@@ -73,4 +73,9 @@ export interface WsError {
   content: string
 }
 
+export interface WSTicketResponse {
+  ticket: string
+  expires_in: number
+}
+
 export type WsEvent = MessageDTO | WsJoinLeave | WsTyping | WsPong | WsError

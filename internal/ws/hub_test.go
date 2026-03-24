@@ -8,9 +8,9 @@ import (
 
 func startTestRoomHub(t *testing.T, roomID uint) *RoomHub {
 	t.Helper()
-	rh := NewRoomHub(roomID)
-	go rh.run()
-	t.Cleanup(rh.Stop)
+	hub := NewHub()
+	rh := hub.GetRoom(roomID)
+	t.Cleanup(hub.Shutdown)
 	return rh
 }
 

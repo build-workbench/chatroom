@@ -1,6 +1,9 @@
 package service
 
 import (
+	"errors"
+	"time"
+
 	"chatroom/internal/models"
 	"chatroom/internal/ws"
 
@@ -46,18 +49,49 @@ func (s *RoomService) List(limit int) ([]RoomDTO, error) {
 	if err := s.db.Order("id desc").Limit(limit).Find(&rooms).Error; err != nil {
 		return nil, err
 	}
+	counts, err := s.onlineCountsByRoom(45 * time.Second)
+	if err != nil {
+		return nil, err
+	}
 	out := make([]RoomDTO, 0, len(rooms))
 	for _, r := range rooms {
-		out = append(out, RoomDTO{ID: r.ID, Name: r.Name, Online: s.hub.Online(r.ID)})
+		online, ok := counts[r.ID]
+		if !ok {
+			online = s.hub.Online(r.ID)
+		}
+		out = append(out, RoomDTO{ID: r.ID, Name: r.Name, Online: online})
 	}
 	return out, nil
 }
 
 // Exists 检查房间是否存在。
-func (s *RoomService) Exists(roomID uint) (*models.Room, error) {
+func (s *RoomService) Exists(roomID uint) (*RoomDTO, error) {
 	var room models.Room
 	if err := s.db.First(&room, roomID).Error; err != nil {
-		return nil, ErrRoomNotFound
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrRoomNotFound
+		}
+		return nil, err
 	}
-	return &room, nil
+	return &RoomDTO{ID: room.ID, Name: room.Name, Online: s.hub.Online(room.ID)}, nil
+}
+
+func (s *RoomService) onlineCountsByRoom(activeWindow time.Duration) (map[uint]int, error) {
+	threshold := time.Now().Add(-activeWindow)
+	var rows []struct {
+		RoomID uint
+		Count  int
+	}
+	if err := s.db.Model(&models.WSSession{}).
+		Select("room_id, COUNT(*) as count").
+		Where("last_seen_at > ?", threshold).
+		Group("room_id").
+		Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+	counts := make(map[uint]int, len(rows))
+	for _, row := range rows {
+		counts[row.RoomID] = row.Count
+	}
+	return counts, nil
 }

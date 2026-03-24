@@ -4,17 +4,24 @@ import (
 	"encoding/json"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"chatroom/internal/metrics"
 )
 
 // Hub 管理房间级别的子 Hub，实现延迟创建与并发安全。
 type Hub struct {
-	mu    sync.RWMutex
-	rooms map[uint]*RoomHub
+	mu           sync.RWMutex
+	rooms        map[uint]*RoomHub
+	realtime     *Realtime
+	cleanupAfter time.Duration
 }
 
-func NewHub() *Hub { return &Hub{rooms: make(map[uint]*RoomHub)} }
+func NewHub() *Hub {
+	return &Hub{rooms: make(map[uint]*RoomHub), cleanupAfter: 3 * time.Minute}
+}
+
+func (h *Hub) SetRealtime(rt *Realtime) { h.realtime = rt }
 
 // GetRoom 若房间未初始化则懒加载一个 RoomHub。
 func (h *Hub) GetRoom(roomID uint) *RoomHub {
@@ -24,6 +31,7 @@ func (h *Hub) GetRoom(roomID uint) *RoomHub {
 	if room != nil {
 		return room
 	}
+
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	room = h.rooms[roomID]
@@ -31,9 +39,20 @@ func (h *Hub) GetRoom(roomID uint) *RoomHub {
 		return room
 	}
 	room = NewRoomHub(roomID)
+	room.parent = h
 	h.rooms[roomID] = room
 	go room.run()
 	return room
+}
+
+func (h *Hub) BroadcastExisting(roomID uint, data []byte) {
+	h.mu.RLock()
+	room := h.rooms[roomID]
+	h.mu.RUnlock()
+	if room == nil {
+		return
+	}
+	room.broadcast <- data
 }
 
 func (h *Hub) Online(roomID uint) int {
@@ -44,6 +63,56 @@ func (h *Hub) Online(roomID uint) int {
 		return 0
 	}
 	return room.Online()
+}
+
+func (h *Hub) countOnline(roomID uint) int {
+	if h.realtime != nil {
+		if n, err := h.realtime.CountRoomOnline(roomID, 45*time.Second); err == nil {
+			return n
+		}
+	}
+	return h.Online(roomID)
+}
+
+func (h *Hub) publish(roomID uint, data []byte) {
+	if h.realtime != nil {
+		_ = h.realtime.Publish(roomID, data)
+	}
+}
+
+func (h *Hub) trackRegister(client *Client) {
+	if h.realtime != nil {
+		_ = h.realtime.RegisterSession(client.sessionID, client.room.roomID, client.userID)
+	}
+}
+
+func (h *Hub) trackHeartbeat(sessionID string) {
+	if h.realtime != nil {
+		_ = h.realtime.TouchSession(sessionID)
+	}
+}
+
+func (h *Hub) trackUnregister(sessionID string) {
+	if h.realtime != nil {
+		_ = h.realtime.DeleteSession(sessionID)
+	}
+}
+
+func (h *Hub) cleanupRoomLater(room *RoomHub) {
+	if h.cleanupAfter <= 0 {
+		return
+	}
+	time.AfterFunc(h.cleanupAfter, func() {
+		if room.Online() != 0 {
+			return
+		}
+		room.Stop()
+		h.mu.Lock()
+		if h.rooms[room.roomID] == room {
+			delete(h.rooms, room.roomID)
+		}
+		h.mu.Unlock()
+	})
 }
 
 // Shutdown 关闭所有 RoomHub goroutine，用于优雅停服。
@@ -57,6 +126,7 @@ func (h *Hub) Shutdown() {
 }
 
 type RoomHub struct {
+	parent     *Hub
 	roomID     uint
 	clients    map[*Client]bool
 	register   chan *Client
@@ -128,12 +198,22 @@ func (rh *RoomHub) run() {
 
 		case c := <-rh.register:
 			rh.clients[c] = true
-			online := rh.updateOnline()
+			rh.updateOnline()
 			metrics.WsConnections.Inc()
-			rh.broadcastEvent(wsPresenceEvent{
-				Type: "join", RoomID: rh.roomID,
-				UserID: c.userID, Username: c.uname, Online: online,
-			})
+			if rh.parent != nil {
+				rh.parent.trackRegister(c)
+			}
+			online := rh.Online()
+			if rh.parent != nil {
+				online = rh.parent.countOnline(rh.roomID)
+			}
+			evt := wsPresenceEvent{Type: "join", RoomID: rh.roomID, UserID: c.userID, Username: c.uname, Online: online}
+			rh.broadcastEvent(evt)
+			if rh.parent != nil {
+				if b, err := json.Marshal(evt); err == nil {
+					rh.parent.publish(rh.roomID, b)
+				}
+			}
 
 		case c := <-rh.unregister:
 			if _, ok := rh.clients[c]; !ok {
@@ -141,12 +221,25 @@ func (rh *RoomHub) run() {
 			}
 			delete(rh.clients, c)
 			close(c.send)
-			online := rh.updateOnline()
+			rh.updateOnline()
 			metrics.WsConnections.Dec()
-			rh.broadcastEvent(wsPresenceEvent{
-				Type: "leave", RoomID: rh.roomID,
-				UserID: c.userID, Username: c.uname, Online: online,
-			})
+			if rh.parent != nil {
+				rh.parent.trackUnregister(c.sessionID)
+			}
+			online := rh.Online()
+			if rh.parent != nil {
+				online = rh.parent.countOnline(rh.roomID)
+			}
+			evt := wsPresenceEvent{Type: "leave", RoomID: rh.roomID, UserID: c.userID, Username: c.uname, Online: online}
+			rh.broadcastEvent(evt)
+			if rh.parent != nil {
+				if b, err := json.Marshal(evt); err == nil {
+					rh.parent.publish(rh.roomID, b)
+				}
+				if len(rh.clients) == 0 {
+					rh.parent.cleanupRoomLater(rh)
+				}
+			}
 
 		case msg := <-rh.broadcast:
 			rh.broadcastToClients(msg)

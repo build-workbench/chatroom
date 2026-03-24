@@ -163,7 +163,7 @@ export function useChat({ api, accessRef, socketRef, initialRoomId }: UseChatOpt
 
     const token = accessRef.current
     if (token) {
-      socketRef.current?.connect(id, token)
+      void socketRef.current?.connect(id, token)
     }
   }, [api, accessRef, socketRef, toast])
 

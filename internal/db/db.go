@@ -45,5 +45,5 @@ func Connect(dsn string) (*gorm.DB, error) {
 
 // Migrate 自动迁移教学环境涉及的全部表结构。
 func Migrate(gdb *gorm.DB) error {
-	return gdb.AutoMigrate(&models.User{}, &models.Room{}, &models.Message{}, &models.RefreshToken{})
+	return gdb.AutoMigrate(&models.User{}, &models.Room{}, &models.Message{}, &models.RefreshToken{}, &models.WSSession{}, &models.WSTicket{})
 }

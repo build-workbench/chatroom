@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"chatroom/internal/auth"
+	"chatroom/internal/config"
 	"chatroom/internal/mw"
 	"chatroom/internal/service"
 
@@ -26,6 +28,7 @@ type UserService interface {
 type RoomService interface {
 	Create(name string, ownerID uint) (*service.RoomDTO, error)
 	List(limit int) ([]service.RoomDTO, error)
+	Exists(roomID uint) (*service.RoomDTO, error)
 }
 
 // MessageService 定义消息业务接口。
@@ -39,11 +42,12 @@ type Handler struct {
 	roomSvc RoomService
 	msgSvc  MessageService
 	db      *gorm.DB
+	cfg     config.Config
 	bi      BuildInfo
 }
 
-func NewHandler(userSvc UserService, roomSvc RoomService, msgSvc MessageService, db *gorm.DB, bi BuildInfo) *Handler {
-	return &Handler{userSvc: userSvc, roomSvc: roomSvc, msgSvc: msgSvc, db: db, bi: bi}
+func NewHandler(userSvc UserService, roomSvc RoomService, msgSvc MessageService, db *gorm.DB, cfg config.Config, bi BuildInfo) *Handler {
+	return &Handler{userSvc: userSvc, roomSvc: roomSvc, msgSvc: msgSvc, db: db, cfg: cfg, bi: bi}
 }
 
 // --- 请求结构体 ---
@@ -64,6 +68,10 @@ type refreshRequest struct {
 
 type createRoomRequest struct {
 	Name string `json:"name" binding:"required,max=128"`
+}
+
+type createWSTicketRequest struct {
+	RoomID uint `json:"room_id" binding:"required"`
 }
 
 // --- 运维端点 ---
@@ -235,6 +243,15 @@ func (h *Handler) ListMessages(c *gin.Context) {
 		badRequest(c, "invalid room id")
 		return
 	}
+	if _, err := h.roomSvc.Exists(uint(roomID)); err != nil {
+		if errors.Is(err, service.ErrRoomNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+			return
+		}
+		log.Error().Err(err).Int("room_id", roomID).Msg("check room before list messages")
+		serverError(c, "failed to list messages")
+		return
+	}
 	limit := 50
 	if limitStr := c.Query("limit"); limitStr != "" {
 		if v, e := strconv.Atoi(limitStr); e == nil && v > 0 && v <= 200 {
@@ -254,4 +271,28 @@ func (h *Handler) ListMessages(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"messages": msgs})
+}
+
+func (h *Handler) CreateWSTicket(c *gin.Context) {
+	var req createWSTicketRequest
+	if err := c.ShouldBindJSON(&req); err != nil || req.RoomID == 0 {
+		badRequest(c, "invalid payload")
+		return
+	}
+	if _, err := h.roomSvc.Exists(req.RoomID); err != nil {
+		if errors.Is(err, service.ErrRoomNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+			return
+		}
+		log.Error().Err(err).Uint("room_id", req.RoomID).Msg("check room before issue ws ticket")
+		serverError(c, "failed to create ws ticket")
+		return
+	}
+	ticket, err := auth.GenerateAndStoreWSTicket(h.db, mw.GetUserID(c), req.RoomID, h.cfg.JWTSecret, h.cfg.WSTicketTTLSeconds)
+	if err != nil {
+		log.Error().Err(err).Uint("room_id", req.RoomID).Uint("user_id", mw.GetUserID(c)).Msg("create ws ticket")
+		serverError(c, "failed to create ws ticket")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ticket": ticket, "expires_in": h.cfg.WSTicketTTLSeconds})
 }

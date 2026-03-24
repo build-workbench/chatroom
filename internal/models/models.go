@@ -42,3 +42,27 @@ type RefreshToken struct {
 }
 
 func (RefreshToken) TableName() string { return "refresh_tokens" }
+
+type WSSession struct {
+	SessionID  string    `gorm:"primaryKey;size:64" json:"session_id"`
+	RoomID     uint      `gorm:"index;not null" json:"room_id"`
+	UserID     uint      `gorm:"index;not null" json:"user_id"`
+	PodID      string    `gorm:"index;size:128;not null" json:"pod_id"`
+	LastSeenAt time.Time `gorm:"index;not null" json:"last_seen_at"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+func (WSSession) TableName() string { return "ws_sessions" }
+
+type WSTicket struct {
+	TicketID   string     `gorm:"primaryKey;size:64" json:"ticket_id"`
+	UserID     uint       `gorm:"index;not null" json:"user_id"`
+	RoomID     uint       `gorm:"index;not null" json:"room_id"`
+	ExpiresAt  time.Time  `gorm:"index;not null" json:"expires_at"`
+	ConsumedAt *time.Time `json:"consumed_at,omitempty"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+}
+
+func (WSTicket) TableName() string { return "ws_tickets" }
