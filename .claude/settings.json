@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; ext=\"${f##*.}\"; if [ \"$ext\" = \"go\" ]; then gofmt -w \"$f\"; elif echo \"$f\" | grep -qE \"frontend/\" && echo \"$ext\" | grep -qE \"^(ts|tsx|css|json|md)$\"; then npx --prefix /home/shane/lessup/apps/chatroom/frontend prettier --write \"$f\"; fi; } 2>/dev/null || true",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
