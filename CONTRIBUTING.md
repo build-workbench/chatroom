@@ -6,36 +6,63 @@
 
 参与本项目即表示你同意遵守我们的 [行为准则](CODE_OF_CONDUCT.md)。
 
+---
+
 ## 如何贡献
 
 ### 报告 Bug
 
 1. 在 [Issues](../../issues) 中搜索是否已有相同问题
-2. 如果没有，创建新 Issue 并使用 Bug Report 模板
-3. 提供详细的复现步骤、环境信息和错误日志
+2. 如果没有，点击 **New Issue** → **Bug Report**
+3. 提供以下信息：
+   - 复现步骤
+   - 期望行为
+   - 实际行为
+   - 环境信息（Go 版本、Node 版本、操作系统）
+   - 相关日志或截图
 
 ### 提出新功能
 
 1. 在 [Issues](../../issues) 中搜索是否已有相同建议
-2. 如果没有，创建新 Issue 并使用 Feature Request 模板
-3. 描述功能的使用场景和预期行为
+2. 如果没有，点击 **New Issue** → **Feature Request**
+3. 描述以下内容：
+   - 功能描述
+   - 使用场景
+   - 期望行为
 
 ### 提交代码
 
-1. Fork 本仓库
-2. 创建功能分支：`git checkout -b feature/your-feature`
-3. 提交更改：`git commit -m 'Add some feature'`
-4. 推送分支：`git push origin feature/your-feature`
-5. 创建 Pull Request
+```bash
+# 1. Fork 仓库
+# 2. 克隆你的 Fork
+git clone https://github.com/<your-username>/chatroom.git
+cd chatroom
+
+# 3. 创建功能分支
+git checkout -b feature/your-feature-name
+
+# 4. 进行修改并提交
+git add .
+git commit -m "添加新功能描述"
+
+# 5. 推送到你的 Fork
+git push origin feature/your-feature-name
+
+# 6. 创建 Pull Request
+```
+
+---
 
 ## 开发环境设置
 
 ### 前置要求
 
-- Go 1.24+
-- Node.js 20+
-- Docker & Docker Compose
-- Make
+| 工具 | 版本 | 用途 |
+|------|------|------|
+| Go | 1.24+ | 后端开发 |
+| Node.js | 20+ | 前端开发 |
+| Docker | 最新 | PostgreSQL |
+| Make | 任意 | 常用命令 |
 
 ### 快速开始
 
@@ -50,62 +77,166 @@ docker compose up -d postgres
 # 运行后端
 go run ./cmd/server
 
-# 运行前端（另一个终端）
+# 运行前端（另一终端）
 npm --prefix frontend ci
 npm --prefix frontend run dev
 ```
 
-### 常用命令
+---
+
+## 常用命令
+
+### 后端
 
 ```bash
 make build      # 构建项目
 make test       # 运行测试
+make test-coverage # 测试覆盖率报告
 make lint       # 代码检查
 make fmt        # 格式化代码
-make docker-build # 构建 Docker 镜像
+make vet        # go vet 检查
 ```
+
+### 前端
+
+```bash
+npm --prefix frontend run dev      # 开发服务器
+npm --prefix frontend run build    # 构建
+npm --prefix frontend run test     # 测试
+npm --prefix frontend run lint     # 代码检查
+```
+
+### 文档
+
+```bash
+npm --prefix docs ci               # 安装依赖
+npm --prefix docs run docs:dev     # 本地预览
+npm --prefix docs run docs:build   # 构建
+```
+
+---
 
 ## 代码风格
 
 ### Go 代码
 
-- 使用 `gofmt` 格式化代码
-- 遵循 [Effective Go](https://golang.org/doc/effective_go) 指南
-- 使用 `golangci-lint` 进行静态检查
-- 导出标识符使用 `CamelCase`，内部标识符使用 `camelCase`
-- JSON 标签使用 `snake_case`
+| 规范 | 说明 |
+|------|------|
+| 格式化 | `gofmt` |
+| 导入排序 | `goimports -w -local chatroom .` |
+| 命名 | 导出 `CamelCase`，内部 `camelCase` |
+| JSON 标签 | `snake_case` |
+| 测试 | 同包 `*_test.go`，表驱动测试 |
 
 ### TypeScript/React 代码
 
-- 使用 ESLint 和 Prettier 格式化
-- 组件使用函数式组件和 Hooks
-- 文件名使用 `kebab-case`
+| 规范 | 说明 |
+|------|------|
+| 格式化 | Prettier |
+| 缩进 | 2 空格 |
+| 组件 | 函数组件 + Hooks |
+| 文件名 | `kebab-case` |
 
 ### 提交信息
 
-- 使用祈使句，首字母大写
-- 主题行不超过 50 字符
-- 可选的详细说明用空行分隔
-- 引用相关 Issue：`Refs #123` 或 `Fixes #123`
+使用中文，祈使句，不超过 50 字符：
 
-示例：
 ```
-Add user authentication middleware
+添加用户认证中间件
 
-- Implement JWT validation
-- Add refresh token rotation
-- Update API documentation
+- 实现 JWT 验证
+- 添加刷新令牌轮换
+- 更新 API 文档
 
 Refs #42
 ```
 
+**提交类型参考**：
+
+- `添加` / `新增`：新功能
+- `修复`：Bug 修复
+- `优化` / `重构`：代码改进
+- `更新`：文档或配置更新
+- `删除`：移除代码或文件
+
+---
+
+## 测试指南
+
+### 运行测试
+
+```bash
+# 所有 Go 测试（需要 PostgreSQL）
+docker compose up -d postgres
+go test -race -cover ./...
+
+# 前端测试
+npm --prefix frontend run test
+
+# 前端测试（监听模式）
+npm --prefix frontend run test:watch
+```
+
+### 编写测试
+
+**Go 测试规范**：
+
+```go
+func TestFunctionName_Scenario_Expected(t *testing.T) {
+    // 使用表驱动测试
+    tests := []struct {
+        name    string
+        input   int
+        want    int
+        wantErr bool
+    }{
+        {"positive", 1, 2, false},
+        {"negative", -1, 0, true},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got, err := Function(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("Function() error = %v, wantErr %v", err, tt.wantErr)
+            }
+            if got != tt.want {
+                t.Errorf("Function() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+**前端测试规范**：
+
+```typescript
+describe('功能模块', () => {
+  it('应该正确处理场景', () => {
+    const result = functionUnderTest(input)
+    expect(result).toBe(expectedOutput)
+  })
+})
+```
+
+---
+
 ## Pull Request 流程
 
-1. 确保所有测试通过：`make test`
-2. 确保代码检查通过：`make lint`
-3. 更新相关文档
-4. 填写 PR 模板中的所有必要信息
-5. 等待代码审查
+### 提交前检查
+
+```bash
+# 1. 运行测试
+make test
+npm --prefix frontend run test
+
+# 2. 代码检查
+make lint
+npm --prefix frontend run lint
+
+# 3. 构建
+make build
+npm --prefix frontend run build
+```
 
 ### PR 检查清单
 
@@ -115,29 +246,37 @@ Refs #42
 - [ ] 更新了相关文档
 - [ ] 提交信息清晰明了
 
-## 测试指南
+### Review 流程
 
-### 运行测试
+1. 提交 PR 后，CI 自动运行测试
+2. 至少一位维护者 Review 代码
+3. 处理 Review 意见
+4. 通过后合并到 `master`
 
-```bash
-# 运行所有测试
-make test
+---
 
-# 运行带覆盖率的测试
-go test -race -cover ./...
+## 项目结构
 
-# 运行特定包的测试
-go test ./internal/auth/...
+```
+chatroom/
+├── cmd/server/          # 程序入口
+├── internal/            # 后端核心代码
+│   ├── auth/            # 认证
+│   ├── config/          # 配置
+│   ├── db/              # 数据库
+│   ├── server/          # HTTP
+│   ├── service/         # 业务
+│   └── ws/              # WebSocket
+├── frontend/            # React 前端
+├── web/                 # 静态回退
+├── docs/                # VitePress 文档
+├── deploy/              # 部署配置
+└── .github/workflows/   # CI/CD
 ```
 
-### 编写测试
+---
 
-- 使用表驱动测试
-- 测试文件命名：`*_test.go`
-- 测试函数命名：`Test<Function>_<Scenario>_<Expected>`
-- 使用接口模拟依赖
-
-## 发布流程
+## 版本发布
 
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)：
 
@@ -145,10 +284,14 @@ go test ./internal/auth/...
 - `MINOR`：向后兼容的功能新增
 - `PATCH`：向后兼容的问题修复
 
+---
+
 ## 获取帮助
 
-- 查看 [文档](docs/)
-- 在 [Discussions](../../discussions) 中提问
-- 查看 [FAQ](docs/FAQ.md)
+- 📖 [文档站](https://lessup.github.io/chatroom/)
+- 💬 [Discussions](../../discussions)
+- 📝 [FAQ](docs/FAQ.md)
+
+---
 
 再次感谢你的贡献！🎉

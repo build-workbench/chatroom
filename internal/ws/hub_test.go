@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-func startTestRoomHub(t *testing.T, roomID uint) *RoomHub {
+func startTestRoomHub(t *testing.T, _ uint) *RoomHub {
 	t.Helper()
 	hub := NewHub()
-	rh := hub.GetRoom(roomID)
+	rh := hub.GetRoom(1)
 	t.Cleanup(hub.Shutdown)
 	return rh
 }
@@ -89,7 +89,7 @@ func TestRoomHub_Broadcast(t *testing.T) {
 
 	// Create multiple clients
 	clients := make([]*Client, 3)
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		clients[i] = &Client{
 			room:   rh,
 			userID: uint(i + 1),
@@ -175,12 +175,9 @@ func TestRoomHub_MultipleRooms(t *testing.T) {
 }
 
 func TestClient_Send(t *testing.T) {
-	rh := startTestRoomHub(t, 1)
+	_ = startTestRoomHub(t, 1)
 	client := &Client{
-		room:   rh,
-		userID: 1,
-		uname:  "testuser",
-		send:   make(chan []byte, 256),
+		send: make(chan []byte, 256),
 	}
 
 	testMsg := []byte("test message")
@@ -211,7 +208,7 @@ func TestRoomHub_Concurrent(t *testing.T) {
 	numClients := 10
 
 	// Concurrently register clients
-	for i := 0; i < numClients; i++ {
+	for i := range numClients {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()

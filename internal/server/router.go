@@ -101,7 +101,7 @@ func serveApp(c *gin.Context, rootDir string) {
 
 // SetupRouter 统一初始化 Gin 中间件、REST API 以及 WebSocket 端点。
 // 返回的 cleanup 函数应在优雅停服时调用，用于释放后台 goroutine。
-func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) (*gin.Engine, func()) {
+func SetupRouter(cfg config.Config, db *gorm.DB, hub *ws.Hub, bi BuildInfo) (router *gin.Engine, cleanup func()) {
 	userSvc := service.NewUserService(db, cfg)
 	roomSvc := service.NewRoomService(db, hub)
 	msgSvc := service.NewMessageService(db)

@@ -50,9 +50,13 @@ func main() {
 	}
 	r, cleanup := server.SetupRouter(cfg, gdb, hub, bi)
 
+	// 启动后台清理任务（清理过期的 token、ticket、session）。
+	stopCleanup := db.StartCleanup(gdb)
+
 	srv := &http.Server{
-		Addr:    ":" + cfg.Port,
-		Handler: r,
+		Addr:              ":" + cfg.Port,
+		Handler:           r,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	// 在独立 goroutine 中启动 HTTP 服务。
@@ -74,6 +78,8 @@ func main() {
 
 	// 关闭 Hub 中所有 RoomHub goroutine。
 	hub.Shutdown()
+	// 停止后台清理任务。
+	stopCleanup()
 	// 释放限速器等后台 goroutine。
 	cleanup()
 

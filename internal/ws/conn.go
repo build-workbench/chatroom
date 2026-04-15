@@ -158,7 +158,7 @@ func (c *Client) readPump() {
 		_ = c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
-	_ = c.conn.SetReadDeadline(time.Now().Add(pongWait))
+	_ = c.conn.SetReadDeadline(time.Now().Add(pongWait)) //nolint:errcheck // deadline only affects subsequent reads
 	c.conn.SetPongHandler(func(string) error {
 		if c.hub != nil {
 			c.hub.trackHeartbeat(c.sessionID)
@@ -234,7 +234,7 @@ func (c *Client) handleMessage(content string) {
 		return
 	}
 	out := OutboundMessage{Type: "message", ID: msg.ID, RoomID: msg.RoomID, UserID: msg.UserID, Username: c.uname, Content: msg.Content, CreatedAt: msg.CreatedAt}
-	b, _ := json.Marshal(out)
+	b, _ := json.Marshal(out) //nolint:errcheck // OutboundMessage fields are JSON-safe
 	metrics.WsMessagesTotal.Inc()
 	c.room.broadcast <- b
 	if c.hub != nil {
@@ -252,31 +252,31 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
-			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait)) //nolint:errcheck // deadline only affects subsequent writes
 			if !ok {
-				_ = c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				_ = c.conn.WriteMessage(websocket.CloseMessage, []byte{}) //nolint:errcheck // connection closing anyway
 				return
 			}
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
 				return
 			}
-			_, _ = w.Write(message)
+			_, _ = w.Write(message) //nolint:errcheck // NextWriter error is sufficient
 			_ = w.Close()
 
 			n := len(c.send)
-			for i := 0; i < n; i++ {
+			for range n {
 				msg, ok := <-c.send
 				if !ok {
 					return
 				}
-				_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+				_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait)) //nolint:errcheck // deadline only affects subsequent writes
 				if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 					return
 				}
 			}
 		case <-ticker.C:
-			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait)) //nolint:errcheck // deadline only affects subsequent writes
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}

@@ -76,25 +76,25 @@ func (h *Hub) countOnline(roomID uint) int {
 
 func (h *Hub) publish(roomID uint, data []byte) {
 	if h.realtime != nil {
-		_ = h.realtime.Publish(roomID, data)
+		_ = h.realtime.Publish(roomID, data) //nolint:errcheck // realtime publish is best-effort
 	}
 }
 
 func (h *Hub) trackRegister(client *Client) {
 	if h.realtime != nil {
-		_ = h.realtime.RegisterSession(client.sessionID, client.room.roomID, client.userID)
+		_ = h.realtime.RegisterSession(client.sessionID, client.room.roomID, client.userID) //nolint:errcheck // session tracking is best-effort
 	}
 }
 
 func (h *Hub) trackHeartbeat(sessionID string) {
 	if h.realtime != nil {
-		_ = h.realtime.TouchSession(sessionID)
+		_ = h.realtime.TouchSession(sessionID) //nolint:errcheck // heartbeat tracking is best-effort
 	}
 }
 
 func (h *Hub) trackUnregister(sessionID string) {
 	if h.realtime != nil {
-		_ = h.realtime.DeleteSession(sessionID)
+		_ = h.realtime.DeleteSession(sessionID) //nolint:errcheck // session cleanup is best-effort
 	}
 }
 
@@ -178,11 +178,10 @@ func (rh *RoomHub) broadcastEvent(evt interface{}) {
 	rh.broadcastToClients(b)
 }
 
-// updateOnline 更新并返回当前在线人数。
-func (rh *RoomHub) updateOnline() int {
-	n := int32(len(rh.clients))
+// updateOnline 更新当前在线人数。
+func (rh *RoomHub) updateOnline() {
+	n := int32(len(rh.clients)) //nolint:gosec // room client count won't exceed int32
 	atomic.StoreInt32(&rh.online, n)
-	return int(n)
 }
 
 func (rh *RoomHub) run() {

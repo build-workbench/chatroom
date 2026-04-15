@@ -62,7 +62,7 @@ func ParseAccessToken(tokenStr, secret string) (*Claims, error) {
 	return nil, errors.New("invalid token")
 }
 
-func GenerateWSTicket(userID, roomID uint, secret string, ttlSeconds int) (token string, ticketID string, expiresAt time.Time, err error) {
+func GenerateWSTicket(userID, roomID uint, secret string, ttlSeconds int) (token, ticketID string, expiresAt time.Time, err error) {
 	now := time.Now().UTC()
 	ticketID, err = GenerateRefreshToken()
 	if err != nil {

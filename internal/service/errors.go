@@ -19,7 +19,6 @@ func isUniqueViolation(err error) bool {
 		return false
 	}
 	msg := strings.ToLower(err.Error())
-	// PostgreSQL: "duplicate key value violates unique constraint"
-	// SQLite: "UNIQUE constraint failed"
+	// PostgreSQL and SQLite both include "unique" in their constraint violation messages.
 	return strings.Contains(msg, "unique") || strings.Contains(msg, "duplicate key")
 }
