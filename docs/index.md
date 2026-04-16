@@ -4,6 +4,9 @@ hero:
   name: ChatRoom 教学文档
   text: 从零理解实时聊天系统
   tagline: Go + React + PostgreSQL + WebSocket，一个适合练手与教学的全栈项目
+  image:
+    src: /logo.svg
+    alt: ChatRoom Logo
   actions:
     - theme: brand
       text: 快速开始
@@ -18,22 +21,49 @@ features:
   - icon: 🚀
     title: 5 分钟启动
     details: Docker Compose 一键启动数据库和后端，前端开发服务器热更新，快速体验完整聊天功能。
+    link: /getting-started
+    linkText: 开始体验
   - icon: 🔐
     title: JWT 双 Token
     details: Access Token + Refresh Token 完整实现，支持自动刷新、Token Rotation、安全登出。
+    link: /API#认证
+    linkText: 查看认证流程
   - icon: ⚡
     title: WebSocket 实时
     details: 房间级 Hub 广播、在线状态同步、输入提示、心跳保活，支持分布式部署。
+    link: /ARCHITECTURE#websocket-层
+    linkText: 了解架构
   - icon: 📊
     title: Prometheus 监控
     details: 内置 HTTP 请求、WebSocket 连接、消息计数指标，配套 Grafana 仪表盘模板。
+    link: /monitoring/README
+    linkText: 配置监控
   - icon: 🧪
     title: 测试完备
     details: Go 单元测试 + 集成测试，前端 Vitest 测试，CI 自动运行，覆盖率报告。
+    link: https://github.com/LessUp/chatroom/actions
+    linkText: 查看 CI
   - icon: 📦
     title: 生产就绪
     details: Docker 多阶段构建、Kubernetes 部署清单、健康检查、优雅停服、速率限制。
+    link: /DESIGN#部署考量
+    linkText: 部署指南
 ---
+
+<script setup>
+import { VPTeamMembers } from 'vitepress/theme'
+
+const members = [
+  {
+    avatar: 'https://www.github.com/LessUp.png',
+    name: 'LessUp',
+    title: '项目维护者',
+    links: [
+      { icon: 'github', link: 'https://github.com/LessUp' },
+    ],
+  },
+]
+</script>
 
 ## 技术栈
 
@@ -46,9 +76,9 @@ features:
 
 ## 这份文档适合谁
 
-- 想用一个小项目**练习 Go 后端开发**的人
-- 想理解**前端如何接入 REST + WebSocket**的人
-- 想把这个仓库当成**课堂演示或自学教材**的人
+- 🎯 想用一个小项目**练习 Go 后端开发**的人
+- 🎯 想理解**前端如何接入 REST + WebSocket**的人
+- 🎯 想把这个仓库当成**课堂演示或自学教材**的人
 
 ## 你将学到什么
 
@@ -116,3 +146,11 @@ npm --prefix frontend run dev
 ```
 
 然后访问 http://localhost:5173 开始体验！
+
+## 项目维护者
+
+<VPTeamMembers size="small" :members="members" />
+
+## 许可证
+
+本项目基于 [MIT License](https://github.com/LessUp/chatroom/blob/master/LICENSE) 开源。

@@ -82,6 +82,23 @@ npm --prefix frontend ci
 npm --prefix frontend run dev
 ```
 
+### 环境说明
+
+**重要**：后端直接读取进程环境变量，**不会自动加载 `.env` 文件**。
+
+```bash
+# 方式 1：直接设置环境变量
+export JWT_SECRET=your-secret
+go run ./cmd/server
+
+# 方式 2：手动 source
+set -a && source .env && set +a
+go run ./cmd/server
+
+# 方式 3：Docker Compose
+docker compose up -d
+```
+
 ---
 
 ## 常用命令

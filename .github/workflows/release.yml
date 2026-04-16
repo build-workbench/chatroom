@@ -11,7 +11,7 @@ permissions:
 
 env:
   GO_VERSION: '1.24'
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -155,7 +155,8 @@ jobs:
 
           mkdir -p "${PACKAGE_DIR}/frontend"
           cp "build/chatroom${{ matrix.ext }}" "${PACKAGE_DIR}/chatroom${{ matrix.ext }}"
-          cp README.md LICENSE .env.example "${PACKAGE_DIR}/"
+          cp README.md README.zh-CN.md LICENSE .env.example "${PACKAGE_DIR}/"
+          cp -R web "${PACKAGE_DIR}/web"
           cp -R frontend/dist "${PACKAGE_DIR}/frontend/dist"
 
           if [ "${{ matrix.goos }}" = "windows" ]; then

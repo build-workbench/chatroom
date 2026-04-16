@@ -1,139 +1,227 @@
-# Requirements Document
+# 需求文档：Open Source Excellence
 
-## Introduction
+> 本文档定义了将 ChatRoom 项目从教学 Demo 提升为优秀开源项目所需的改进需求。
 
-本文档定义了将 ChatRoom 项目从教学 Demo 提升为优秀开源项目所需的改进需求。目标是建立清晰的项目结构、完善的文档体系、健全的测试覆盖、规范的贡献流程，以及专业的开源社区标准。
+---
 
-## Glossary
+## 术语表
 
-- **Project**: ChatRoom 实时聊天室项目
-- **Repository**: 项目的 Git 仓库
-- **Contributor**: 向项目贡献代码或文档的开发者
-- **CI_Pipeline**: 持续集成流水线，自动执行测试和检查
-- **Code_Coverage**: 测试代码覆盖率指标
-- **Linter**: 代码静态分析工具
-- **Release**: 项目的正式发布版本
+| 术语 | 定义 |
+|------|------|
+| Project | ChatRoom 实时聊天室项目 |
+| Repository | 项目的 Git 仓库 |
+| Contributor | 向项目贡献代码或文档的开发者 |
+| CI_Pipeline | 持续集成流水线，自动执行测试和检查 |
+| Code_Coverage | 测试代码覆盖率指标 |
+| Linter | 代码静态分析工具 |
+| Release | 项目的正式发布版本 |
 
-## Requirements
+---
+
+## 需求清单
 
 ### Requirement 1: 开源项目标准文件
 
-**User Story:** As a potential contributor, I want to see standard open source files, so that I understand how to contribute and use the project.
+**用户故事**：作为潜在贡献者，我希望看到标准开源文件，以便理解如何贡献和使用项目。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. THE Repository SHALL contain a LICENSE file with an appropriate open source license (MIT/Apache-2.0)
-2. THE Repository SHALL contain a CONTRIBUTING.md file with contribution guidelines
-3. THE Repository SHALL contain a CODE_OF_CONDUCT.md file with community behavior standards
-4. THE Repository SHALL contain a SECURITY.md file with vulnerability reporting instructions
-5. THE Repository SHALL contain a CHANGELOG.md file following Keep a Changelog format
-6. THE Repository SHALL contain issue and pull request templates in .github directory
+| ID | 验收标准 |
+|----|----------|
+| 1.1 | Repository **必须**包含 LICENSE 文件（MIT 许可证） |
+| 1.2 | Repository **必须**包含 CONTRIBUTING.md 贡献指南 |
+| 1.3 | Repository **必须**包含 CODE_OF_CONDUCT.md 行为准则 |
+| 1.4 | Repository **必须**包含 SECURITY.md 安全策略 |
+| 1.5 | Repository **必须**包含 CHANGELOG.md（Keep a Changelog 格式） |
+| 1.6 | Repository **必须**包含 Issue 和 PR 模板 |
+
+**状态**：✅ 完成
+
+---
 
 ### Requirement 2: 项目文档完善
 
-**User Story:** As a developer, I want comprehensive documentation, so that I can quickly understand and use the project.
+**用户故事**：作为开发者，我希望有完善的文档，以便快速理解和使用项目。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. THE README.md SHALL contain project badges showing build status, coverage, and license
-2. THE README.md SHALL contain a clear feature list with visual screenshots or GIFs
-3. THE Project SHALL provide API documentation in docs/API.md with all endpoints, request/response formats
-4. THE Project SHALL provide architecture documentation with component diagrams
-5. WHEN a user reads the documentation, THE Project SHALL provide copy-paste ready examples for common use cases
+| ID | 验收标准 |
+|----|----------|
+| 2.1 | README.md **必须**包含项目徽章（CI、覆盖率、许可证） |
+| 2.2 | README.md **必须**包含清晰的功能列表 |
+| 2.3 | 项目**必须**提供 API 文档（docs/API.md） |
+| 2.4 | 项目**必须**提供架构文档（组件图） |
+| 2.5 | 文档**必须**提供可复制粘贴的使用示例 |
+
+**状态**：✅ 完成
+
+---
 
 ### Requirement 3: 代码质量与规范
 
-**User Story:** As a maintainer, I want consistent code quality, so that the codebase remains maintainable and professional.
+**用户故事**：作为维护者，我希望有一致的代码质量，以便代码库保持可维护和专业。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. THE Project SHALL use golangci-lint with a .golangci.yml configuration file
-2. THE Project SHALL pass all linter checks without errors or warnings
-3. THE Project SHALL have consistent code formatting verified by gofmt
-4. THE Project SHALL define EditorConfig settings in .editorconfig for cross-editor consistency
-5. WHEN code is committed, THE CI_Pipeline SHALL automatically run linting checks
+| ID | 验收标准 |
+|----|----------|
+| 3.1 | 项目**必须**使用 golangci-lint（.golangci.yml 配置） |
+| 3.2 | 项目**必须**通过所有 linter 检查（无错误或警告） |
+| 3.3 | 项目**必须**有一致的代码格式化（gofmt 验证） |
+| 3.4 | 项目**必须**定义 EditorConfig 设置（跨编辑器一致性） |
+| 3.5 | CI_Pipeline **必须**在代码提交时自动运行 linting |
+
+**状态**：✅ 完成
+
+---
 
 ### Requirement 4: 测试覆盖与质量
 
-**User Story:** As a contributor, I want comprehensive tests, so that I can confidently make changes without breaking existing functionality.
+**用户故事**：作为贡献者，我希望有完善的测试，以便自信地修改代码而不破坏现有功能。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. THE Project SHALL achieve minimum 70% Code_Coverage for core packages (auth, ws, server)
-2. THE Project SHALL have unit tests for all exported functions in internal packages
-3. THE Project SHALL have integration tests for HTTP API endpoints
-4. THE Project SHALL have WebSocket integration tests for real-time messaging
-5. WHEN tests are run, THE CI_Pipeline SHALL report coverage metrics
+| ID | 验收标准 |
+|----|----------|
+| 4.1 | 核心包（auth, ws, server）**必须**达到 70% Code_Coverage |
+| 4.2 | internal 包的所有导出函数**必须**有单元测试 |
+| 4.3 | HTTP API 端点**必须**有集成测试 |
+| 4.4 | WebSocket 实时消息**必须**有集成测试 |
+| 4.5 | CI_Pipeline **必须**报告覆盖率指标 |
+
+**状态**：✅ 完成
+
+---
 
 ### Requirement 5: CI/CD 流水线
 
-**User Story:** As a maintainer, I want automated CI/CD, so that code quality is enforced and releases are streamlined.
+**用户故事**：作为维护者，我希望有自动化 CI/CD，以便强制代码质量并简化发布流程。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. THE CI_Pipeline SHALL run on every push and pull request
-2. THE CI_Pipeline SHALL execute go test with race detection and coverage
-3. THE CI_Pipeline SHALL run golangci-lint checks
-4. THE CI_Pipeline SHALL build Docker images for releases
-5. THE CI_Pipeline SHALL support automated release creation with changelog generation
-6. IF any CI check fails, THEN THE CI_Pipeline SHALL block the pull request merge
+| ID | 验收标准 |
+|----|----------|
+| 5.1 | CI_Pipeline **必须**在每次 push 和 PR 时运行 |
+| 5.2 | CI_Pipeline **必须**执行 go test（race 检测 + 覆盖率） |
+| 5.3 | CI_Pipeline **必须**运行 golangci-lint 检查 |
+| 5.4 | CI_Pipeline **必须**为发布构建 Docker 镜像 |
+| 5.5 | CI_Pipeline **必须**支持自动创建 Release（含 changelog） |
+| 5.6 | 如果检查失败，CI_Pipeline **必须**阻止 PR 合并 |
+
+**状态**：✅ 完成
+
+---
 
 ### Requirement 6: 容器化与部署
 
-**User Story:** As a user, I want easy deployment options, so that I can quickly run the application in various environments.
+**用户故事**：作为用户，我希望有简单的部署选项，以便快速在各种环境运行应用。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. THE Project SHALL provide a multi-stage Dockerfile for optimized production builds
-2. THE docker-compose.yml SHALL include the application service alongside Postgres
-3. THE Project SHALL provide environment variable documentation in .env.example
-4. THE Project SHALL provide Kubernetes deployment manifests in deploy/k8s directory
-5. WHEN deploying, THE Project SHALL support health check endpoints for orchestration
+| ID | 验收标准 |
+|----|----------|
+| 6.1 | 项目**必须**提供多阶段 Dockerfile（优化生产构建） |
+| 6.2 | docker-compose.yml **必须**包含应用服务（含 Postgres） |
+| 6.3 | 项目**必须**提供环境变量文档（.env.example） |
+| 6.4 | 项目**必须**提供 Kubernetes 部署清单（deploy/k8s） |
+| 6.5 | 项目**必须**支持健康检查端点（用于编排） |
+
+**状态**：✅ 完成
+
+---
 
 ### Requirement 7: 版本管理与发布
 
-**User Story:** As a user, I want clear versioning, so that I can track changes and upgrade safely.
+**用户故事**：作为用户，我希望有清晰的版本管理，以便跟踪变更和安全升级。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. THE Project SHALL follow Semantic Versioning (SemVer) for releases
-2. THE Project SHALL tag releases in Git with version numbers (v1.0.0 format)
-3. THE CHANGELOG.md SHALL document all notable changes for each version
-4. THE Release SHALL include pre-built binaries for major platforms (Linux, macOS, Windows)
-5. WHEN a release is created, THE CI_Pipeline SHALL automatically generate release notes
+| ID | 验收标准 |
+|----|----------|
+| 7.1 | 项目**必须**遵循语义化版本（SemVer） |
+| 7.2 | Release **必须**在 Git 中打标签（v1.0.0 格式） |
+| 7.3 | CHANGELOG.md **必须**记录每个版本的所有变更 |
+| 7.4 | Release **必须**包含主要平台的预构建二进制 |
+| 7.5 | CI_Pipeline **必须**在发布时自动生成 Release Notes |
+
+**状态**：✅ 完成
+
+---
 
 ### Requirement 8: 前端工程化
 
-**User Story:** As a frontend developer, I want modern frontend tooling, so that the frontend code is maintainable and professional.
+**用户故事**：作为前端开发者，我希望有现代前端工具链，以便代码保持可维护和专业。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. THE frontend SHALL use TypeScript for type safety
-2. THE frontend SHALL have ESLint and Prettier configuration for code quality
-3. THE frontend SHALL have a proper build process with Vite
-4. THE frontend SHALL have unit tests for core utility functions
-5. WHEN frontend code is committed, THE CI_Pipeline SHALL run frontend linting and tests
+| ID | 验收标准 |
+|----|----------|
+| 8.1 | 前端**必须**使用 TypeScript（类型安全） |
+| 8.2 | 前端**必须**有 ESLint 和 Prettier 配置 |
+| 8.3 | 前端**必须**有正确的构建流程（Vite） |
+| 8.4 | 前端**必须**有核心工具函数的单元测试 |
+| 8.5 | CI_Pipeline **必须**在前端代码提交时运行 linting 和测试 |
+
+**状态**：✅ 完成
+
+---
 
 ### Requirement 9: 安全最佳实践
 
-**User Story:** As a security-conscious user, I want the project to follow security best practices, so that I can trust it with sensitive data.
+**用户故事**：作为注重安全的用户，我希望项目遵循安全最佳实践，以便信任它处理敏感数据。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. THE Project SHALL not commit any secrets or credentials to the repository
-2. THE Project SHALL use environment variables for all sensitive configuration
-3. THE CI_Pipeline SHALL run security scanning (e.g., gosec, trivy)
-4. THE Project SHALL document security considerations in SECURITY.md
-5. IF JWT_SECRET is default value in production, THEN THE Project SHALL refuse to start
+| ID | 验收标准 |
+|----|----------|
+| 9.1 | 项目**必须不**提交任何密钥或凭证 |
+| 9.2 | 项目**必须**使用环境变量处理敏感配置 |
+| 9.3 | CI_Pipeline **必须**运行安全扫描（gosec, trivy） |
+| 9.4 | 项目**必须**在 SECURITY.md 中记录安全考虑 |
+| 9.5 | 如果 JWT_SECRET 在生产环境使用默认值，项目**必须拒绝**启动 |
+
+**状态**：✅ 完成
+
+---
 
 ### Requirement 10: 可观测性与监控
 
-**User Story:** As an operator, I want observability features, so that I can monitor and troubleshoot the application.
+**用户故事**：作为运维人员，我希望有可观测性功能，以便监控和排查应用问题。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. THE Project SHALL expose Prometheus metrics at /metrics endpoint
-2. THE Project SHALL provide structured JSON logging with configurable levels
-3. THE Project SHALL include example Grafana dashboards in docs/monitoring
-4. THE Project SHALL implement health check endpoints (/health, /ready)
-5. WHEN errors occur, THE Project SHALL log sufficient context for debugging
+| ID | 验收标准 |
+|----|----------|
+| 10.1 | 项目**必须**在 /metrics 端点暴露 Prometheus 指标 |
+| 10.2 | 项目**必须**提供结构化 JSON 日志（可配置级别） |
+| 10.3 | 项目**必须**在 docs/monitoring 包含示例 Grafana 仪表盘 |
+| 10.4 | 项目**必须**实现健康检查端点（/health, /ready） |
+| 10.5 | 发生错误时，项目**必须**记录足够的调试上下文 |
+
+**状态**：✅ 完成
+
+---
+
+## 需求追溯矩阵
+
+| 需求 | 对应任务 | 对应测试 | 状态 |
+|------|----------|----------|------|
+| R1 | Task 1, 2 | 文件存在检查 | ✅ |
+| R2 | Task 8 | 文档构建检查 | ✅ |
+| R3 | Task 3 | lint, fmt 测试 | ✅ |
+| R4 | Task 9 | 单元/集成测试 | ✅ |
+| R5 | Task 4 | CI workflow | ✅ |
+| R6 | Task 5 | Docker 构建 | ✅ |
+| R7 | Task 4.2 | Release workflow | ✅ |
+| R8 | Task 10 | 前端测试 | ✅ |
+| R9 | Task 7 | 安全扫描 | ✅ |
+| R10 | Task 6, 8.4 | 健康检查测试 | ✅ |
+
+---
+
+## 变更历史
+
+| 日期 | 变更 |
+|------|------|
+| 2026-03-08 | 初始需求文档创建 |
+| 2026-03-08 | 所有需求标记为完成 |

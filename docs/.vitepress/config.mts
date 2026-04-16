@@ -12,20 +12,39 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   ignoreDeadLinks: [/^http:\/\/localhost:\d+(?:\/.*)?$/],
+
+  // Head tags for SEO
   head: [
     ['link', { rel: 'canonical', href: siteUrl }],
     ['meta', { name: 'theme-color', content: '#2563eb' }],
+    ['meta', { name: 'author', content: 'LessUp' }],
+    ['meta', { name: 'keywords', content: 'Go, React, WebSocket, ChatRoom, 教学项目, 实时聊天, JWT, PostgreSQL' }],
+
+    // Open Graph
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'ChatRoom 教学文档' }],
     ['meta', { property: 'og:description', content: '面向练手与教学的 Go + React + WebSocket 聊天室文档站' }],
     ['meta', { property: 'og:url', content: siteUrl }],
+    ['meta', { property: 'og:image', content: `${siteUrl}og-image.png` }],
+    ['meta', { property: 'og:locale', content: 'zh_CN' }],
+    ['meta', { property: 'og:site_name', content: 'ChatRoom 教学文档' }],
+
+    // Twitter Card
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: 'ChatRoom 教学文档' }],
     ['meta', { name: 'twitter:description', content: '面向练手与教学的 Go + React + WebSocket 聊天室文档站' }],
+    ['meta', { name: 'twitter:image', content: `${siteUrl}og-image.png` }],
+
+    // Favicon
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}logo.svg` }],
   ],
+
+  // Theme configuration
   themeConfig: {
     siteTitle: 'ChatRoom 教学文档',
     logo: '/logo.svg',
+
+    // Navigation
     nav: [
       { text: '快速开始', link: '/getting-started' },
       { text: 'API', link: '/API' },
@@ -33,6 +52,8 @@ export default defineConfig({
       { text: '设计', link: '/DESIGN' },
       { text: 'FAQ', link: '/FAQ' },
     ],
+
+    // Sidebar
     sidebar: [
       {
         text: '📖 入门指南',
@@ -60,10 +81,23 @@ export default defineConfig({
           { text: '监控指南', link: '/monitoring/README' },
         ],
       },
+      {
+        text: '📋 项目规范',
+        collapsed: true,
+        items: [
+          { text: '贡献指南', link: 'https://github.com/LessUp/chatroom/blob/master/CONTRIBUTING.md' },
+          { text: '安全策略', link: 'https://github.com/LessUp/chatroom/blob/master/SECURITY.md' },
+          { text: '变更日志', link: 'https://github.com/LessUp/chatroom/blob/master/CHANGELOG.md' },
+        ],
+      },
     ],
+
+    // Social links
     socialLinks: [
       { icon: 'github', link: 'https://github.com/LessUp/chatroom' },
     ],
+
+    // Search
     search: {
       provider: 'local',
       options: {
@@ -84,6 +118,8 @@ export default defineConfig({
         },
       },
     },
+
+    // Features
     externalLinkIcon: true,
     outline: {
       level: [2, 3],
@@ -97,10 +133,14 @@ export default defineConfig({
       pattern: 'https://github.com/LessUp/chatroom/edit/master/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
+
+    // Footer
     footer: {
       message: '教学与练手优先，不做过度生产化设计',
       copyright: 'Copyright © 2025-2026 LessUp — MIT License',
     },
+
+    // Labels
     returnToTopLabel: '回到顶部',
     sidebarMenuLabel: '菜单',
     darkModeSwitchLabel: '主题',
@@ -112,6 +152,15 @@ export default defineConfig({
         dateStyle: 'short',
         timeStyle: 'short',
       },
+    },
+  },
+
+  // Markdown configuration
+  markdown: {
+    lineNumbers: false,
+    theme: {
+      light: 'github-light',
+      dark: 'github-dark',
     },
   },
 })
