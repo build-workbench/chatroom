@@ -88,7 +88,7 @@ jobs:
       build_mode: ${{ steps.decision.outputs.mode }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0  # Full history for accurate change detection
 
@@ -145,10 +145,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -205,7 +205,7 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             docs
@@ -219,7 +219,7 @@ jobs:
       # Setup Node.js with aggressive caching
       # -----------------------------------------------------------------------
       - name: Setup Node.js ${{ matrix.node_version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'npm'
@@ -347,7 +347,7 @@ jobs:
       # Upload artifact
       # -----------------------------------------------------------------------
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: docs-build-${{ matrix.build_target }}
           path: docs/.vitepress/dist
@@ -371,7 +371,7 @@ jobs:
     
     steps:
       - name: Download optimized build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: docs-build-optimized
           path: _site
@@ -410,7 +410,7 @@ jobs:
     
     steps:
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: docs-build-standard
           path: _site
@@ -503,7 +503,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: docs-build-optimized
           path: _site
@@ -546,7 +546,7 @@ jobs:
           echo "✅ Created robots.txt"
 
       - name: Upload SEO artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: docs-seo-artifacts
           path: |

@@ -10,6 +10,7 @@ import (
 	"chatroom/internal/auth"
 	"chatroom/internal/config"
 	"chatroom/internal/mw"
+	"chatroom/internal/sanitize"
 	"chatroom/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -138,8 +139,8 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 	req.Username = strings.TrimSpace(req.Username)
-	if req.Username == "" {
-		badRequest(c, "invalid payload")
+	if req.Username == "" || !sanitize.Username(req.Username) {
+		badRequest(c, "invalid username: only letters, numbers, underscores and Chinese characters allowed")
 		return
 	}
 	result, err := h.userSvc.Register(req.Username, req.Password)
@@ -163,8 +164,8 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 	req.Username = strings.TrimSpace(req.Username)
-	if req.Username == "" {
-		badRequest(c, "invalid payload")
+	if req.Username == "" || !sanitize.Username(req.Username) {
+		badRequest(c, "invalid username")
 		return
 	}
 	result, err := h.userSvc.Login(req.Username, req.Password)

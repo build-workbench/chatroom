@@ -53,8 +53,9 @@ on:
 # =============================================================================
 env:
   NODE_VERSION: '22'
-  PNPM_VERSION: '9'
-  DEPLOYMENT_MATRIX: 'github-pages,cloudflare,vercel'
+  NPM_CONFIG_FUND: 'false'
+  NPM_CONFIG_AUDIT: 'false'
+  HUSKY: '0'  # Skip husky hooks in CI
   
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
@@ -86,7 +87,7 @@ jobs:
       should_skip: ${{ steps.skip.outputs.should_skip }}
     steps:
       - name: 📥 Deep Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -170,26 +171,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: 🚀 Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
-
-      - name: 🔧 Setup Node.js Beast Mode
-        uses: actions/setup-node@v4
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          cache-dependency-path: docs/pnpm-lock.yaml
+          cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
 
-      - name: 📦 Dependency Installation with Turbo Cache
+      - name: 📦 Dependency Installation
         working-directory: docs
         run: |
-          pnpm install --frozen-lockfile --prefer-offline
-          pnpm store prune
+          npm ci --prefer-offline --no-audit
 
       - name: 🗄️ Prime Build Cache
         uses: actions/cache@v4
@@ -197,18 +191,9 @@ jobs:
           path: |
             docs/.vitepress/cache
             docs/node_modules/.vite
-            ~/.local/share/pnpm/store
           key: ${{ needs.intelligence.outputs.cache_key }}
           restore-keys: |
             docs-${{ runner.os }}-
-
-      - name: 📤 Upload Prepared Environment
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            docs/node_modules
-            docs/.vitepress/cache
-          key: env-${{ github.run_id }}
 
   # ==========================================================================
   # STAGE 3: HYPER-PARALLEL BUILDS (The Beast Unleashed)
@@ -250,7 +235,7 @@ jobs:
 
     steps:
       - name: 📥 Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             docs
@@ -258,17 +243,12 @@ jobs:
             README.md
           sparse-checkout-cone-mode: false
 
-      - name: 🚀 Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          cache-dependency-path: docs/pnpm-lock.yaml
+          cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
 
       - name: 🗄️ Restore Dependencies
         uses: actions/cache/restore@v4
@@ -290,7 +270,7 @@ jobs:
           echo "🚀 Starting ULTRA build for ${{ matrix.locale }}..."
           echo "Optimization: ${{ matrix.optimize }}"
           echo "Experimental: ${{ matrix.experimental }}"
-          
+
           # Dynamic build command
           if [[ "${{ matrix.optimize }}" == "aggressive" ]]; then
             # Aggressive optimization flags
@@ -298,7 +278,7 @@ jobs:
             export VITE_SSG=true
             node --max-old-space-size=8192 node_modules/.bin/vitepress build . 2>&1 | tee build.log
           else
-            pnpm docs:build 2>&1 | tee build.log
+            npm run docs:build 2>&1 | tee build.log
           fi
           
           # Build analytics
@@ -375,7 +355,7 @@ jobs:
           EOF
 
       - name: 📤 Upload Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: docs-build-${{ matrix.locale }}-${{ matrix.optimize }}
           path: docs/.vitepress/dist
@@ -395,7 +375,7 @@ jobs:
         check: [links, performance, seo, accessibility, security]
     steps:
       - name: 📥 Download Build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: docs-build-all-standard
           path: _site
@@ -503,7 +483,7 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - name: 📥 Download Optimized Build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: docs-build-all-aggressive
           path: _site
@@ -623,7 +603,7 @@ jobs:
       pull-requests: write
     steps:
       - name: 📥 Download Build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: docs-build-all-standard
           path: _site

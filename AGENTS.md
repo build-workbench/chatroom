@@ -1,34 +1,135 @@
-# 仓库协作指南
+# Repository Collaboration Guide
 
-## 项目结构与模块划分
-`cmd/server/main.go` 负责加载配置、初始化日志、连接数据库并启动 HTTP / WebSocket 服务。核心业务代码位于 `internal/*`：`auth` 负责令牌与鉴权，`db` 负责数据库连接与迁移，`models` 定义共享数据结构，`mw` 存放 HTTP 中间件，`ws` 维护 Hub 与连接状态，`metrics` 提供观测指标。默认配置在 `internal/config/config.go`。前端以 `frontend/` 为主，`web/` 是后端在 `frontend/dist` 不存在时使用的静态回退界面。测试文件应与被测包放在一起，例如 `internal/ws/hub_test.go`，以便 `go test ./...` 直接发现。
+## Project Philosophy: Spec-Driven Development (SDD)
 
-## 项目定位
-本仓库主要用于个人练手与教学演示，不以生产部署为目标。提交改动时优先保证：
+This repository strictly follows the **Spec-Driven Development (SDD)** paradigm. All code implementations must use the `/specs` directory as the **Single Source of Truth** for product requirements, technical designs, API definitions, database schemas, and test specifications.
 
-- 文档与代码行为一致
-- 本地运行路径清晰
-- 测试和构建能直接通过
-- 设计简单、便于理解和讲解
+## Directory Context
 
-避免为了“看起来更工程化”而引入超出当前项目目标的复杂度。
+| Directory | Purpose |
+|-----------|---------|
+| `/specs/product/` | Product feature definitions and acceptance criteria (PRDs) |
+| `/specs/rfc/` | Technical design documents and architecture RFCs |
+| `/specs/api/` | API interface specifications (OpenAPI, WebSocket protocols) |
+| `/specs/db/` | Database schema definitions and migration specifications |
+| `/specs/testing/` | Test specifications and BDD feature files |
+| `/docs/` | User-facing documentation (guides, tutorials, architecture overview) |
+| `/specs/README.md` | Complete spec index and workflow guide |
 
-## 构建、测试与开发命令
-- `docker compose up -d postgres`：启动 `docker-compose.yml` 中定义的 PostgreSQL 16 服务。
-- `go run ./cmd/server`：在本地数据库上运行后端 API / WebSocket 服务。
-- `go build ./cmd/server`：构建后端二进制；需要打包时可配合 `-o bin/chatroom` 使用。
-- `go test ./...`：运行全部 Go 测试。
-- `npm --prefix frontend run test`：运行前端单元测试。
-- `npm --prefix frontend run build`：构建 React 前端。
+## AI Agent Workflow Instructions
 
-## 代码风格与命名约定
-Go 代码统一使用 `gofmt ./...` 格式化，保持短小、全小写的包名，并与目录名称一致。导出标识符使用 `CamelCase`，内部辅助函数使用 `camelCase`，JSON 标签保持 `snake_case` 以匹配接口载荷。共享 DTO 放在 `internal/models`，配置结构放在 `internal/config`。前端文件名保持清晰，React 组件放在 `frontend/src`，静态回退资源放在 `web/`。
+When you (the AI) are asked to develop a new feature, modify existing functionality, or fix a bug, **you MUST strictly follow this workflow without skipping any steps**:
 
-## 测试约定
-优先使用表驱动测试，并让测试包名与被测包保持一致，例如 `package ws`。数据库相关测试应尽量保持本地可运行、低依赖；WebSocket 测试应覆盖广播、在线人数和房间隔离等关键行为。提交前至少确认：`go test ./...`、`npm --prefix frontend run test`、`npm --prefix frontend run build` 可以通过。若存在有意保留的测试空白，请在提交说明中明确写出原因。
+### Step 1: Review Specs (审查与分析)
 
-## 提交与 Pull Request 建议
-提交标题建议使用祈使句并控制在约 50 个字符内，必要时补充正文说明背景、影响范围和验证方式。若有关联问题，可使用 `Refs #123`。Pull Request 建议包含：改动背景、测试证据、手动验证步骤，以及对文档 / 配置 / Release 的影响说明。
+- First, read the relevant specs in `/specs/` directory (product requirements, RFCs, API definitions)
+- If the user's request conflicts with existing specs, **stop immediately** and point out the conflict, asking whether the spec should be updated first
+- **Never write code before understanding the spec context**
 
-## 安全与配置提示
-运行时配置统一从 `internal/config` 读取，可通过 `APP_PORT`、`DATABASE_DSN`、`JWT_SECRET`、`APP_ENV`、`ACCESS_TOKEN_TTL_MINUTES`、`REFRESH_TOKEN_TTL_DAYS`、`LOG_LEVEL`、`LOG_FORMAT` 覆盖。真实密钥不要提交到仓库；教学环境可以使用默认值，但在非 `dev` 环境下应显式设置 `JWT_SECRET`。日志通过 `LOG_LEVEL`（trace/debug/info/warn/error/fatal）和 `LOG_FORMAT`（console/json）控制，建议保持结构化输出，并避免在 WebSocket 或鉴权逻辑中直接记录敏感用户输入。
+### Step 2: Spec-First Update (规范优先)
+
+- If this is a new feature, or requires changing existing interfaces/database structures, **you MUST first propose modifying or creating the corresponding spec documents** (e.g., RFC, API spec, DB schema)
+- Wait for user confirmation of spec changes before entering the code implementation phase
+- Ensure spec documents are clear, complete, and unambiguous
+
+### Step 3: Code Implementation (代码实现)
+
+- When writing code, **100% comply with spec definitions** (including variable naming, API paths, data types, status codes, etc.)
+- **Do NOT add features not defined in specs** (No Gold-Plating)
+- Follow code style conventions defined in the project (see Code Style section below)
+
+### Step 4: Test Verification (测试验证)
+
+- Write unit tests and integration tests based on the acceptance criteria in `/specs/`
+- Ensure test cases cover all boundary conditions described in the specs
+- Run `go test ./...` and `npm --prefix frontend run test` to verify
+
+## Code Generation Rules
+
+- Any changes to externally exposed APIs **must** synchronously modify the corresponding spec in `/specs/api/`
+- When uncertain about technical details, consult the architecture conventions in `/specs/rfc/` — do not fabricate design patterns
+- All implementations must have corresponding spec references
+
+## Project Positioning
+
+This repository is primarily for **personal practice and teaching demonstrations**, not for production deployment priorities. When submitting changes, prioritize:
+
+- Documentation and code behavior consistency
+- Clear local execution paths
+- Tests and builds passing directly
+- Simple, understandable design for teaching purposes
+
+**Avoid introducing complexity beyond current project goals** just to "appear more engineered."
+
+## Build, Test & Development Commands
+
+| Command | Purpose |
+|---------|---------|
+| `docker compose up -d postgres` | Start PostgreSQL 16 service |
+| `go run ./cmd/server` | Run backend API / WebSocket service |
+| `go build ./cmd/server` | Build backend binary |
+| `go test -race ./...` | Run all Go tests (requires PostgreSQL) |
+| `npm --prefix frontend run test` | Run frontend unit tests |
+| `npm --prefix frontend run build` | Build React frontend |
+| `make lint` | Run Go linter (golangci-lint) |
+| `make all` | Run lint + test + build (Go only) |
+
+## Code Style & Naming Conventions
+
+### Go Code
+
+- Format with `gofmt ./...`
+- Run `goimports -w -local chatroom .` for import organization
+- Use tabs for indentation
+- Package names: short, lowercase, matching directory names
+- Exports: `CamelCase`, internals: `camelCase`
+- JSON tags: `snake_case` to match API payloads
+- Shared DTOs in `internal/models`, configuration structs in `internal/config`
+- Table-driven tests preferred, test package same as tested package (e.g., `package ws`)
+
+### Frontend Code
+
+- 2-space indent, Prettier configured
+- Config: semi, single quotes, trailing comma es5, 100 print width
+- Kebab-case filenames, PascalCase component names
+- React components in `frontend/src`, static fallback in `web/`
+- TypeScript strict mode enabled
+
+### Commit Messages
+
+- Use imperative mood, ~50 character title
+- Supplementary body explains context, impact, verification
+- Use `Refs #123` for related issues
+
+## Test Conventions
+
+- Prefer table-driven tests with same package name as tested code
+- Database tests should be low-dependency and locally runnable
+- WebSocket tests should cover broadcasting, online count, and room isolation
+- Before submission, confirm: `go test ./...`, `npm --prefix frontend run test`, `npm --prefix frontend run build` pass
+- If intentionally leaving test gaps, document reasons in commit message
+
+## Submission & Pull Request Guidelines
+
+- Use imperative commit titles, ~50 chars
+- Pull Requests should include: change background, test evidence, manual verification steps, and impact on docs/config/release
+- Link related issues with `Refs #123`
+- Reference spec documents when applicable
+
+## Security & Configuration
+
+- Runtime configuration read from `internal/config`, overridable via environment variables:
+  - `APP_PORT`, `DATABASE_DSN`, `JWT_SECRET`, `APP_ENV`
+  - `ACCESS_TOKEN_TTL_MINUTES`, `REFRESH_TOKEN_TTL_DAYS`
+  - `LOG_LEVEL`, `LOG_FORMAT`
+- **Never commit real secrets**; teaching environments can use defaults, but production should explicitly set `JWT_SECRET`
+- Logs controlled via `LOG_LEVEL` (trace/debug/info/warn/error/fatal) and `LOG_FORMAT` (console/json)
+- Avoid logging sensitive user input directly in WebSocket or auth logic
+
+## Related Documents
+
+| Document | Purpose |
+|----------|---------|
+| [CLAUDE.md](CLAUDE.md) | Claude Code-specific guidance |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+| [specs/README.md](specs/README.md) | Spec index and templates |

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 
+import type { WsEvent } from './types'
+
 import { ChatRoom } from './components/ChatRoom'
 import { Sidebar } from './components/Sidebar'
 import { useAuth } from './hooks/useAuth'
@@ -29,8 +31,8 @@ export default function App() {
 		onMessage: (evt) => chatAddMessageRef.current(evt),
 	})
 
-	const chatAddItemRef = useRef<(evt: import('./types').WsEvent) => void>(() => {})
-	const chatAddMessageRef = useRef<(evt: import('./types').WsEvent) => void>(() => {})
+	const chatAddItemRef = useRef<(evt: WsEvent) => void>(() => {})
+	const chatAddMessageRef = useRef<(evt: WsEvent) => void>(() => {})
 
 	const chat = useChat({
 		api: auth.api,
@@ -48,9 +50,10 @@ export default function App() {
 	// 登录后加载房间列表
 	useEffect(() => {
 		if (!auth.user || !auth.accessToken) return
-		void chat.reloadRooms()
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [auth.user, auth.accessToken])
+		chat.reloadRooms().catch((error) => {
+			console.error('Failed to load rooms:', error)
+		})
+	}, [auth.user, auth.accessToken, chat])
 
 	if (!auth.user) {
 		return <AuthScreen onLogin={auth.handleLogin} onRegister={auth.handleRegister} />

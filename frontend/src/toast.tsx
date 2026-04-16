@@ -41,10 +41,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="fixed top-4 right-4 z-[100] space-y-2 pointer-events-none">
+      <div className="fixed top-4 right-4 z-[100] space-y-2 pointer-events-none" role="region" aria-label="通知">
         {items.map((t) => (
           <div
             key={t.id}
+            role="alert"
+            aria-live="polite"
             className="pointer-events-auto flex items-center w-full max-w-sm p-4 gap-3 text-gray-100 bg-dark-800/95 glass rounded-xl shadow-2xl border border-dark-700/50"
           >
             <div className="flex-shrink-0">

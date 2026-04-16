@@ -8,6 +8,8 @@ const AVATAR_COLORS = [
   'from-pink-500 to-rose-500',
 ]
 
+export { AVATAR_COLORS }
+
 interface SidebarProps {
   user: User
   rooms: Room[]
@@ -141,14 +143,17 @@ export function Sidebar({
               const active = currentRoomId === r.id
               const color = AVATAR_COLORS[r.id % AVATAR_COLORS.length]
               return (
-                <div
+                <button
                   key={r.id}
-                  className={`room-item group flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${
+                  type="button"
+                  className={`room-item group w-full flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all text-left ${
                     active
                       ? 'active bg-primary-500/10 border-l-2 border-primary-500'
                       : 'hover:bg-dark-800/50 border-l-2 border-transparent'
                   }`}
                   onClick={() => onJoinRoom(r.id, r.name, r.online)}
+                  aria-pressed={active}
+                  aria-label={`加入房间 ${r.name}，${r.online || 0} 人在线`}
                 >
                   <div
                     className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white font-bold text-sm shadow-lg flex-shrink-0`}
@@ -174,7 +179,7 @@ export function Sidebar({
                       <span className="text-xs text-gray-500">{r.online || 0} 在线</span>
                     </div>
                   </div>
-                </div>
+                </button>
               )
             })}
             {rooms.length === 0 ? (

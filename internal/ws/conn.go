@@ -11,6 +11,7 @@ import (
 	"chatroom/internal/config"
 	"chatroom/internal/metrics"
 	"chatroom/internal/models"
+	"chatroom/internal/sanitize"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -213,7 +214,9 @@ func (c *Client) handleMessage(content string) {
 	if content == "" {
 		return
 	}
-	if len(content) > maxContentLength {
+	// 对消息内容进行 XSS 过滤
+	sanitizedContent := sanitize.Content(content)
+	if len(sanitizedContent) > maxContentLength {
 		if b, err := json.Marshal(wsSimpleMsg{Type: "error", Content: "消息长度不能超过2000字符"}); err == nil {
 			select {
 			case c.send <- b:
@@ -222,7 +225,7 @@ func (c *Client) handleMessage(content string) {
 		}
 		return
 	}
-	msg := models.Message{RoomID: c.room.roomID, UserID: c.userID, Content: content}
+	msg := models.Message{RoomID: c.room.roomID, UserID: c.userID, Content: sanitizedContent}
 	if err := c.db.Create(&msg).Error; err != nil {
 		log.Error().Err(err).Uint("room_id", c.room.roomID).Uint("user_id", c.userID).Msg("ws persist message")
 		if b, err := json.Marshal(wsSimpleMsg{Type: "error", Content: "消息发送失败"}); err == nil {

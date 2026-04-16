@@ -2,12 +2,24 @@
   "name": "chatroom-docs",
   "private": true,
   "type": "module",
+  "version": "3.0.0",
   "scripts": {
     "docs:dev": "vitepress dev .",
     "docs:build": "vitepress build .",
-    "docs:preview": "vitepress preview ."
+    "docs:preview": "vitepress preview .",
+    "docs:serve": "vitepress serve .",
+    "optimize": "node scripts/optimize.mjs",
+    "lint:md": "markdownlint-cli2 '**/*.md' --config .markdownlint.json",
+    "lint:links": "lychee . --config lychee.toml",
+    "analyze": "node scripts/analyze.mjs"
   },
   "devDependencies": {
-    "vitepress": "^1.6.4"
-  }
+    "vitepress": "^1.6.4",
+    "@types/node": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0"
 }

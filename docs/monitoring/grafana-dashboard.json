@@ -236,7 +236,7 @@
             "pluginVersion": "10.2.2",
             "targets": [
                 {
-                    "expr": "ws_connections_current",
+                    "expr": "chat_ws_connections",
                     "legendFormat": "Active Connections",
                     "refId": "A"
                 }

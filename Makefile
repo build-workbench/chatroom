@@ -12,7 +12,7 @@ BUILD_TIME?=$(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
 LDFLAGS=-ldflags "-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME)"
 
 # Default target
-all: lint test build
+all: lint test frontend-test build
 
 # Build the application
 build:

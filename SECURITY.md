@@ -17,7 +17,7 @@
 ### 报告流程
 
 1. **不要**在公开的 Issue、PR 或 Discussions 中报告安全漏洞
-2. 发送邮件至 **security@example.com**（请替换为实际安全邮箱）
+2. 发送邮件至 **security@chatroom-demo.example**（请在部署时替换为实际安全邮箱）
 3. 在邮件中包含以下信息：
    - 漏洞的详细描述
    - 复现步骤（如有）

@@ -107,8 +107,10 @@ export function useChat({ api, accessRef, socketRef, initialRoomId }: UseChatOpt
 
   const currentRoomIdRef = useRef(currentRoomId)
   const currentRoomNameRef = useRef(currentRoomName)
+  const loadingHistoryRef = useRef(loadingHistory)
   currentRoomIdRef.current = currentRoomId
   currentRoomNameRef.current = currentRoomName
+  loadingHistoryRef.current = loadingHistory
 
   const clearCurrentRoom = useCallback((clearPersistedRoom: boolean) => {
     currentRoomIdRef.current = null
@@ -225,7 +227,9 @@ export function useChat({ api, accessRef, socketRef, initialRoomId }: UseChatOpt
   }, [api, newRoomName, openRoom, reloadRooms, toast])
 
   const loadMoreHistory = useCallback(async () => {
-    if (!currentRoomIdRef.current || !earliestMsgId || loadingHistory) return
+    // 使用 ref 检查，避免竞态条件
+    if (!currentRoomIdRef.current || !earliestMsgId || loadingHistoryRef.current) return
+    loadingHistoryRef.current = true
     setLoadingHistory(true)
     try {
       const data = await api.listMessages(currentRoomIdRef.current, 50, earliestMsgId)
@@ -237,9 +241,10 @@ export function useChat({ api, accessRef, socketRef, initialRoomId }: UseChatOpt
     } catch (error) {
       toast.error(getLoadMoreHistoryErrorMessage(error))
     } finally {
+      loadingHistoryRef.current = false
       setLoadingHistory(false)
     }
-  }, [api, earliestMsgId, loadingHistory, toast])
+  }, [api, earliestMsgId, toast])
 
   const sendMessage = useCallback(() => {
     const content = draft.trim()

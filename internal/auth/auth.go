@@ -51,6 +51,9 @@ func GenerateAccessToken(userID uint, secret string, ttlMinutes int) (string, er
 
 func ParseAccessToken(tokenStr, secret string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
 		return []byte(secret), nil
 	})
 	if err != nil {
@@ -90,6 +93,9 @@ func GenerateWSTicket(userID, roomID uint, secret string, ttlSeconds int) (token
 
 func ParseWSTicket(tokenStr, secret string) (*WSTicketClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &WSTicketClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
 		return []byte(secret), nil
 	})
 	if err != nil {

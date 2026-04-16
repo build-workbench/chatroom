@@ -102,9 +102,11 @@ export function AuthScreen(props: {
           <p className="text-gray-500 mt-2 text-sm">新一代实时通讯体验</p>
         </div>
 
-        <div className="flex mb-6 p-1 bg-dark-800/50 rounded-xl">
+        <div className="flex mb-6 p-1 bg-dark-800/50 rounded-xl" role="tablist" aria-label="登录或注册">
           <button
             type="button"
+            role="tab"
+            aria-selected={tab === 'login'}
             className={
               tab === 'login'
                 ? 'flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all bg-primary-600 text-white'
@@ -117,6 +119,8 @@ export function AuthScreen(props: {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={tab === 'register'}
             className={
               tab === 'register'
                 ? 'flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all bg-primary-600 text-white'

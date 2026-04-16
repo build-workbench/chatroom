@@ -81,6 +81,7 @@ export function MessageInput({
             type="button"
             onClick={handleSend}
             className="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white p-3 rounded-xl font-medium transition-all btn-shine shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40"
+            aria-label="发送消息"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path

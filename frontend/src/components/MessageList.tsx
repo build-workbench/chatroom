@@ -1,14 +1,8 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 
 import type { MessageDTO, User, WsEvent } from '../types'
 
-const AVATAR_COLORS = [
-  'from-violet-500 to-purple-600',
-  'from-blue-500 to-cyan-500',
-  'from-emerald-500 to-teal-500',
-  'from-orange-500 to-red-500',
-  'from-pink-500 to-rose-500',
-]
+import { AVATAR_COLORS } from './Sidebar'
 
 function escapeText(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -61,6 +55,11 @@ function renderMessageContent(content: string) {
   )
 }
 
+// 类型守卫：判断 WsEvent 是否为 MessageDTO
+function isMessageDTO(evt: WsEvent): evt is MessageDTO {
+  return evt.type === 'message' && 'id' in evt && 'content' in evt && 'created_at' in evt
+}
+
 interface MessageListProps {
   items: WsEvent[]
   user: User
@@ -78,9 +77,12 @@ export function MessageList({ items, user, currentRoomId, onLoadMore }: MessageL
     if (boxRef.current) {
       prevScrollHeightRef.current = boxRef.current.scrollHeight
     }
-  })
+  }, [items.length])
 
-  const hasRenderableItems = items.some((m) => m.type === 'message' || m.type === 'join' || m.type === 'leave')
+  const hasRenderableItems = useMemo(
+    () => items.some((m) => m.type === 'message' || m.type === 'join' || m.type === 'leave'),
+    [items],
+  )
 
   useEffect(() => {
     const box = boxRef.current
@@ -122,10 +124,10 @@ export function MessageList({ items, user, currentRoomId, onLoadMore }: MessageL
           </div>
         </div>
       ) : null}
-      {items.map((m) => {
+      {items.map((m, index) => {
         if (m.type === 'join' || m.type === 'leave') {
           return (
-            <div key={`${m.type}-${m.user_id}-${m.online}-${m.room_id}-${m.username}`} className="flex justify-center my-4">
+            <div key={`${m.type}-${m.user_id}-${index}`} className="flex justify-center my-4">
               <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-dark-800/50 px-3 py-1.5 rounded-full border border-dark-700/50">
                 <span className={m.type === 'join' ? 'text-emerald-400' : ''}>{m.username}</span>
                 {m.type === 'join' ? '加入了房间' : '离开了房间'}
@@ -133,8 +135,8 @@ export function MessageList({ items, user, currentRoomId, onLoadMore }: MessageL
             </div>
           )
         }
-        if (m.type !== 'message') return null
-        const msg = m as MessageDTO
+        if (!isMessageDTO(m)) return null
+        const msg = m
         const isMe = msg.username === user.username
         const ts = new Date(msg.created_at).toLocaleTimeString([], {
           hour: '2-digit',

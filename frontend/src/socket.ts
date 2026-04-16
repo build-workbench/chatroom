@@ -163,12 +163,15 @@ export class ChatSocket {
     this.stopHeartbeat()
 
     this.heartbeatInterval = window.setInterval(() => {
-      if (this.ws?.readyState === WebSocket.OPEN) {
+      const ws = this.ws
+      if (ws?.readyState === WebSocket.OPEN) {
         this.send({ type: 'ping' }, true)
+        // 捕获当前的 ws 引用，防止回调执行时 ws 已被清理
         this.heartbeatTimeout = window.setTimeout(() => {
-          if (Date.now() - this.lastPong > 35000) {
+          // 检查 ws 是否仍然是同一个实例且未关闭
+          if (this.ws === ws && Date.now() - this.lastPong > 35000) {
             this.emitSocketError('实时连接超时，正在尝试重新连接')
-            this.ws?.close()
+            ws.close()
           }
         }, 5000)
       }

@@ -1,54 +1,69 @@
 # Contributing to ChatRoom
 
-感谢你对 ChatRoom 项目的关注！我们欢迎各种形式的贡献。
+Thank you for your interest in contributing to ChatRoom! We welcome all forms of contributions.
 
-## 行为准则
+**This project follows Spec-Driven Development (SDD).** Before implementing features or changes, please review relevant specifications in `/specs/` directory. See [AGENTS.md](AGENTS.md) for the complete SDD workflow.
 
-参与本项目即表示你同意遵守我们的 [行为准则](CODE_OF_CONDUCT.md)。
+## Code of Conduct
+
+By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ---
 
-## 如何贡献
+## How to Contribute
 
-### 报告 Bug
+### Spec-First Workflow
 
-1. 在 [Issues](../../issues) 中搜索是否已有相同问题
-2. 如果没有，点击 **New Issue** → **Bug Report**
-3. 提供以下信息：
-   - 复现步骤
-   - 期望行为
-   - 实际行为
-   - 环境信息（Go 版本、Node 版本、操作系统）
-   - 相关日志或截图
+For new features or significant changes:
 
-### 提出新功能
+1. **Review existing specs**: Check `/specs/` directory for related requirements, RFCs, and API definitions
+2. **Propose spec changes**: If specs don't exist or need updates, create/modify spec documents first
+3. **Get approval**: Wait for spec review before implementation
+4. **Implement**: Write code according to specs (no gold-plating)
+5. **Test**: Ensure tests cover all acceptance criteria
 
-1. 在 [Issues](../../issues) 中搜索是否已有相同建议
-2. 如果没有，点击 **New Issue** → **Feature Request**
-3. 描述以下内容：
-   - 功能描述
-   - 使用场景
-   - 期望行为
+See [specs/README.md](specs/README.md) for complete specification structure.
 
-### 提交代码
+### Reporting Bugs
+
+1. Search [Issues](../../issues) for existing reports
+2. If not found, create **New Issue** → **Bug Report**
+3. Include:
+   - Reproduction steps
+   - Expected behavior
+   - Actual behavior
+   - Environment (Go version, Node version, OS)
+   - Relevant logs or screenshots
+
+### Suggesting Features
+
+1. Search [Issues](../../issues) for existing suggestions
+2. If not found, create **New Issue** → **Feature Request**
+3. Describe:
+   - Feature description
+   - Use case
+   - Expected behavior
+   - Related spec module (product/rfc/api/db/testing)
+
+### Submitting Code
 
 ```bash
-# 1. Fork 仓库
-# 2. 克隆你的 Fork
+# 1. Fork repository
+# 2. Clone your Fork
 git clone https://github.com/<your-username>/chatroom.git
 cd chatroom
 
-# 3. 创建功能分支
+# 3. Create feature branch
 git checkout -b feature/your-feature-name
 
-# 4. 进行修改并提交
+# 4. Make changes and commit
 git add .
-git commit -m "添加新功能描述"
+git commit -m "add feature description"
 
-# 5. 推送到你的 Fork
+# 5. Push to your Fork
 git push origin feature/your-feature-name
 
-# 6. 创建 Pull Request
+# 6. Create Pull Request
 ```
 
 ---

@@ -61,6 +61,7 @@ npm --prefix frontend run dev
 
 ## 📚 Documentation
 
+### User Documentation
 - 📖 [Documentation Site (EN)](https://lessup.github.io/chatroom/en/)
 - 📖 [Documentation Site (ZH)](https://lessup.github.io/chatroom/zh/)
 - 🚀 [Getting Started](https://lessup.github.io/chatroom/en/getting-started)
@@ -68,6 +69,14 @@ npm --prefix frontend run dev
 - 🏗️ [Architecture](https://lessup.github.io/chatroom/en/architecture)
 - 🎨 [Design Decisions](https://lessup.github.io/chatroom/en/design)
 - ❓ [FAQ](https://lessup.github.io/chatroom/en/faq)
+
+### Specifications (Single Source of Truth)
+- 📋 [Spec Index](specs/README.md) — Complete specification directory
+- 📦 [Product Specs](specs/product/) — Requirements and acceptance criteria
+- 🏛️ [RFCs](specs/rfc/) — Technical design documents
+- 🔌 [API Specs](specs/api/) — Interface specifications
+- 🗄️ [DB Specs](specs/db/) — Database schemas
+- 🧪 [Testing Specs](specs/testing/) — Test specifications
 
 ## 🛠️ Tech Stack
 
@@ -96,7 +105,13 @@ chatroom/
 │   └── models/              # GORM data models
 ├── frontend/                # React frontend
 ├── web/                     # Static fallback UI
-├── docs/                    # VitePress documentation site
+├── specs/                   # Project specifications (SDD source of truth)
+│   ├── product/             # Product requirements
+│   ├── rfc/                 # Technical design documents
+│   ├── api/                 # API specifications
+│   ├── db/                  # Database schemas
+│   └── testing/             # Test specifications
+├── docs/                    # VitePress documentation site (user-facing)
 ├── deploy/                  # Docker, Kubernetes configs
 └── changelog/               # Detailed change records
 ```

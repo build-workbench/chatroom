@@ -180,7 +180,9 @@ func (rh *RoomHub) broadcastEvent(evt interface{}) {
 
 // updateOnline 更新当前在线人数。
 func (rh *RoomHub) updateOnline() {
-	n := int32(len(rh.clients)) //nolint:gosec // room client count won't exceed int32
+	// Gosec G115: Safe conversion - room client count is bounded and won't exceed int32 range in practice.
+	// The nolint directive is placed per Gosec's official guidance for intentional conversions.
+	n := int32(len(rh.clients)) //nolint:gosec // G115 - bounded client count, safe to convert
 	atomic.StoreInt32(&rh.online, n)
 }
 
