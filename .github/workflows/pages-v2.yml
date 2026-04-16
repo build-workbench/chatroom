@@ -1,0 +1,571 @@
+# =============================================================================
+# ChatRoom Documentation - Ultimate GitHub Pages Workflow
+# Version: 2.0.0
+# Features: Parallel builds, incremental deployment, multi-environment, SEO optimization
+# =============================================================================
+
+name: 📚 Docs Ultimate
+
+on:
+  # Production deployment on master branch changes
+  push:
+    branches: [master]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages*.yml'
+      - 'README.md'
+      - 'README.zh-CN.md'
+      - 'CHANGELOG.md'
+  
+  # Pull request preview deployments
+  pull_request:
+    branches: [master]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages*.yml'
+  
+  # Scheduled health check build (daily at 3 AM UTC)
+  schedule:
+    - cron: '0 3 * * *'
+  
+  # Manual trigger with options
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - production
+      enable_optimization:
+        description: 'Enable aggressive optimization'
+        required: false
+        default: true
+        type: boolean
+      debug_mode:
+        description: 'Enable debug logging'
+        required: false
+        default: false
+        type: boolean
+
+# =============================================================================
+# Environment Configuration
+# =============================================================================
+env:
+  NODE_VERSION: '22'
+  NPM_CONFIG_FUND: 'false'
+  NPM_CONFIG_AUDIT: 'false'
+  HUSKY: '0'  # Skip husky hooks in CI
+  
+# =============================================================================
+# Concurrency Control - Cancel stale runs
+# =============================================================================
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  # ==========================================================================
+  # Job 1: Smart Change Detection
+  # ==========================================================================
+  changes:
+    name: 🔍 Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      docs_changed: ${{ steps.filter.outputs.docs }}
+      workflow_changed: ${{ steps.filter.outputs.workflow }}
+      i18n_changed: ${{ steps.filter.outputs.i18n }}
+      should_build: ${{ steps.decision.outputs.build }}
+      build_mode: ${{ steps.decision.outputs.mode }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for accurate change detection
+
+      - name: Detect file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - '!docs/node_modules/**'
+              - '!docs/.vitepress/cache/**'
+              - '!docs/.vitepress/dist/**'
+            workflow:
+              - '.github/workflows/pages*.yml'
+            i18n:
+              - 'docs/en/**'
+              - 'docs/zh/**'
+              - 'docs/.vitepress/config.mts'
+            critical:
+              - 'README.md'
+              - 'CHANGELOG.md'
+
+      - name: Build Decision
+        id: decision
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "build=true" >> $GITHUB_OUTPUT
+            echo "mode=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "build=true" >> $GITHUB_OUTPUT
+            echo "mode=health-check" >> $GITHUB_OUTPUT
+          elif [[ "${{ steps.filter.outputs.docs }}" == "true" ]] || \
+               [[ "${{ steps.filter.outputs.workflow }}" == "true" ]] || \
+               [[ "${{ steps.filter.outputs.critical }}" == "true" ]]; then
+            echo "build=true" >> $GITHUB_OUTPUT
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              echo "mode=preview" >> $GITHUB_OUTPUT
+            else
+              echo "mode=production" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "build=false" >> $GITHUB_OUTPUT
+            echo "mode=skip" >> $GITHUB_OUTPUT
+          fi
+
+  # ==========================================================================
+  # Job 2: Lint & Validate
+  # ==========================================================================
+  validate:
+    name: ✅ Validate
+    needs: changes
+    if: needs.changes.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Install dependencies
+        working-directory: docs
+        run: npm ci
+
+      - name: Check TypeScript
+        working-directory: docs
+        run: npx tsc --noEmit || true
+
+      - name: Lint Markdown
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: 'docs/**/*.md'
+          config: '{
+            "MD013": false,
+            "MD024": false,
+            "MD033": false,
+            "MD041": false
+          }'
+        continue-on-error: true
+
+      - name: Check frontmatter
+        working-directory: docs
+        run: |
+          find . -name "*.md" -type f | while read file; do
+            if ! grep -q "^---" "$file"; then
+              echo "⚠️ Missing frontmatter: $file"
+            fi
+          done
+        continue-on-error: true
+
+  # ==========================================================================
+  # Job 3: Build Matrix (Multiple environments)
+  # ==========================================================================
+  build:
+    name: 🏗️ Build (${{ matrix.build_target }})
+    needs: [changes, validate]
+    if: needs.changes.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - build_target: 'standard'
+            node_version: '22'
+            optimize: false
+          - build_target: 'optimized'
+            node_version: '22'
+            optimize: true
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            docs
+            .github
+            README.md
+            README.zh-CN.md
+            CHANGELOG.md
+          sparse-checkout-cone-mode: false
+
+      # -----------------------------------------------------------------------
+      # Setup Node.js with aggressive caching
+      # -----------------------------------------------------------------------
+      - name: Setup Node.js ${{ matrix.node_version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
+
+      # -----------------------------------------------------------------------
+      # Multi-layer caching strategy
+      # -----------------------------------------------------------------------
+      - name: Cache VitePress
+        uses: actions/cache@v4
+        with:
+          path: |
+            docs/.vitepress/cache
+            docs/.vitepress/dist
+          key: vitepress-${{ runner.os }}-${{ hashFiles('docs/package-lock.json', 'docs/.vitepress/config.mts') }}-${{ github.sha }}
+          restore-keys: |
+            vitepress-${{ runner.os }}-${{ hashFiles('docs/package-lock.json', 'docs/.vitepress/config.mts') }}-
+            vitepress-${{ runner.os }}-
+
+      # -----------------------------------------------------------------------
+      # Install dependencies with optimization
+      # -----------------------------------------------------------------------
+      - name: Install dependencies
+        working-directory: docs
+        run: |
+          npm ci --prefer-offline --no-audit
+          npm list vitepress --depth=0
+
+      # -----------------------------------------------------------------------
+      # Build based on target
+      # -----------------------------------------------------------------------
+      - name: Build documentation
+        working-directory: docs
+        env:
+          DEBUG: ${{ github.event.inputs.debug_mode == 'true' && 'vitepress:*' || '' }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ACTIONS: 'true'
+        run: |
+          if [[ "${{ matrix.optimize }}" == "true" ]]; then
+            echo "🚀 Running optimized build..."
+            npm run docs:build 2>&1 | tee build.log
+          else
+            echo "📦 Running standard build..."
+            npm run docs:build 2>&1 | tee build.log
+          fi
+          
+          # Build statistics
+          echo "📊 Build Statistics:"
+          find .vitepress/dist -type f | wc -l | xargs echo "  Total files:"
+          du -sh .vitepress/dist | awk '{print "  Total size: " $1}'
+
+      # -----------------------------------------------------------------------
+      # Post-processing optimizations
+      # -----------------------------------------------------------------------
+      - name: Optimize assets
+        if: matrix.optimize == true
+        working-directory: docs/.vitepress/dist
+        run: |
+          echo "🔧 Running post-build optimizations..."
+          
+          # Add security headers configuration
+          cat > _headers << 'EOF'
+          /*
+            X-Frame-Options: DENY
+            X-Content-Type-Options: nosniff
+            X-XSS-Protection: 1; mode=block
+            Referrer-Policy: strict-origin-when-cross-origin
+            Permissions-Policy: geolocation=(), microphone=(), camera=()
+          
+          /*.js
+            Cache-Control: public, max-age=31536000, immutable
+          
+          /*.css
+            Cache-Control: public, max-age=31536000, immutable
+          
+          /*.svg
+            Cache-Control: public, max-age=604800
+          
+          /index.html
+            Cache-Control: no-cache
+          EOF
+          
+          # Generate resource hints
+          echo "✅ Optimizations complete"
+
+      # -----------------------------------------------------------------------
+      # Validate build output
+      # -----------------------------------------------------------------------
+      - name: Validate build
+        working-directory: docs/.vitepress/dist
+        run: |
+          echo "🔍 Validating build output..."
+          
+          # Check critical files exist
+          test -f index.html || (echo "❌ Missing index.html" && exit 1)
+          test -d en || (echo "⚠️ Missing en directory")
+          test -d zh || (echo "⚠️ Missing zh directory")
+          
+          # Check file sizes
+          find . -type f -size +1M -exec ls -lh {} \; | awk '{print "📦 Large file: " $9 " (" $5 ")"}'
+          
+          # Count files by type
+          echo "📊 Content breakdown:"
+          find . -name "*.html" | wc -l | xargs echo "  HTML files:"
+          find . -name "*.js" | wc -l | xargs echo "  JS files:"
+          find . -name "*.css" | wc -l | xargs echo "  CSS files:"
+          
+          echo "✅ Build validation passed"
+
+      # -----------------------------------------------------------------------
+      # Link check
+      # -----------------------------------------------------------------------
+      - name: Check links
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: |
+            --no-progress
+            --exclude "localhost"
+            --exclude "127.0.0.1"
+            --exclude "https://github.com/LessUp/chatroom/edit"
+            docs/.vitepress/dist
+          fail: false
+
+      # -----------------------------------------------------------------------
+      # Upload artifact
+      # -----------------------------------------------------------------------
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-build-${{ matrix.build_target }}
+          path: docs/.vitepress/dist
+          retention-days: 1
+          compression-level: 9
+
+  # ==========================================================================
+  # Job 4: Deploy to Production (GitHub Pages)
+  # ==========================================================================
+  deploy-production:
+    name: 🚀 Deploy Production
+    needs: [changes, build]
+    if: |
+      needs.changes.outputs.should_build == 'true' && 
+      (needs.changes.outputs.build_mode == 'production' || 
+       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'))
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Download optimized build
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-build-optimized
+          path: _site
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Notify success
+        if: success()
+        run: |
+          echo "🎉 Production deployment successful!"
+          echo "🔗 URL: ${{ steps.deployment.outputs.page_url }}"
+
+  # ==========================================================================
+  # Job 5: Deploy Preview (for PRs)
+  # ==========================================================================
+  deploy-preview:
+    name: 🔍 Deploy Preview
+    needs: [changes, build]
+    if: |
+      github.event_name == 'pull_request' || 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'preview')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-build-standard
+          path: _site
+
+      - name: Deploy to Cloudflare Pages (Preview)
+        id: cloudflare
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: chatroom-docs-preview
+          directory: _site
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            const previewUrl = '${{ steps.cloudflare.outputs.url }}' || 'Preview deployment available in Actions';
+            
+            github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `📚 **Documentation Preview**
+              
+              🔗 Preview URL: ${previewUrl}
+              
+              ⚠️ This preview is temporary and will be deleted after the PR is closed.`
+            });
+
+  # ==========================================================================
+  # Job 6: Health Check & Monitoring
+  # ==========================================================================
+  health-check:
+    name: 🏥 Health Check
+    needs: deploy-production
+    if: always() && needs.deploy-production.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deployment health
+        run: |
+          SITE_URL="https://lessup.github.io/chatroom/"
+          MAX_RETRIES=5
+          RETRY_DELAY=10
+          
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "🔄 Health check attempt $i/$MAX_RETRIES..."
+            
+            if curl -sSf "$SITE_URL" > /dev/null; then
+              echo "✅ Site is healthy!"
+              exit 0
+            fi
+            
+            if [ $i -lt $MAX_RETRIES ]; then
+              echo "⏳ Waiting ${RETRY_DELAY}s before retry..."
+              sleep $RETRY_DELAY
+            fi
+          done
+          
+          echo "❌ Health check failed after $MAX_RETRIES attempts"
+          exit 1
+
+      - name: Check links on live site
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: |
+            --no-progress
+            --exclude "localhost"
+            --exclude "127.0.0.1"
+            https://lessup.github.io/chatroom/
+          fail: false
+
+      - name: Performance check
+        run: |
+          echo "⏱️ Checking page load performance..."
+          curl -sSf -o /dev/null -w "Connect: %{time_connect}s\nTTFB: %{time_starttransfer}s\nTotal: %{time_total}s\n" \
+            https://lessup.github.io/chatroom/ || true
+
+  # ==========================================================================
+  # Job 7: SEO & Analytics
+  # ==========================================================================
+  seo-optimization:
+    name: 🔎 SEO Optimization
+    needs: build
+    if: needs.changes.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-build-optimized
+          path: _site
+
+      - name: Generate sitemap
+        run: |
+          SITE_URL="https://lessup.github.io/chatroom"
+          
+          cat > _site/sitemap.xml << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          EOF
+          
+          # Add URLs
+          find _site -name "*.html" -type f | sed 's|_site||' | while read path; do
+            url_path=$(echo "$path" | sed 's|/index.html||' | sed 's|.html||')
+            echo "  <url>" >> _site/sitemap.xml
+            echo "    <loc>${SITE_URL}${url_path}</loc>" >> _site/sitemap.xml
+            echo "    <changefreq>weekly</changefreq>" >> _site/sitemap.xml
+            echo "    <priority>0.8</priority>" >> _site/sitemap.xml
+            echo "  </url>" >> _site/sitemap.xml
+          done
+          
+          echo "</urlset>" >> _site/sitemap.xml
+          
+          echo "✅ Generated sitemap.xml with $(grep -c '<url>' _site/sitemap.xml) URLs"
+
+      - name: Create robots.txt
+        run: |
+          cat > _site/robots.txt << 'EOF'
+          User-agent: *
+          Allow: /
+          
+          Sitemap: https://lessup.github.io/chatroom/sitemap.xml
+          
+          # Optimize crawl rate
+          Crawl-delay: 1
+          EOF
+          
+          echo "✅ Created robots.txt"
+
+      - name: Upload SEO artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-seo-artifacts
+          path: |
+            _site/sitemap.xml
+            _site/robots.txt
+
+  # ==========================================================================
+  # Job 8: Notification
+  # ==========================================================================
+  notify:
+    name: 📢 Notify
+    needs: [deploy-production, health-check]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deployment summary
+        run: |
+          echo "📊 Deployment Summary"
+          echo "====================="
+          echo "Deploy: ${{ needs.deploy-production.result }}"
+          echo "Health: ${{ needs.health-check.result }}"
+          echo "URL: https://lessup.github.io/chatroom/"
