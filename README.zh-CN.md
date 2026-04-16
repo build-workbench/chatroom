@@ -3,6 +3,7 @@
 [![CI](https://github.com/LessUp/chatroom/actions/workflows/ci.yml/badge.svg)](https://github.com/LessUp/chatroom/actions/workflows/ci.yml)
 [![Docs](https://github.com/LessUp/chatroom/actions/workflows/pages.yml/badge.svg)](https://lessup.github.io/chatroom/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/LessUp/chatroom)](https://github.com/LessUp/chatroom/releases)
 
 [English](README.md) | 简体中文
 
@@ -10,17 +11,7 @@
 
 **设计哲学**：可运行、可理解、可验证、可扩展 —— 不追求功能堆砌。
 
-## 核心特性
-
-- **认证系统**：JWT + Refresh Token，支持自动刷新与轮换
-- **实时通信**：WebSocket 房间广播，支持分布式部署
-- **在线状态**：在线人数、加入/离开事件、输入提示
-- **消息历史**：游标分页，支持加载更多
-- **安全防护**：速率限制、CORS 校验、输入验证
-- **可观测性**：Prometheus 指标、结构化日志、健康检查
-- **部署支持**：Docker、Kubernetes 清单、GitHub Actions CI/CD
-
-## 快速开始
+## 🚀 快速开始
 
 ### 前置要求
 
@@ -48,12 +39,37 @@ npm --prefix frontend run dev
 |------|------|
 | 前端开发服务器 | http://localhost:5173 |
 | 后端首页 | http://localhost:8080 |
-| 健康检查 | http://localhost:8080/health |
-| 就绪检查 | http://localhost:8080/ready |
-| 版本信息 | http://localhost:8080/version |
-| Prometheus 指标 | http://localhost:8080/metrics |
 
-## 技术栈
+## ✨ 核心特性
+
+- **认证系统**：JWT + Refresh Token，支持自动刷新与轮换
+- **实时通信**：WebSocket 房间广播，支持分布式部署
+- **在线状态**：在线人数、加入/离开事件、输入提示
+- **消息历史**：游标分页，支持加载更多
+- **安全防护**：速率限制、CORS 校验、输入验证
+- **可观测性**：Prometheus 指标、结构化日志、健康检查
+- **部署支持**：Docker、Kubernetes 清单、GitHub Actions CI/CD
+
+## 🏗️ 架构
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   React     │────▶│   Go Gin    │────▶│ PostgreSQL  │
+│   前端      │◀────│   后端      │◀────│   数据库    │
+└─────────────┘ WS  └─────────────┘     └─────────────┘
+```
+
+## 📚 文档
+
+- 📖 [文档站（英文）](https://lessup.github.io/chatroom/en/)
+- 📖 [文档站（中文）](https://lessup.github.io/chatroom/zh/)
+- 🚀 [快速开始](https://lessup.github.io/chatroom/zh/getting-started)
+- 📚 [API 文档](https://lessup.github.io/chatroom/zh/api)
+- 🏗️ [架构文档](https://lessup.github.io/chatroom/zh/architecture)
+- 🎨 [设计文档](https://lessup.github.io/chatroom/zh/design)
+- ❓ [常见问题](https://lessup.github.io/chatroom/zh/faq)
+
+## 🛠️ 技术栈
 
 | 层级 | 技术 |
 |------|------|
@@ -63,7 +79,7 @@ npm --prefix frontend run dev
 | 监控 | Prometheus, Grafana |
 | 部署 | Docker, Kubernetes |
 
-## 项目结构
+## 📁 项目结构
 
 ```
 chatroom/
@@ -82,14 +98,12 @@ chatroom/
 ├── web/                     # 静态回退 UI
 ├── docs/                    # VitePress 文档站
 ├── deploy/                  # Docker、Kubernetes 配置
-└── .github/workflows/       # CI/CD 流水线
+└── changelog/               # 细粒度变更记录
 ```
 
-## 配置说明
+## ⚙️ 配置
 
-后端直接读取**进程环境变量**，不会自动加载 `.env` 文件。
-
-主要配置项：
+配置从**环境变量**读取：
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
@@ -103,42 +117,45 @@ chatroom/
 
 完整配置见 `.env.example`。
 
-## 常用命令
+## 🧪 测试
 
 ```bash
-# Go
-make test          # 运行测试
-make lint          # 代码检查
-make build         # 构建
-make all           # lint + test + build
+# Go 测试
+make test
 
-# 前端
-npm --prefix frontend run dev     # 开发服务器
-npm --prefix frontend run build   # 构建
-npm --prefix frontend run test    # 测试
+# 前端测试
+npm --prefix frontend run test
 
-# Docker
-docker compose up -d              # 启动所有服务
-docker compose up -d postgres     # 仅数据库
+# 完整验证
+make all
 ```
 
-## 文档
+## 🐳 Docker
 
-- 📖 [文档站](https://lessup.github.io/chatroom/)
-- 🚀 [快速开始](docs/getting-started.md)
-- 📚 [API 文档](docs/API.md)
-- 🏗️ [架构文档](docs/ARCHITECTURE.md)
-- 🎨 [设计文档](docs/DESIGN.md)
-- ❓ [常见问题](docs/FAQ.md)
+```bash
+# 启动全部服务
+docker compose up -d
 
-## 贡献
+# 包含监控
+docker compose --profile monitoring up -d
+```
+
+## 📄 变更日志
+
+版本历史见 [CHANGELOG.md](CHANGELOG.md)。
+
+## 🤝 贡献
 
 贡献指南见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-## 安全
+## 🔒 安全
 
 安全策略与最佳实践见 [SECURITY.md](SECURITY.md)。
 
-## 许可证
+## 📜 许可证
 
 [MIT License](LICENSE)
+
+---
+
+**说明**：本项目主要用于教学和练手目的。虽然包含了生产就绪的实践，但设计目标是便于学习理解，而非功能堆砌。

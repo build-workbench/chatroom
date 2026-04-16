@@ -3,6 +3,7 @@
 [![CI](https://github.com/LessUp/chatroom/actions/workflows/ci.yml/badge.svg)](https://github.com/LessUp/chatroom/actions/workflows/ci.yml)
 [![Docs](https://github.com/LessUp/chatroom/actions/workflows/pages.yml/badge.svg)](https://lessup.github.io/chatroom/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/LessUp/chatroom)](https://github.com/LessUp/chatroom/releases)
 
 English | [简体中文](README.zh-CN.md)
 
@@ -10,17 +11,7 @@ A teaching-oriented real-time chat room project built with Go, React, PostgreSQL
 
 **Design Philosophy**: Runnable, Understandable, Verifiable, Extendable — not feature-heavy.
 
-## Features
-
-- **Authentication**: JWT + Refresh Token with automatic rotation
-- **Real-time Chat**: WebSocket with room-based broadcasting
-- **Presence**: Online count, join/leave events, typing indicators
-- **History**: Paginated message history with cursor-based loading
-- **Security**: Rate limiting, CORS validation, input sanitization
-- **Observability**: Prometheus metrics, structured logging, health checks
-- **Deployment**: Docker, Kubernetes manifests, GitHub Actions CI/CD
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 
@@ -42,18 +33,43 @@ npm --prefix frontend ci
 npm --prefix frontend run dev
 ```
 
-### Access
+### Access URLs
 
 | Service | URL |
 |---------|-----|
 | Frontend (Dev) | http://localhost:5173 |
 | Backend | http://localhost:8080 |
-| Health Check | http://localhost:8080/health |
-| Ready Check | http://localhost:8080/ready |
-| Version | http://localhost:8080/version |
-| Metrics | http://localhost:8080/metrics |
 
-## Tech Stack
+## ✨ Features
+
+- **Authentication**: JWT + Refresh Token with automatic rotation
+- **Real-time Chat**: WebSocket with room-based broadcasting
+- **Presence**: Online count, join/leave events, typing indicators
+- **History**: Paginated message history with cursor-based loading
+- **Security**: Rate limiting, CORS validation, input sanitization
+- **Observability**: Prometheus metrics, structured logging, health checks
+- **Deployment**: Docker, Kubernetes manifests, GitHub Actions CI/CD
+
+## 🏗️ Architecture
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   React     │────▶│   Go Gin    │────▶│ PostgreSQL  │
+│  Frontend   │◀────│   Backend   │◀────│  Database   │
+└─────────────┘ WS  └─────────────┘     └─────────────┘
+```
+
+## 📚 Documentation
+
+- 📖 [Documentation Site (EN)](https://lessup.github.io/chatroom/en/)
+- 📖 [Documentation Site (ZH)](https://lessup.github.io/chatroom/zh/)
+- 🚀 [Getting Started](https://lessup.github.io/chatroom/en/getting-started)
+- 📚 [API Reference](https://lessup.github.io/chatroom/en/api)
+- 🏗️ [Architecture](https://lessup.github.io/chatroom/en/architecture)
+- 🎨 [Design Decisions](https://lessup.github.io/chatroom/en/design)
+- ❓ [FAQ](https://lessup.github.io/chatroom/en/faq)
+
+## 🛠️ Tech Stack
 
 | Layer | Technology |
 |-------|------------|
@@ -63,7 +79,7 @@ npm --prefix frontend run dev
 | Monitoring | Prometheus, Grafana |
 | Deployment | Docker, Kubernetes |
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 chatroom/
@@ -73,8 +89,8 @@ chatroom/
 │   ├── config/              # Configuration loading
 │   ├── db/                  # Database connection, migrations
 │   ├── server/              # HTTP routes and handlers
-│   ├── service/             # Business logic layer
-│   ├── ws/                  # WebSocket Hub and connections
+│   ├── service/             # Business logic
+│   ├── ws/                  # WebSocket Hub, connections
 │   ├── mw/                  # Middleware (auth, rate limit, CORS)
 │   ├── metrics/             # Prometheus metrics
 │   └── models/              # GORM data models
@@ -82,63 +98,64 @@ chatroom/
 ├── web/                     # Static fallback UI
 ├── docs/                    # VitePress documentation site
 ├── deploy/                  # Docker, Kubernetes configs
-└── .github/workflows/       # CI/CD pipelines
+└── changelog/               # Detailed change records
 ```
 
-## Configuration
+## ⚙️ Configuration
 
-The backend reads configuration from **environment variables**. It does NOT auto-load `.env` files.
-
-Key configuration options:
+Configuration is loaded from **environment variables**:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `APP_PORT` | 8080 | HTTP port |
 | `APP_ENV` | dev | Environment (dev/staging/production) |
 | `DATABASE_DSN` | localhost | PostgreSQL connection string |
-| `JWT_SECRET` | dev-secret-change-me | JWT signing key (MUST change in production) |
+| `JWT_SECRET` | dev-secret-change-me | JWT signing key |
 | `ALLOWED_ORIGINS` | - | CORS allowed origins (comma-separated) |
 | `ACCESS_TOKEN_TTL_MINUTES` | 15 | Access token lifetime |
 | `REFRESH_TOKEN_TTL_DAYS` | 7 | Refresh token lifetime |
 
-See `.env.example` for the complete list.
+See `.env.example` for complete list.
 
-## Commands
+## 🧪 Testing
 
 ```bash
-# Go
-make test          # Run tests
-make lint          # Lint code
-make build         # Build binary
-make all           # lint + test + build
+# Go tests
+make test
 
-# Frontend
-npm --prefix frontend run dev     # Development server
-npm --prefix frontend run build   # Production build
-npm --prefix frontend run test    # Run tests
+# Frontend tests
+npm --prefix frontend run test
 
-# Docker
-docker compose up -d              # Start all services
-docker compose up -d postgres     # Database only
+# Full verification
+make all
 ```
 
-## Documentation
+## 🐳 Docker
 
-- 📖 [Documentation Site](https://lessup.github.io/chatroom/)
-- 🚀 [Getting Started](docs/getting-started.md)
-- 📚 [API Reference](docs/API.md)
-- 🏗️ [Architecture](docs/ARCHITECTURE.md)
-- 🎨 [Design Decisions](docs/DESIGN.md)
-- ❓ [FAQ](docs/FAQ.md)
+```bash
+# Full stack
+docker compose up -d
 
-## Contributing
+# With monitoring
+docker compose --profile monitoring up -d
+```
+
+## 📄 Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
+## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## Security
+## 🔒 Security
 
 See [SECURITY.md](SECURITY.md) for security policy and best practices.
 
-## License
+## 📜 License
 
 [MIT License](LICENSE)
+
+---
+
+**Note**: This project is primarily for teaching and learning purposes. While it includes production-ready practices, it's designed for understanding rather than feature density.
