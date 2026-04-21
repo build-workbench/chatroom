@@ -4,12 +4,13 @@
 [![Docs](https://github.com/LessUp/chatroom/actions/workflows/pages.yml/badge.svg)](https://lessup.github.io/chatroom/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/LessUp/chatroom)](https://github.com/LessUp/chatroom/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/LessUp/chatroom)](https://goreportcard.com/report/github.com/LessUp/chatroom)
 
 English | [简体中文](README.zh-CN.md)
 
-A teaching-oriented real-time chat room project built with Go, React, PostgreSQL, REST API, and WebSocket.
+A **teaching-oriented** real-time chat room application demonstrating modern full-stack development practices with Go, React, PostgreSQL, WebSocket, and production-ready CI/CD.
 
-**Design Philosophy**: Runnable, Understandable, Verifiable, Extendable — not feature-heavy.
+**Design Philosophy**: Runnable → Understandable → Verifiable → Extendable
 
 ## 🚀 Quick Start
 
@@ -42,13 +43,14 @@ npm --prefix frontend run dev
 
 ## ✨ Features
 
-- **Authentication**: JWT + Refresh Token with automatic rotation
-- **Real-time Chat**: WebSocket with room-based broadcasting
-- **Presence**: Online count, join/leave events, typing indicators
-- **History**: Paginated message history with cursor-based loading
-- **Security**: Rate limiting, CORS validation, input sanitization
-- **Observability**: Prometheus metrics, structured logging, health checks
-- **Deployment**: Docker, Kubernetes manifests, GitHub Actions CI/CD
+| Category | Features |
+|----------|----------|
+| **Authentication** | JWT + Refresh Token with automatic rotation, secure WebSocket ticket |
+| **Real-time Chat** | Room-based WebSocket broadcasting, typing indicators, presence |
+| **Message History** | Cursor-based pagination, persistent storage in PostgreSQL |
+| **Security** | Rate limiting, CORS validation, input sanitization, bcrypt passwords |
+| **Observability** | Prometheus metrics, structured logging (zerolog), health checks |
+| **Deployment** | Docker multi-stage builds, Kubernetes manifests, GitHub Actions CI/CD |
 
 ## 🏗️ Architecture
 

@@ -5,39 +5,41 @@ const base = process.env.GITHUB_ACTIONS === 'true' ? `/${repoName}/` : '/'
 const siteUrl = `https://lessup.github.io/${repoName}/`
 
 export default defineConfig({
-  // Default to Chinese for root
   lang: 'zh-CN',
   title: 'ChatRoom',
-  description: '面向练手与教学的 Go + React + WebSocket 聊天室文档站',
+  description: '面向教学的 Go + React + WebSocket 实时聊天室 | A teaching-oriented real-time chat room with Go, React, WebSocket',
   base,
   cleanUrls: true,
   lastUpdated: true,
   ignoreDeadLinks: [/^http:\/\/localhost:\d+(?:\/.*)?$/],
 
-  // Head tags for SEO
+  sitemap: {
+    hostname: siteUrl,
+  },
+
   head: [
     ['link', { rel: 'canonical', href: siteUrl }],
     ['meta', { name: 'theme-color', content: '#2563eb' }],
     ['meta', { name: 'author', content: 'LessUp' }],
-    ['meta', { name: 'keywords', content: 'ChatRoom, real-time chat, Go, React, WebSocket, PostgreSQL, teaching project' }],
+    ['meta', { name: 'keywords', content: 'ChatRoom, real-time chat, Go, React, WebSocket, PostgreSQL, teaching project, 教学项目, 聊天室' }],
+    ['meta', { name: 'google-site-verification', content: '' }],
 
-    // Open Graph
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'ChatRoom Documentation' }],
     ['meta', { property: 'og:description', content: 'A teaching-oriented real-time chat room project with Go, React, PostgreSQL, and WebSocket' }],
     ['meta', { property: 'og:url', content: siteUrl }],
-    ['meta', { property: 'og:image', content: `${siteUrl}og-image.png` }],
+    ['meta', { property: 'og:image', content: `${siteUrl}logo.svg` }],
     ['meta', { property: 'og:locale', content: 'zh_CN' }],
+    ['meta', { property: 'og:locale:alternate', content: 'en_US' }],
     ['meta', { property: 'og:site_name', content: 'ChatRoom Documentation' }],
 
-    // Twitter Card
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: 'ChatRoom Documentation' }],
     ['meta', { name: 'twitter:description', content: 'A teaching-oriented real-time chat room project with Go, React, PostgreSQL, and WebSocket' }],
-    ['meta', { name: 'twitter:image', content: `${siteUrl}og-image.png` }],
+    ['meta', { name: 'twitter:image', content: `${siteUrl}logo.svg` }],
 
-    // Favicon
     ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}logo.svg` }],
+    ['link', { rel: 'apple-touch-icon', href: `${base}logo.svg` }],
   ],
 
   // Theme configuration

@@ -3,6 +3,7 @@ layout: home
 hero:
   name: ChatRoom
   text: Documentation
+  tagline: Teaching-oriented Real-time Chat Application
   image:
     src: /logo.svg
     alt: ChatRoom Logo
@@ -13,6 +14,19 @@ hero:
     - theme: alt
       text: English Docs
       link: /en/
+features:
+  - icon: 🚀
+    title: 5-Minute Setup
+    details: Docker Compose one-click setup, hot-reload development server
+  - icon: 🔐
+    title: JWT Auth
+    details: Access + Refresh Token with automatic rotation
+  - icon: ⚡
+    title: WebSocket
+    details: Room-based broadcasting, presence, typing indicators
+  - icon: 📊
+    title: Prometheus
+    details: Built-in metrics with Grafana dashboard templates
 ---
 
 <div align="center">

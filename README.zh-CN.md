@@ -4,12 +4,13 @@
 [![Docs](https://github.com/LessUp/chatroom/actions/workflows/pages.yml/badge.svg)](https://lessup.github.io/chatroom/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/LessUp/chatroom)](https://github.com/LessUp/chatroom/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/LessUp/chatroom)](https://goreportcard.com/report/github.com/LessUp/chatroom)
 
 [English](README.md) | 简体中文
 
-一个面向个人练手与教学演示的实时聊天室项目，使用 Go、React、PostgreSQL、REST API 与 WebSocket 构建。
+一个**面向教学**的实时聊天室项目，展示现代全栈开发实践：Go + React + PostgreSQL + WebSocket + 生产级 CI/CD。
 
-**设计哲学**：可运行、可理解、可验证、可扩展 —— 不追求功能堆砌。
+**设计哲学**：可运行 → 可理解 → 可验证 → 可扩展
 
 ## 🚀 快速开始
 
@@ -42,13 +43,14 @@ npm --prefix frontend run dev
 
 ## ✨ 核心特性
 
-- **认证系统**：JWT + Refresh Token，支持自动刷新与轮换
-- **实时通信**：WebSocket 房间广播，支持分布式部署
-- **在线状态**：在线人数、加入/离开事件、输入提示
-- **消息历史**：游标分页，支持加载更多
-- **安全防护**：速率限制、CORS 校验、输入验证
-- **可观测性**：Prometheus 指标、结构化日志、健康检查
-- **部署支持**：Docker、Kubernetes 清单、GitHub Actions CI/CD
+| 分类 | 功能 |
+|------|------|
+| **认证系统** | JWT + Refresh Token 自动轮换，安全的 WebSocket 票据 |
+| **实时通信** | 房间级 WebSocket 广播，输入提示，在线状态 |
+| **消息历史** | 游标分页，PostgreSQL 持久化存储 |
+| **安全防护** | 速率限制，CORS 校验，输入过滤，bcrypt 密码 |
+| **可观测性** | Prometheus 指标，结构化日志，健康检查 |
+| **部署支持** | Docker 多阶段构建，Kubernetes 清单，GitHub Actions CI/CD |
 
 ## 🏗️ 架构
 
