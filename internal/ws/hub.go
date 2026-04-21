@@ -148,13 +148,16 @@ func NewRoomHub(roomID uint) *RoomHub {
 }
 
 // broadcastToClients 向房间内所有客户端发送数据，慢客户端会被清理。
+// 注意：此函数会关闭慢客户端的 send 通道，但会先从 clients map 中删除，
+// 这样后续的 unregister case 可以通过检查 clients map 来避免重复关闭。
 func (rh *RoomHub) broadcastToClients(data []byte) {
 	for cli := range rh.clients {
 		select {
 		case cli.send <- data:
 		default:
-			close(cli.send)
+			// 先从 map 中删除，再关闭通道，防止 unregister case 重复关闭
 			delete(rh.clients, cli)
+			close(cli.send)
 			metrics.WsConnections.Dec()
 		}
 	}
