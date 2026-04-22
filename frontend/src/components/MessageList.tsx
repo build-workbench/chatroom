@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 
 import type { MessageDTO, User, WsEvent } from '../types'
 
-import { AVATAR_COLORS } from './Sidebar'
+import { AVATAR_COLORS } from '../constants'
 
 function escapeText(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
