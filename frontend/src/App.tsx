@@ -41,11 +41,13 @@ export default function App() {
 		initialRoomId: loadAuth().lastRoomId,
 	})
 
-	// 连接 ref 以打破循环依赖
-	chatResetRef.current = chat.resetChat
-	socketCloseRef.current = () => socketRef.current?.close()
-	chatAddItemRef.current = chat.addItem
-	chatAddMessageRef.current = chat.addMessage
+	// 连接 ref 以打破循环依赖 - 必须在 useEffect 中更新 ref
+	useEffect(() => {
+		chatResetRef.current = chat.resetChat
+		socketCloseRef.current = () => socketRef.current?.close()
+		chatAddItemRef.current = chat.addItem
+		chatAddMessageRef.current = chat.addMessage
+	})
 
 	// 登录后加载房间列表
 	useEffect(() => {
