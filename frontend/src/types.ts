@@ -18,6 +18,19 @@ export interface Room {
   online: number
 }
 
+export interface SidebarProps {
+  user: User
+  rooms: Room[]
+  currentRoomId: number | null
+  roomQuery: string
+  newRoomName: string
+  onRoomQueryChange: (q: string) => void
+  onNewRoomNameChange: (name: string) => void
+  onCreateRoom: () => void
+  onJoinRoom: (id: number, name: string, online: number) => void
+  onLogout: () => void
+}
+
 export interface AuthLoginResponse {
   access_token: string
   refresh_token: string

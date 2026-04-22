@@ -11,7 +11,7 @@ var usernameRegex = regexp.MustCompile(`^[\p{L}\p{N}_]+$`)
 // Username 校验用户名是否合法
 // 只允许字母、数字、下划线，防止 XSS 攻击
 func Username(username string) bool {
-	if len(username) == 0 {
+	if username == "" {
 		return false
 	}
 	return usernameRegex.MatchString(username)
