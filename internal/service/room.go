@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"chatroom/internal/db"
 	"chatroom/internal/models"
 	"chatroom/internal/ws"
 
@@ -32,7 +33,7 @@ type RoomDTO struct {
 func (s *RoomService) Create(name string, ownerID uint) (*RoomDTO, error) {
 	room := models.Room{Name: name, OwnerID: ownerID}
 	if err := s.db.Create(&room).Error; err != nil {
-		if isUniqueViolation(err) {
+		if db.IsUniqueViolation(err) {
 			return nil, ErrRoomNameTaken
 		}
 		return nil, err

@@ -17,7 +17,7 @@ import (
 //
 // **Validates: Requirements 3.3**
 func TestProperty_CodeFormattingConsistency(t *testing.T) {
-	// Find project root (go up from internal/quality)
+	// Find project root (go up from tests/quality)
 	projectRoot, err := findProjectRoot()
 	if err != nil {
 		t.Fatalf("Failed to find project root: %v", err)

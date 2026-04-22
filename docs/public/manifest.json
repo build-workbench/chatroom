@@ -1,0 +1,21 @@
+{
+  "name": "ChatRoom Documentation",
+  "short_name": "ChatRoom Docs",
+  "description": "A teaching-oriented real-time chat room project with Go, React, PostgreSQL, and WebSocket",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

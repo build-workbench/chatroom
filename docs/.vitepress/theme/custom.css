@@ -1,71 +1,379 @@
+/* ========================================
+   ChatRoom Documentation Theme
+   Modern, clean, teaching-focused design
+   ======================================== */
+
+/* CSS Variables */
 :root {
+  /* Brand Colors */
   --vp-c-brand-1: #2563eb;
-  --vp-c-brand-2: #1d4ed8;
-  --vp-c-brand-3: #1e40af;
+  --vp-c-brand-2: #3b82f6;
+  --vp-c-brand-3: #1d4ed8;
+  --vp-c-brand-soft: rgba(37, 99, 235, 0.14);
+  
+  /* Accent Colors */
+  --vp-c-accent-1: #7c3aed;
+  --vp-c-accent-2: #8b5cf6;
+  --vp-c-accent-3: #6d28d9;
+  
+  /* Text Colors */
+  --vp-c-text-1: #0f172a;
+  --vp-c-text-2: #475569;
+  --vp-c-text-3: #94a3b8;
+  
+  /* Background Colors */
+  --vp-c-bg: #ffffff;
+  --vp-c-bg-alt: #f8fafc;
+  --vp-c-bg-soft: #f1f5f9;
+  --vp-c-bg-mute: #e2e8f0;
+  
+  /* Border Colors */
+  --vp-c-divider: #e2e8f0;
+  --vp-c-border: #cbd5e1;
+  
+  /* Hero Section */
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(120deg, #2563eb 30%, #7c3aed 100%);
-  --vp-home-hero-image-background-image: linear-gradient(120deg, #2563eb 50%, #7c3aed 50%);
-  --vp-home-hero-image-filter: blur(44px);
+  --vp-home-hero-name-background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --vp-home-hero-image-background-image: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --vp-home-hero-image-filter: blur(50px);
+  
+  /* Custom */
+  --vp-c-glass-bg: rgba(255, 255, 255, 0.7);
+  --vp-c-glass-border: rgba(255, 255, 255, 0.3);
 }
 
+/* Dark Mode */
 .dark {
-  --vp-home-hero-image-background-image: linear-gradient(120deg, #2563eb 50%, #7c3aed 50%);
+  --vp-c-text-1: #f8fafc;
+  --vp-c-text-2: #cbd5e1;
+  --vp-c-text-3: #64748b;
+  
+  --vp-c-bg: #0f172a;
+  --vp-c-bg-alt: #1e293b;
+  --vp-c-bg-soft: #334155;
+  --vp-c-bg-mute: #475569;
+  
+  --vp-c-divider: #334155;
+  --vp-c-border: #475569;
+  
+  --vp-c-glass-bg: rgba(15, 23, 42, 0.7);
+  --vp-c-glass-border: rgba(255, 255, 255, 0.1);
+  
+  --vp-home-hero-image-background-image: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
 }
 
-.VPHome .text {
+/* ========================================
+   Base Styles
+   ======================================== */
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(37, 99, 235, 0.2);
+  color: var(--vp-c-brand-1);
+}
+
+.dark ::selection {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+/* ========================================
+   Layout Overrides
+   ======================================== */
+
+/* Container max-width */
+.VPDoc .content {
   max-width: 760px;
 }
 
-.VPFeature {
-  border-radius: 16px;
-  border: 1px solid var(--vp-c-divider);
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.02), rgba(124, 58, 237, 0.02));
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.VPFeature:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
-}
-
-.dark .VPFeature {
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.04), rgba(124, 58, 237, 0.04));
-}
-
-.VPDoc .custom-block.tip {
-  border-color: var(--vp-c-brand-1);
-}
-
-.VPHero .image-bg {
-  transition: opacity 0.3s ease;
-}
-
-.vp-doc h1, .vp-doc h2, .vp-doc h3 {
-  position: relative;
-}
-
-.vp-doc h2 {
-  border-top: 1px solid var(--vp-c-divider);
-  padding-top: 24px;
-  margin-top: 48px;
-}
-
-.vp-doc a {
-  text-decoration: none;
-  border-bottom: 1px dashed var(--vp-c-brand-1);
-  transition: border-color 0.2s;
-}
-
-.vp-doc a:hover {
-  border-bottom-style: solid;
+/* Sidebar styling */
+.VPSidebar {
+  background: var(--vp-c-bg);
+  border-right: 1px solid var(--vp-c-divider);
 }
 
 .VPSidebarItem .text {
   font-weight: 500;
 }
 
+.VPSidebarItem.is-active .text {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
+
+/* Navigation */
+.VPNav {
+  background: var(--vp-c-glass-bg) !important;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--vp-c-glass-border);
+}
+
+.VPNavBar {
+  background: transparent !important;
+}
+
+/* Logo styling */
+.VPNavBarTitle .logo {
+  height: 28px;
+}
+
+.VPNavBarTitle .title {
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+/* ========================================
+   Typography
+   ======================================== */
+
+/* Headings */
+.vp-doc h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 0;
+}
+
+.vp-doc h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  border-top: 1px solid var(--vp-c-divider);
+  padding-top: 1.5rem;
+  margin-top: 3rem;
+}
+
+.vp-doc h3 {
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+/* Links */
+.vp-doc a {
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--vp-c-brand-1);
+  transition: all 0.2s ease;
+}
+
+.vp-doc a:hover {
+  border-bottom-style: solid;
+  color: var(--vp-c-brand-2);
+}
+
+/* Code blocks */
+.vp-doc div[class*='language-'] {
+  border-radius: 12px;
+  margin: 1.5rem 0;
+}
+
+.vp-doc code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.875em;
+}
+
+/* Inline code */
+.vp-doc :not(pre) > code {
+  background: var(--vp-c-bg-soft);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  color: var(--vp-c-brand-1);
+}
+
+/* ========================================
+   Custom Blocks
+   ======================================== */
+
+/* Tip block */
+.vp-doc .custom-block.tip {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: var(--vp-c-brand-1);
+  border-radius: 12px;
+}
+
+.vp-doc .custom-block.tip .custom-block-title {
+  color: var(--vp-c-brand-1);
+}
+
+/* Warning block */
+.vp-doc .custom-block.warning {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: #f59e0b;
+  border-radius: 12px;
+}
+
+/* Danger block */
+.vp-doc .custom-block.danger {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: #ef4444;
+  border-radius: 12px;
+}
+
+/* Info block */
+.vp-doc .custom-block.info {
+  background: rgba(6, 182, 212, 0.08);
+  border-color: #06b6d4;
+  border-radius: 12px;
+}
+
+/* ========================================
+   Tables
+   ======================================== */
+
+.vp-doc table {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--vp-c-divider);
+  margin: 1.5rem 0;
+}
+
+.vp-doc th {
+  background: var(--vp-c-bg-soft);
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.vp-doc td {
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+/* ========================================
+   Search
+   ======================================== */
+
+.DocSearch-Button {
+  border-radius: 10px;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+}
+
+.DocSearch-Button:hover {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-bg-mute);
+}
+
+/* ========================================
+   Footer
+   ======================================== */
+
+.VPFooter {
+  background: var(--vp-c-bg-alt);
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+/* ========================================
+   Mobile Optimizations
+   ======================================== */
+
 @media (max-width: 768px) {
-  .VPFeature {
-    border-radius: 12px;
+  .vp-doc h1 {
+    font-size: 1.875rem;
+  }
+  
+  .vp-doc h2 {
+    font-size: 1.5rem;
+  }
+  
+  .vp-doc h3 {
+    font-size: 1.25rem;
+  }
+  
+  .VPNav {
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* ========================================
+   Home Page Specific
+   ======================================== */
+
+/* Remove default hero on homepage - we use custom components */
+.VPHomeHero {
+  display: none;
+}
+
+/* Adjust home padding */
+.VPHome {
+  padding-top: 0 !important;
+}
+
+/* Content width for home */
+.VPHome .container {
+  max-width: 1200px;
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ========================================
+   Scrollbar
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--vp-c-bg-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vp-c-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vp-c-text-3);
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+
+@media print {
+  .VPNav,
+  .VPSidebar,
+  .VPFooter,
+  .VPLocalNav {
+    display: none !important;
+  }
+  
+  .VPDoc {
+    padding: 0 !important;
   }
 }

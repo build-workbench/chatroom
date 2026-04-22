@@ -6,6 +6,7 @@ import (
 
 	"chatroom/internal/auth"
 	"chatroom/internal/config"
+	"chatroom/internal/db"
 	"chatroom/internal/models"
 
 	"gorm.io/gorm"
@@ -36,7 +37,7 @@ func (s *UserService) Register(username, password string) (*RegisterResult, erro
 	}
 	user := models.User{Username: username, PasswordHash: hash}
 	if err := s.db.Create(&user).Error; err != nil {
-		if isUniqueViolation(err) {
+		if db.IsUniqueViolation(err) {
 			return nil, ErrUsernameTaken
 		}
 		return nil, err
