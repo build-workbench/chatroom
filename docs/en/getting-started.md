@@ -22,7 +22,7 @@ It prioritizes:
 | Tool | Required Version | Purpose |
 |------|-----------------|---------|
 | Go | 1.24+ | Backend runtime |
-| Node.js | 20+ | Frontend build |
+| Node.js | 22+ | Frontend build |
 | Docker | Latest | PostgreSQL database |
 
 ---

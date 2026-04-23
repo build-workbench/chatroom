@@ -44,7 +44,7 @@ chatroom/
 │   ├── docker/              # Dockerfile
 │   ├── k8s/                 # Kubernetes manifests
 │   └── prometheus/          # Prometheus configuration
-└── changelog/               # Detailed change records
+└── openspec/                # Specifications and active changes
 ```
 
 ## Architecture Diagram

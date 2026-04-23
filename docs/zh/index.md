@@ -2,64 +2,46 @@
 layout: home
 hero:
   name: ChatRoom 文档
-  text: ''
-  tagline: 用实战项目学会全栈开发 — Go + React + WebSocket
-  image:
-    src: /logo.svg
-    alt: ChatRoom Logo
+  text: 一个能跑起来、也能读懂的实时全栈项目
+  tagline: 用一个紧凑的代码库学习认证、WebSocket、持久化、监控，以及 OpenSpec 驱动的协作流程。
   actions:
     - theme: brand
       text: 快速开始
       link: /zh/getting-started
     - theme: alt
-      text: 学习路径
-      link: /zh/learning-path
+      text: 架构文档
+      link: /zh/architecture
     - theme: alt
       text: GitHub
       link: https://github.com/LessUp/chatroom
+
+features:
+  - title: 端到端真实链路
+    details: 不是孤立知识点，而是把认证、房间、消息、WebSocket 和存储放进同一个可运行项目里理解。
+  - title: 仓库边界清晰
+    details: README、文档站、OpenSpec 和版本历史各司其职，读者不会在重复内容里迷路。
+  - title: 适合教学与自学
+    details: 足够小，便于完整阅读；又足够完整，能覆盖交付、监控和规范化协作。
 ---
 
-## 核心特性
+## 建议从这里开始
 
-| 特性 | 描述 |
-|------|------|
-| 🚀 **5 分钟启动** | Docker Compose 一键启动，热重载开发 |
-| 🔐 **JWT 双 Token** | Access + Refresh Token 完整实现 |
-| ⚡ **WebSocket 实时** | 房间级广播、在线状态、心跳保活 |
-| 📊 **Prometheus 监控** | 内置指标，配套 Grafana 仪表盘 |
-| 🧪 **测试完备** | Go 单元/集成测试，前端 Vitest 测试 |
-| 📦 **生产就绪** | Docker 多阶段构建，K8s 部署清单 |
+- [快速开始](/zh/getting-started)
+- [学习路径](/zh/learning-path)
+- [架构文档](/zh/architecture)
+- [API 文档](/zh/api)
+- [常见问题](/zh/faq)
 
-## 快速开始
+## 你可以重点看什么
 
-```bash
-# 克隆项目
-git clone https://github.com/LessUp/chatroom.git
-cd chatroom
+- JWT 登录与刷新令牌流程
+- 房间级 WebSocket 消息广播
+- 基于 PostgreSQL + GORM 的持久化设计
+- React + TypeScript 聊天客户端的组织方式
+- Prometheus 指标与健康检查
+- OpenSpec 如何落到日常仓库协作里
 
-# 启动 PostgreSQL
-docker compose up -d postgres
+## 想看规范定义？
 
-# 启动后端
-go run ./cmd/server
-
-# 启动前端（另一终端）
-npm --prefix frontend install
-npm --prefix frontend run dev
-```
-
-访问 http://localhost:5173 开始体验！
-
-## 文档导航
-
-- [快速开始](./getting-started) — 项目启动与环境配置
-- [学习路径](./learning-path) — 后端/前端/全栈学习路径
-- [API 文档](./api) — REST + WebSocket 接口
-- [架构文档](./architecture) — 系统分层与数据流
-- [设计文档](./design) — 设计决策与扩展方向
-- [监控指南](./monitoring/README) — Prometheus + Grafana 配置
-- [常见问题](./faq) — 问题解答
-
----
-
-🔗 [English Documentation](/en/) | [返回门户页](/)
+- 规范主目录：[openspec/specs](https://github.com/LessUp/chatroom/tree/master/openspec/specs)
+- 活跃变更：[openspec/changes](https://github.com/LessUp/chatroom/tree/master/openspec/changes)

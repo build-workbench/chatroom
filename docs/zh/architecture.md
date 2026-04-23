@@ -44,7 +44,7 @@ chatroom/
 │   ├── docker/              # Dockerfile
 │   ├── k8s/                 # Kubernetes 清单
 │   └── prometheus/          # Prometheus 配置
-└── changelog/               # 细粒度变更记录
+└── openspec/                # 规约与活跃变更
 ```
 
 ## 架构图

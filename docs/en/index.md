@@ -2,64 +2,46 @@
 layout: home
 hero:
   name: ChatRoom Docs
-  text: ''
-  tagline: Learn Full-Stack Development — Go + React + WebSocket
-  image:
-    src: /logo.svg
-    alt: ChatRoom Logo
+  text: A compact real-time app you can run and understand
+  tagline: Learn auth, WebSocket messaging, persistence, observability, and OpenSpec-driven workflow in one codebase.
   actions:
     - theme: brand
-      text: Get Started
+      text: Get started
       link: /en/getting-started
     - theme: alt
-      text: Learning Path
-      link: /en/learning-path
+      text: Architecture
+      link: /en/architecture
     - theme: alt
       text: GitHub
       link: https://github.com/LessUp/chatroom
+
+features:
+  - title: Real application flow
+    details: See how REST auth, room management, and WebSocket messaging work together instead of learning them in isolation.
+  - title: Clear repository boundaries
+    details: README, docs, OpenSpec, and release history each serve a distinct role, so you always know where to look.
+  - title: Good teaching signal
+    details: The project is intentionally small enough to study, but rich enough to cover delivery, monitoring, and change management.
 ---
 
-## Core Features
+## Start here
 
-| Feature | Description |
-|---------|-------------|
-| 🚀 **5-Minute Setup** | Docker Compose one-click, hot-reload dev |
-| 🔐 **JWT Dual Token** | Access + Refresh Token implementation |
-| ⚡ **WebSocket Real-time** | Room-based broadcast, presence, heartbeat |
-| 📊 **Prometheus Metrics** | Built-in metrics with Grafana dashboards |
-| 🧪 **Comprehensive Tests** | Go unit/integration, frontend Vitest |
-| 📦 **Production Ready** | Docker multi-stage, K8s manifests |
+- [Getting Started](/en/getting-started)
+- [Learning Path](/en/learning-path)
+- [Architecture](/en/architecture)
+- [API Reference](/en/api)
+- [FAQ](/en/faq)
 
-## Quick Start
+## What you can study in this repo
 
-```bash
-# Clone
-git clone https://github.com/LessUp/chatroom.git
-cd chatroom
+- JWT login and refresh-token flow
+- Room-based WebSocket message delivery
+- PostgreSQL-backed persistence with GORM
+- React + TypeScript chat client organization
+- Prometheus metrics and health endpoints
+- OpenSpec as a practical workflow for repository changes
 
-# Start PostgreSQL
-docker compose up -d postgres
+## Looking for the source of truth?
 
-# Start backend
-go run ./cmd/server
-
-# Start frontend (another terminal)
-npm --prefix frontend install
-npm --prefix frontend run dev
-```
-
-Visit http://localhost:5173!
-
-## Documentation
-
-- [Getting Started](./getting-started) — Project setup & environment
-- [Learning Path](./learning-path) — Backend/frontend/full-stack paths
-- [API Documentation](./api) — REST + WebSocket interfaces
-- [Architecture](./architecture) — System layers & data flow
-- [Design](./design) — Design decisions & extension paths
-- [Monitoring](./monitoring/README) — Prometheus + Grafana setup
-- [FAQ](./faq) — Common questions
-
----
-
-🔗 [中文文档](/zh/) | [Back to Portal](/)
+- Normative specs: [openspec/specs](https://github.com/LessUp/chatroom/tree/master/openspec/specs)
+- Active changes: [openspec/changes](https://github.com/LessUp/chatroom/tree/master/openspec/changes)
