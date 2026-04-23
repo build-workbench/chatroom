@@ -6,11 +6,6 @@ on:
     paths:
       - 'docs/**'
       - '.github/workflows/pages.yml'
-      - 'README.md'
-      - 'README.zh-CN.md'
-      - 'CONTRIBUTING.md'
-      - 'CHANGELOG.md'
-      - 'SECURITY.md'
   workflow_dispatch:
 
 permissions:
@@ -33,12 +28,6 @@ jobs:
         with:
           sparse-checkout: |
             docs
-            .github
-            README.md
-            README.zh-CN.md
-            CHANGELOG.md
-            CONTRIBUTING.md
-            SECURITY.md
           sparse-checkout-cone-mode: false
 
       - name: Set up Node.js

@@ -1,58 +1,27 @@
-## 变更描述
+## Summary
 
-简要描述这个 PR 做了什么。
+What changed and why?
 
-## 变更类型
+## OpenSpec
 
-- [ ] Bug 修复 (non-breaking change)
-- [ ] 新功能 (non-breaking change)
-- [ ] Breaking change (会影响现有功能)
-- [ ] 文档更新
-- [ ] 代码重构
-- [ ] 测试更新
-- [ ] CI/CD 更新
+- Change name:
+- Spec or task reference:
 
-## 关联 Issue
+## Validation
 
-Fixes #(issue number)
-
-## 变更内容
-
-- 变更点 1
-- 变更点 2
-- 变更点 3
-
-## 测试说明
-
-描述你如何测试了这些变更。
+List the commands you ran.
 
 ```bash
-# 测试命令示例
-make test
 ```
 
-## 截图（如适用）
+## Surface impact
 
-添加截图来展示 UI 变更。
+- [ ] Code
+- [ ] Docs
+- [ ] Workflow / CI
+- [ ] OpenSpec
+- [ ] GitHub metadata
 
-## 检查清单
+## Notes
 
-- [ ] 我的代码遵循项目的代码风格
-- [ ] 我已进行自我代码审查
-- [ ] 我已添加必要的注释，特别是在难以理解的地方
-- [ ] 我已更新相关文档
-- [ ] 我的更改没有产生新的警告
-- [ ] 我已添加测试来证明修复有效或功能正常
-- [ ] 新的和现有的单元测试都通过
-- [ ] 任何依赖的更改已合并并发布
-
-## 部署注意事项
-
-- [ ] 需要数据库迁移
-- [ ] 需要新的环境变量
-- [ ] 需要更新配置文件
-- [ ] 无特殊部署要求
-
-## 额外说明
-
-添加任何其他关于 PR 的信息。
+Anything reviewers should pay special attention to?

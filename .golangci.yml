@@ -1,89 +1,80 @@
+version: "2"
+
 run:
-  timeout: 5m
   modules-download-mode: readonly
 
 linters:
   enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-    - gofmt
-    - goimports
-    - misspell
-    - gosec
     - bodyclose
+    - copyloopvar
     - durationcheck
     - errorlint
     - gocritic
+    - gosec
+    - intrange
+    - misspell
     - nilerr
     - prealloc
     - unconvert
     - unparam
-    - copyloopvar
-    - intrange
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-
-  govet:
-    enable-all: true
-    disable:
-      - fieldalignment
-
-  gofmt:
-    simplify: true
-
-  goimports:
-    local-prefixes: chatroom
-
-  misspell:
-    locale: US
-
-  gosec:
-    excludes:
-      - G104
-    config:
-      G306: "0644"
-
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
-    disabled-checks:
-      - hugeParam
-      - rangeValCopy
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    gocritic:
+      disabled-checks:
+        - hugeParam
+        - rangeValCopy
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+    gosec:
+      excludes:
+        - G104
+      config:
+        G306: "0644"
+    govet:
+      disable:
+        - fieldalignment
+      enable-all: true
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - errcheck
+          - gocritic
+          - gosec
+        path: _test\.go
+      - linters:
+          - gocritic
+        path: cmd/
+      - linters:
+          - staticcheck
+        text: 'SA9003:'
+      - linters:
+          - govet
+        text: 'shadow:'
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 
 issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
-        - gosec
-        - gocritic
-
-    - path: cmd/
-      linters:
-        - gocritic
-
-    - linters:
-        - staticcheck
-      text: "SA9003:"
-
-    - linters:
-        - govet
-      text: "shadow:"
-
   max-issues-per-linter: 50
   max-same-issues: 10
 
-output:
-  formats:
-    - format: colored-line-number
-  print-issued-lines: true
-  print-linter-name: true
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
