@@ -18,8 +18,8 @@ type UserService struct {
 	cfg config.Config
 }
 
-func NewUserService(db *gorm.DB, cfg config.Config) *UserService {
-	return &UserService{db: db, cfg: cfg}
+func NewUserService(gormDB *gorm.DB, cfg config.Config) *UserService {
+	return &UserService{db: gormDB, cfg: cfg}
 }
 
 // RegisterResult 注册成功后返回的数据。

@@ -17,8 +17,8 @@ type RoomService struct {
 	hub *ws.Hub
 }
 
-func NewRoomService(db *gorm.DB, hub *ws.Hub) *RoomService {
-	return &RoomService{db: db, hub: hub}
+func NewRoomService(gormDB *gorm.DB, hub *ws.Hub) *RoomService {
+	return &RoomService{db: gormDB, hub: hub}
 }
 
 // RoomDTO 是对外输出的房间数据。

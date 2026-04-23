@@ -35,7 +35,7 @@ func NewRealtime(db *gorm.DB, hub *Hub, cfg config.Config) *Realtime {
 		db:      db,
 		hub:     hub,
 		cfg:     cfg,
-		enabled: db != nil && db.Dialector.Name() == "postgres",
+		enabled: db != nil && db.Name() == "postgres",
 		stop:    make(chan struct{}),
 	}
 	if rt.enabled {
