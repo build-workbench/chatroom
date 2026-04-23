@@ -18,6 +18,7 @@ coverage.*
 *.log
 
 # 前端与打包目录
+.vite/
 node_modules/
 web/node_modules/
 web/dist/
@@ -46,3 +47,7 @@ Thumbs.db
 # 临时编译产物
 server
 chatroom
+
+# BMad Method V6
+_bmad/
+_bmad-output/
