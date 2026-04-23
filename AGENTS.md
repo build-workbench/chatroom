@@ -1,135 +1,81 @@
 # Repository Collaboration Guide
 
-## Project Philosophy: Spec-Driven Development (SDD)
+## Project Snapshot
 
-This repository strictly follows the **Spec-Driven Development (SDD)** paradigm. All code implementations must use the `/specs` directory as the **Single Source of Truth** for product requirements, technical designs, API definitions, database schemas, and test specifications.
+ChatRoom is a teaching-oriented real-time chat application:
+- **Backend**: Go 1.24, Gin, GORM, Gorilla WebSocket, PostgreSQL
+- **Frontend**: React 19, TypeScript, Vite 7, Tailwind CSS v4
+- **Docs**: VitePress
+- **Process**: OpenSpec-driven development
 
-## Directory Context
+The repository is being normalized for an archive-ready end state. Favor clarity, consistency, and maintainability over feature expansion or engineering theater.
 
-| Directory | Purpose |
-|-----------|---------|
-| `/specs/product/` | Product feature definitions and acceptance criteria (PRDs) |
-| `/specs/rfc/` | Technical design documents and architecture RFCs |
-| `/specs/api/` | API interface specifications (OpenAPI, WebSocket protocols) |
-| `/specs/db/` | Database schema definitions and migration specifications |
-| `/specs/testing/` | Test specifications and BDD feature files |
-| `/docs/` | User-facing documentation (guides, tutorials, architecture overview) |
-| `/specs/README.md` | Complete spec index and workflow guide |
+## Canonical Surfaces
 
-## AI Agent Workflow Instructions
-
-When you (the AI) are asked to develop a new feature, modify existing functionality, or fix a bug, **you MUST strictly follow this workflow without skipping any steps**:
-
-### Step 1: Review Specs (审查与分析)
-
-- First, read the relevant specs in `/specs/` directory (product requirements, RFCs, API definitions)
-- If the user's request conflicts with existing specs, **stop immediately** and point out the conflict, asking whether the spec should be updated first
-- **Never write code before understanding the spec context**
-
-### Step 2: Spec-First Update (规范优先)
-
-- If this is a new feature, or requires changing existing interfaces/database structures, **you MUST first propose modifying or creating the corresponding spec documents** (e.g., RFC, API spec, DB schema)
-- Wait for user confirmation of spec changes before entering the code implementation phase
-- Ensure spec documents are clear, complete, and unambiguous
-
-### Step 3: Code Implementation (代码实现)
-
-- When writing code, **100% comply with spec definitions** (including variable naming, API paths, data types, status codes, etc.)
-- **Do NOT add features not defined in specs** (No Gold-Plating)
-- Follow code style conventions defined in the project (see Code Style section below)
-
-### Step 4: Test Verification (测试验证)
-
-- Write unit tests and integration tests based on the acceptance criteria in `/specs/`
-- Ensure test cases cover all boundary conditions described in the specs
-- Run `go test ./...` and `npm --prefix frontend run test` to verify
-
-## Code Generation Rules
-
-- Any changes to externally exposed APIs **must** synchronously modify the corresponding spec in `/specs/api/`
-- When uncertain about technical details, consult the architecture conventions in `/specs/rfc/` — do not fabricate design patterns
-- All implementations must have corresponding spec references
-
-## Project Positioning
-
-This repository is primarily for **personal practice and teaching demonstrations**, not for production deployment priorities. When submitting changes, prioritize:
-
-- Documentation and code behavior consistency
-- Clear local execution paths
-- Tests and builds passing directly
-- Simple, understandable design for teaching purposes
-
-**Avoid introducing complexity beyond current project goals** just to "appear more engineered."
-
-## Build, Test & Development Commands
-
-| Command | Purpose |
+| Surface | Purpose |
 |---------|---------|
-| `docker compose up -d postgres` | Start PostgreSQL 16 service |
-| `go run ./cmd/server` | Run backend API / WebSocket service |
-| `go build ./cmd/server` | Build backend binary |
-| `go test -race ./...` | Run all Go tests (requires PostgreSQL) |
-| `npm --prefix frontend run test` | Run frontend unit tests |
-| `npm --prefix frontend run build` | Build React frontend |
-| `make lint` | Run Go linter (golangci-lint) |
-| `make all` | Run lint + test + build (Go only) |
+| `README.md` / `README.zh-CN.md` | Entry point, positioning, quick start, canonical links |
+| `docs/` | Guided learning and operational walkthroughs |
+| `openspec/specs/` | Normative capability requirements |
+| `openspec/changes/` | Active change proposals and task lists |
+| `CHANGELOG.md` | Concise release-level history |
 
-## Code Style & Naming Conventions
+Do not duplicate the same guidance across these layers.
 
-### Go Code
+## Default Workflow
 
-- Format with `gofmt ./...`
-- Run `goimports -w -local chatroom .` for import organization
-- Use tabs for indentation
-- Package names: short, lowercase, matching directory names
-- Exports: `CamelCase`, internals: `camelCase`
-- JSON tags: `snake_case` to match API payloads
-- Shared DTOs in `internal/models`, configuration structs in `internal/config`
-- Table-driven tests preferred, test package same as tested package (e.g., `package ws`)
+For any non-trivial feature, refactor, workflow change, or cross-cutting cleanup:
 
-### Frontend Code
+1. **Explore first**: use `/opsx:explore` if scope or design is unclear.
+2. **Propose the change**: use `/opsx:propose <name>` to create proposal, design, specs, and tasks.
+3. **Implement from tasks**: use `/opsx:apply <name>` and keep tasks updated as work completes.
+4. **Archive finished work**: use `/opsx:archive <name>` when implementation is complete.
 
-- 2-space indent, Prettier configured
-- Config: semi, single quotes, trailing comma es5, 100 print width
-- Kebab-case filenames, PascalCase component names
-- React components in `frontend/src`, static fallback in `web/`
-- TypeScript strict mode enabled
+If a request changes externally visible behavior, documentation boundaries, or engineering policy, update the relevant OpenSpec artifact in the same change.
 
-### Commit Messages
+## Working Rules
 
-- Use imperative mood, ~50 character title
-- Supplementary body explains context, impact, verification
-- Use `Refs #123` for related issues
+- Keep the repository **small and truthful**. Delete or consolidate stale docs, scripts, and configs instead of preserving low-value history.
+- Use `openspec/` paths only. Legacy `/specs` references are drift and should be removed.
+- Prefer **one coherent toolchain story** across docs, scripts, and CI. This repo defaults to **npm** for JavaScript tooling.
+- Prefer **portable automation**. Do not introduce machine-specific absolute paths in hooks or instructions.
+- Prefer **long-running autopilot** for substantial cleanup work. Use `/review` or targeted subagents at meaningful milestones. Avoid `/fleet` unless the work is clearly parallelizable and worth the extra cost.
+- Default to a **minimal MCP/plugin posture**. Add extra integrations only when they provide recurring, repo-specific value.
 
-## Test Conventions
+## Supported Tooling Baseline
 
-- Prefer table-driven tests with same package name as tested code
-- Database tests should be low-dependency and locally runnable
-- WebSocket tests should cover broadcasting, online count, and room isolation
-- Before submission, confirm: `go test ./...`, `npm --prefix frontend run test`, `npm --prefix frontend run build` pass
-- If intentionally leaving test gaps, document reasons in commit message
+- **Go LSP**: `gopls`
+- **Frontend LSP**: TypeScript language service / `typescript-language-server`
+- **Diagnostics**: ESLint for frontend, `golangci-lint` for Go
+- **Optional editor support**: Tailwind/VitePress language tooling only if it materially helps your workflow
 
-## Submission & Pull Request Guidelines
+These LSPs are broadly reusable across Claude, Copilot, Codex, and other editors. Prefer documenting a good baseline over committing editor-specific lock-in.
 
-- Use imperative commit titles, ~50 chars
-- Pull Requests should include: change background, test evidence, manual verification steps, and impact on docs/config/release
-- Link related issues with `Refs #123`
-- Reference spec documents when applicable
+## Build, Test, and Docs Commands
 
-## Security & Configuration
+```bash
+docker compose up -d postgres
+make lint
+go test -race ./...
+npm --prefix frontend run test
+npm --prefix frontend run build
+npm --prefix docs ci
+npm --prefix docs run docs:build
+```
 
-- Runtime configuration read from `internal/config`, overridable via environment variables:
-  - `APP_PORT`, `DATABASE_DSN`, `JWT_SECRET`, `APP_ENV`
-  - `ACCESS_TOKEN_TTL_MINUTES`, `REFRESH_TOKEN_TTL_DAYS`
-  - `LOG_LEVEL`, `LOG_FORMAT`
-- **Never commit real secrets**; teaching environments can use defaults, but production should explicitly set `JWT_SECRET`
-- Logs controlled via `LOG_LEVEL` (trace/debug/info/warn/error/fatal) and `LOG_FORMAT` (console/json)
-- Avoid logging sensitive user input directly in WebSocket or auth logic
+## Repo-Specific Gotchas
 
-## Related Documents
+- The Go app reads environment variables directly; `.env` is not auto-loaded.
+- Go tests require PostgreSQL to be running.
+- Vite dev proxies `/api` and `/ws` to the Go backend on port `8080`.
+- Go serves `frontend/dist` if present, otherwise it falls back to `web/`.
+- The docs site is the public GitHub Pages surface; keep it distinct from the README.
 
-| Document | Purpose |
-|----------|---------|
-| [CLAUDE.md](CLAUDE.md) | Claude Code-specific guidance |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
-| [specs/README.md](specs/README.md) | Spec index and templates |
+## Change Quality Bar
+
+Before wrapping up a change:
+- the affected OpenSpec artifacts must match reality
+- the edited docs/configs must not contradict the codebase
+- the relevant existing verification commands must pass for the touched surfaces
+
+When in doubt, simplify.

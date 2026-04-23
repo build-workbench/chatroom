@@ -4,230 +4,123 @@
 [![Docs](https://github.com/LessUp/chatroom/actions/workflows/pages.yml/badge.svg)](https://lessup.github.io/chatroom/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/LessUp/chatroom)](https://github.com/LessUp/chatroom/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/LessUp/chatroom)](https://goreportcard.com/report/github.com/LessUp/chatroom)
 
 English | [简体中文](README.zh-CN.md)
 
-A **teaching-oriented** real-time chat room application demonstrating modern full-stack development practices with Go, React, PostgreSQL, WebSocket, and production-ready CI/CD.
+A teaching-oriented real-time chat application that demonstrates how to build and reason about a modern full-stack system with **Go**, **React**, **PostgreSQL**, **WebSocket**, **tests**, **observability**, and **OpenSpec-driven change management**.
 
-> **Design Philosophy**: Runnable → Understandable → Verifiable → Extendable
+## Why this repo exists
 
----
+This project is designed to be:
+- **Runnable**: you can start the stack locally in minutes
+- **Understandable**: the backend, frontend, docs, and specs are kept explicit
+- **Teachable**: the repository is organized so learners can follow how a real-time product fits together
 
-## 🎯 Who Is This For
+If you want a compact codebase that still covers authentication, rooms, messages, WebSocket delivery, monitoring, and deployment basics, this repo is for you.
 
-This project is designed for:
+## What you can learn
 
-- 🎓 **Students** learning full-stack development with Go and React
-- 👨‍💻 **Developers** exploring real-time communication patterns (WebSocket)
-- 🏗️ **Teams** seeking examples of Spec-Driven Development workflow
-- 🔍 **Engineers** studying production-ready practices (observability, CI/CD, testing)
+- JWT login, refresh tokens, and request authentication
+- Room-based WebSocket messaging and message persistence
+- Go service layering and database-backed handlers
+- React + TypeScript client structure for chat flows
+- Prometheus metrics, health checks, and release workflows
+- How OpenSpec can keep product and engineering changes aligned
 
-**Note**: This project prioritizes code clarity and understanding over feature density.
-
----
-
-## 🚀 Quick Start
+## Quick start
 
 ### Prerequisites
 
-- Go 1.24+
-- Node.js 20+
-- Docker & Docker Compose
+- Go 1.24
+- Node.js 22
+- Docker
 
-### Run Locally
+### Run locally
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/LessUp/chatroom.git && cd chatroom
+git clone https://github.com/LessUp/chatroom.git
+cd chatroom
 
-# 2. Start PostgreSQL
 docker compose up -d postgres
 
-# 3. Configure environment (optional for local dev, required for production)
-cp .env.example .env
-# ⚠️ Edit .env and set JWT_SECRET for production
-
-# 4. Start backend (Terminal 1)
+# backend
 go run ./cmd/server
 
-# 5. Start frontend (Terminal 2) - first time
-npm --prefix frontend install
+# frontend (another terminal)
+npm --prefix frontend ci
 npm --prefix frontend run dev
 ```
 
-### Access URLs
+### URLs
 
-| Service | URL |
+| Surface | URL |
 |---------|-----|
-| Frontend (Dev) | http://localhost:5173 |
+| Frontend dev server | http://localhost:5173 |
 | Backend | http://localhost:8080 |
+| Docs site | https://lessup.github.io/chatroom/ |
 
----
+## Where to go next
 
-## ✨ Features
+- **Docs site**: [English](https://lessup.github.io/chatroom/en/) · [中文](https://lessup.github.io/chatroom/zh/)
+- **Getting started**: [EN](https://lessup.github.io/chatroom/en/getting-started) · [ZH](https://lessup.github.io/chatroom/zh/getting-started)
+- **Architecture walkthrough**: [EN](https://lessup.github.io/chatroom/en/architecture) · [ZH](https://lessup.github.io/chatroom/zh/architecture)
+- **API reference**: [EN](https://lessup.github.io/chatroom/en/api) · [ZH](https://lessup.github.io/chatroom/zh/api)
+- **OpenSpec source of truth**: [`openspec/specs/`](openspec/specs)
 
-### 🔐 Authentication & Security
-- JWT access tokens + refresh token rotation
-- Secure WebSocket ticket authentication
-- Rate limiting and CORS validation
-- Password hashing with bcrypt
-
-### 💬 Real-time Chat
-- Room-based WebSocket broadcasting
-- Typing indicators and online presence
-- Cursor-based message pagination
-- Message history with persistent storage
-
-### 🔧 Observability & Ops
-- Prometheus metrics + Grafana dashboards
-- Structured logging with zerolog
-- Health check endpoints
-- Docker multi-stage builds + Kubernetes manifests
-
----
-
-## 🏗️ Architecture
-
-```mermaid
-graph LR
-    Browser["🌐 Browser<br/>React + Vite"]
-    Backend["⚡ Go Backend<br/>Gin + WebSocket"]
-    DB[("🐘 PostgreSQL<br/>Persistence")]
-    
-    Browser -->|HTTP API| Backend
-    Browser -.->|WebSocket| Backend
-    Backend -->|GORM| DB
-```
-
-### Tech Stack
+## Tech snapshot
 
 | Layer | Technology |
 |-------|------------|
-| **Backend** | Go 1.24, Gin, GORM, gorilla/websocket, zerolog |
-| **Frontend** | React 19, TypeScript, Vite 7, Tailwind CSS v4 |
-| **Database** | PostgreSQL 16 |
-| **Monitoring** | Prometheus, Grafana |
-| **Deployment** | Docker, Kubernetes, GitHub Actions |
+| Backend | Go 1.24, Gin, GORM, Gorilla WebSocket, zerolog |
+| Frontend | React 19, TypeScript, Vite 7, Tailwind CSS v4 |
+| Database | PostgreSQL 16 |
+| Observability | Prometheus, Grafana |
+| Delivery | Docker, GitHub Actions, GitHub Pages |
 
----
+## Project structure
 
-## 📁 Project Structure
-
-```
+```text
 chatroom/
-├── cmd/server/              # Application entry point
-├── internal/                # Private packages
-│   ├── auth/                # JWT, password hashing, tokens
-│   ├── config/              # Configuration loading
-│   ├── db/                  # Database connection, migrations
-│   ├── server/              # HTTP routes and handlers
-│   ├── service/             # Business logic
-│   ├── ws/                  # WebSocket Hub, connections
-│   ├── mw/                  # Middleware (auth, rate limit, CORS)
-│   ├── metrics/             # Prometheus metrics
-│   └── models/              # GORM data models
-├── frontend/                # React frontend
-├── web/                     # Static fallback UI
-├── specs/                   # Project specifications (SDD source of truth)
-├── docs/                    # VitePress documentation site
-├── deploy/                  # Docker, Kubernetes configs
-└── changelog/               # Detailed change records
+├── cmd/server/        # application entrypoint
+├── internal/          # backend application code
+├── frontend/          # React client
+├── web/               # static fallback UI
+├── docs/              # documentation site
+├── openspec/          # specs and active changes
+└── deploy/            # Docker and Kubernetes assets
 ```
 
----
+## OpenSpec workflow
 
-## 📚 Documentation
-
-### User Documentation
-- 📖 [Documentation Site (EN)](https://lessup.github.io/chatroom/en/)
-- 📖 [Documentation Site (ZH)](https://lessup.github.io/chatroom/zh/)
-- 🚀 [Getting Started](https://lessup.github.io/chatroom/en/getting-started)
-- 📚 [API Reference](https://lessup.github.io/chatroom/en/api)
-- 🏗️ [Architecture](https://lessup.github.io/chatroom/en/architecture)
-- ❓ [FAQ](https://lessup.github.io/chatroom/en/faq)
-
-### Specifications (Single Source of Truth)
-- 📋 [Spec Index](specs/README.md) — Complete specification directory
-- 📦 [Product Specs](specs/product/) — Requirements and acceptance criteria
-- 🏛️ [RFCs](specs/rfc/) — Technical design documents
-- 🔌 [API Specs](specs/api/) — Interface specifications
-- 🗄️ [DB Specs](specs/db/) — Database schemas
-
----
-
-## ⚙️ Configuration
-
-Configuration is loaded via environment variables. See `.env.example` for all options.
+Non-trivial repository changes are managed through OpenSpec:
 
 ```bash
-# Required for production
-JWT_SECRET=your-secure-secret-key
-
-# Optional common settings
-APP_PORT=8080
-DATABASE_DSN=host=localhost user=postgres password=postgres dbname=chatroom port=5432 sslmode=disable
-APP_ENV=dev
+/opsx:explore
+/opsx:propose <change-name>
+/opsx:apply <change-name>
+/opsx:archive <change-name>
 ```
 
----
+The canonical requirements live in [`openspec/specs/`](openspec/specs), and active work lives in [`openspec/changes/`](openspec/changes).
 
-## 🧪 Testing
+## Validation commands
 
 ```bash
-# Go backend tests (requires PostgreSQL running)
+docker compose up -d postgres
+make lint
 go test -race ./...
-
-# Frontend tests
 npm --prefix frontend run test
-
-# Lint and build
-make all
+npm --prefix frontend run build
+npm --prefix docs ci
+npm --prefix docs run docs:build
 ```
 
----
+## Contributing and security
 
-## 🐳 Docker Deployment
+- Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security policy: [SECURITY.md](SECURITY.md)
+- Release history: [CHANGELOG.md](CHANGELOG.md)
 
-```bash
-# Full stack with frontend, backend, and database
-docker compose up -d
-
-# With monitoring (Prometheus + Grafana)
-docker compose --profile monitoring up -d
-```
-
----
-
-## 🤝 Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-We welcome contributions! Please ensure:
-- All tests pass: `go test ./...` and `npm --prefix frontend run test`
-- Code follows our style guide (see [AGENTS.md](AGENTS.md))
-- Specs are updated for any API changes
-
----
-
-## 🔒 Security
-
-See [SECURITY.md](SECURITY.md) for security policy and best practices.
-
----
-
-## 📄 Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for version history.
-
----
-
-## 📜 License
+## License
 
 [MIT License](LICENSE)
-
----
-
-<p align="center">
-  Built with ❤️ for teaching and learning
-</p>

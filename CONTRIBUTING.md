@@ -1,329 +1,96 @@
 # Contributing to ChatRoom
 
-Thank you for your interest in contributing to ChatRoom! We welcome all forms of contributions.
+Thanks for your interest in contributing.
 
-**This project follows Spec-Driven Development (SDD).** Before implementing features or changes, please review relevant specifications in `/specs/` directory. See [AGENTS.md](AGENTS.md) for the complete SDD workflow.
+This repository uses **OpenSpec** for non-trivial changes. The goal is to keep the codebase understandable, runnable, and easy to maintain as a teaching project.
 
-## Code of Conduct
+## Before you start
 
-By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md).
+Read these files first:
 
----
+- [AGENTS.md](AGENTS.md) — canonical repository workflow
+- [`openspec/specs/`](openspec/specs) — normative requirements
+- [SECURITY.md](SECURITY.md) — how to report security issues
 
-## How to Contribute
+## Change workflow
 
-### Spec-First Workflow
-
-For new features or significant changes:
-
-1. **Review existing specs**: Check `/specs/` directory for related requirements, RFCs, and API definitions
-2. **Propose spec changes**: If specs don't exist or need updates, create/modify spec documents first
-3. **Get approval**: Wait for spec review before implementation
-4. **Implement**: Write code according to specs (no gold-plating)
-5. **Test**: Ensure tests cover all acceptance criteria
-
-See [specs/README.md](specs/README.md) for complete specification structure.
-
-### Reporting Bugs
-
-1. Search [Issues](../../issues) for existing reports
-2. If not found, create **New Issue** → **Bug Report**
-3. Include:
-   - Reproduction steps
-   - Expected behavior
-   - Actual behavior
-   - Environment (Go version, Node version, OS)
-   - Relevant logs or screenshots
-
-### Suggesting Features
-
-1. Search [Issues](../../issues) for existing suggestions
-2. If not found, create **New Issue** → **Feature Request**
-3. Describe:
-   - Feature description
-   - Use case
-   - Expected behavior
-   - Related spec module (product/rfc/api/db/testing)
-
-### Submitting Code
+Use OpenSpec for any feature work, cross-cutting refactor, process change, or substantial bug fix:
 
 ```bash
-# 1. Fork repository
-# 2. Clone your Fork
-git clone https://github.com/<your-username>/chatroom.git
-cd chatroom
-
-# 3. Create feature branch
-git checkout -b feature/your-feature-name
-
-# 4. Make changes and commit
-git add .
-git commit -m "add feature description"
-
-# 5. Push to your Fork
-git push origin feature/your-feature-name
-
-# 6. Create Pull Request
+/opsx:explore
+/opsx:propose <change-name>
+/opsx:apply <change-name>
+/opsx:archive <change-name>
 ```
 
----
+Guidelines:
+- Keep one coherent change per effort.
+- Update specs and implementation together when behavior changes.
+- Prefer deleting stale docs/config to preserving low-value drift.
 
-## 开发环境设置
+## Local setup
 
-### 前置要求
+### Requirements
 
-| 工具 | 版本 | 用途 |
-|------|------|------|
-| Go | 1.24+ | 后端开发 |
-| Node.js | 20+ | 前端开发 |
-| Docker | 最新 | PostgreSQL |
-| Make | 任意 | 常用命令 |
+- Go 1.24
+- Node.js 22
+- Docker
 
-### 快速开始
+### Start the stack
 
 ```bash
-# 克隆仓库
 git clone https://github.com/LessUp/chatroom.git
 cd chatroom
 
-# 启动数据库
 docker compose up -d postgres
 
-# 运行后端
+# backend
 go run ./cmd/server
 
-# 运行前端（另一终端）
+# frontend
 npm --prefix frontend ci
 npm --prefix frontend run dev
 ```
 
-### 环境说明
+## Validation commands
 
-**重要**：后端直接读取进程环境变量，**不会自动加载 `.env` 文件**。
-
-```bash
-# 方式 1：直接设置环境变量
-export JWT_SECRET=your-secret
-go run ./cmd/server
-
-# 方式 2：手动 source
-set -a && source .env && set +a
-go run ./cmd/server
-
-# 方式 3：Docker Compose
-docker compose up -d
-```
-
----
-
-## 常用命令
-
-### 后端
+Run the relevant existing commands for the surfaces you touched:
 
 ```bash
-make build      # 构建项目
-make test       # 运行测试
-make test-coverage # 测试覆盖率报告
-make lint       # 代码检查
-make fmt        # 格式化代码
-make vet        # go vet 检查
-```
-
-### 前端
-
-```bash
-npm --prefix frontend run dev      # 开发服务器
-npm --prefix frontend run build    # 构建
-npm --prefix frontend run test     # 测试
-npm --prefix frontend run lint     # 代码检查
-```
-
-### 文档
-
-```bash
-npm --prefix docs ci               # 安装依赖
-npm --prefix docs run docs:dev     # 本地预览
-npm --prefix docs run docs:build   # 构建
-```
-
----
-
-## 代码风格
-
-### Go 代码
-
-| 规范 | 说明 |
-|------|------|
-| 格式化 | `gofmt` |
-| 导入排序 | `goimports -w -local chatroom .` |
-| 命名 | 导出 `CamelCase`，内部 `camelCase` |
-| JSON 标签 | `snake_case` |
-| 测试 | 同包 `*_test.go`，表驱动测试 |
-
-### TypeScript/React 代码
-
-| 规范 | 说明 |
-|------|------|
-| 格式化 | Prettier |
-| 缩进 | 2 空格 |
-| 组件 | 函数组件 + Hooks |
-| 文件名 | `kebab-case` |
-
-### 提交信息
-
-使用中文，祈使句，不超过 50 字符：
-
-```
-添加用户认证中间件
-
-- 实现 JWT 验证
-- 添加刷新令牌轮换
-- 更新 API 文档
-
-Refs #42
-```
-
-**提交类型参考**：
-
-- `添加` / `新增`：新功能
-- `修复`：Bug 修复
-- `优化` / `重构`：代码改进
-- `更新`：文档或配置更新
-- `删除`：移除代码或文件
-
----
-
-## 测试指南
-
-### 运行测试
-
-```bash
-# 所有 Go 测试（需要 PostgreSQL）
 docker compose up -d postgres
-go test -race -cover ./...
-
-# 前端测试
-npm --prefix frontend run test
-
-# 前端测试（监听模式）
-npm --prefix frontend run test:watch
-```
-
-### 编写测试
-
-**Go 测试规范**：
-
-```go
-func TestFunctionName_Scenario_Expected(t *testing.T) {
-    // 使用表驱动测试
-    tests := []struct {
-        name    string
-        input   int
-        want    int
-        wantErr bool
-    }{
-        {"positive", 1, 2, false},
-        {"negative", -1, 0, true},
-    }
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            got, err := Function(tt.input)
-            if (err != nil) != tt.wantErr {
-                t.Errorf("Function() error = %v, wantErr %v", err, tt.wantErr)
-            }
-            if got != tt.want {
-                t.Errorf("Function() = %v, want %v", got, tt.want)
-            }
-        })
-    }
-}
-```
-
-**前端测试规范**：
-
-```typescript
-describe('功能模块', () => {
-  it('应该正确处理场景', () => {
-    const result = functionUnderTest(input)
-    expect(result).toBe(expectedOutput)
-  })
-})
-```
-
----
-
-## Pull Request 流程
-
-### 提交前检查
-
-```bash
-# 1. 运行测试
-make test
-npm --prefix frontend run test
-
-# 2. 代码检查
 make lint
-npm --prefix frontend run lint
-
-# 3. 构建
-make build
+go test -race ./...
+npm --prefix frontend run test
 npm --prefix frontend run build
+npm --prefix docs ci
+npm --prefix docs run docs:build
 ```
 
-### PR 检查清单
+## Code and repo expectations
 
-- [ ] 代码遵循项目风格指南
-- [ ] 添加了必要的测试
-- [ ] 所有测试通过
-- [ ] 更新了相关文档
-- [ ] 提交信息清晰明了
+- Use `openspec/` paths only; do not reintroduce legacy `/specs` references.
+- Keep docs concise and purposeful; avoid generic boilerplate.
+- Keep automation portable; do not add machine-specific absolute paths.
+- Prefer npm consistently for frontend and docs workflows.
+- For AI-assisted work, keep repository instruction files aligned with actual practice.
 
-### Review 流程
+## Pull requests
 
-1. 提交 PR 后，CI 自动运行测试
-2. 至少一位维护者 Review 代码
-3. 处理 Review 意见
-4. 通过后合并到 `master`
+A good PR includes:
 
----
+1. A short summary of what changed
+2. The related OpenSpec change name (if applicable)
+3. The validation commands you ran
+4. Notes on docs, workflow, or config impact
 
-## 项目结构
+Before opening a PR, make sure:
 
-```
-chatroom/
-├── cmd/server/          # 程序入口
-├── internal/            # 后端核心代码
-│   ├── auth/            # 认证
-│   ├── config/          # 配置
-│   ├── db/              # 数据库
-│   ├── server/          # HTTP
-│   ├── service/         # 业务
-│   └── ws/              # WebSocket
-├── frontend/            # React 前端
-├── web/                 # 静态回退
-├── docs/                # VitePress 文档
-├── deploy/              # 部署配置
-└── .github/workflows/   # CI/CD
-```
+- the relevant specs match reality
+- the touched docs do not contradict the codebase
+- the existing checks for the touched surfaces pass
 
----
+## Getting help
 
-## 版本发布
-
-版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)：
-
-- `MAJOR`：不兼容的 API 变更
-- `MINOR`：向后兼容的功能新增
-- `PATCH`：向后兼容的问题修复
-
----
-
-## 获取帮助
-
-- 📖 [文档站](https://lessup.github.io/chatroom/)
-- 💬 [Discussions](../../discussions)
-- 📝 [FAQ](docs/FAQ.md)
-
----
-
-再次感谢你的贡献！🎉
+- Docs site: https://lessup.github.io/chatroom/
+- Issues: ../../issues
+- Discussions: ../../discussions
