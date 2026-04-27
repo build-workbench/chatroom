@@ -4,12 +4,10 @@
 > **Created**: 2026-04-23
 > **Updated**: 2026-04-23
 
-This specification defines how the repository presents itself through README, GitHub Pages, metadata, and curated historical surfaces.
+## Purpose
 
----
-
-## ADDED Requirements
-
+Define how the repository presents itself through README, GitHub Pages, metadata, and curated historical surfaces.
+## Requirements
 ### Requirement: Canonical Repository Surface
 The repository SHALL maintain a clear, non-overlapping information architecture across root documentation, the docs site, OpenSpec artifacts, and release history.
 
@@ -53,3 +51,36 @@ The documentation site SHALL provide a distinct landing experience that introduc
 #### Scenario: Docs content overlaps with README
 - **WHEN** the docs site is reviewed for duplication
 - **THEN** content is refactored so the site complements the repository entry point rather than mirroring it
+
+### Requirement: Docs Navigation Truthfulness
+The documentation site SHALL keep its learning paths, next-step links, and navigation aligned with pages and repository files that actually exist.
+
+#### Scenario: Learner follows the docs navigation
+- **WHEN** a reader uses docs-site sidebars, learning paths, or next-step sections
+- **THEN** each referenced page or repository path exists and reflects a canonical surface rather than a stale or duplicated document
+
+### Requirement: Redundant Design Narrative Removal
+The documentation site SHALL remove overlapping design-narrative pages when architecture, deployment assets, and OpenSpec already cover the same ground more truthfully.
+
+#### Scenario: Docs information architecture is reviewed
+- **WHEN** a docs page duplicates architectural rationale without owning a unique canonical role
+- **THEN** that page is removed or consolidated and its references are redirected to higher-signal surfaces
+
+### Requirement: Canonical Handoff Status
+The repository SHALL capture finalization status, deferred work, and next-step ordering in a canonical repository surface before handoff.
+
+#### Scenario: Model handoff is prepared
+- **WHEN** the repository is handed off to another model or maintainer
+- **THEN** the canonical handoff surface records completed work, remaining tasks, and the recommended next action order
+
+### Requirement: Finalization Program Documentation Boundaries
+The repository SHALL execute archive finalization through a documented umbrella program that keeps README, docs, OpenSpec, and handoff artifacts as distinct canonical surfaces.
+
+#### Scenario: Finalization tasks are organized
+- **WHEN** contributors inspect the finalization program
+- **THEN** the umbrella change defines which repository surfaces are canonical and delegates implementation details to focused child changes instead of duplicating guidance
+
+#### Scenario: GLM handoff is prepared
+- **WHEN** the repository is prepared for model handoff
+- **THEN** the remaining tasks, deferred scope, and completion status are captured in canonical repository surfaces rather than only in transient chat context
+

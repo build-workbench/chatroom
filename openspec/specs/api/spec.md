@@ -4,11 +4,11 @@
 > **Created**: 2026-04-17
 > **Updated**: 2026-04-23
 
-This specification defines the REST API and WebSocket protocol for the ChatRoom application.
+## Purpose
 
----
+Define the REST API and WebSocket protocol for the ChatRoom application.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Authentication Endpoints
 The system SHALL provide REST endpoints for user authentication.

@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; ext=\"${f##*.}\"; if [ \"$ext\" = \"go\" ]; then gofmt -w \"$f\"; elif echo \"$f\" | grep -qE '^frontend/' && echo \"$ext\" | grep -qE '^(ts|tsx|css|json|md)$'; then npx --prefix frontend prettier --write \"$f\"; fi; } 2>/dev/null || true",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f || exit 0; [ -n \"$f\" ] || exit 0; [ -f \"$f\" ] || exit 0; case \"$f\" in *.go) gofmt -w \"$f\" ;; frontend/*.ts|frontend/*.tsx|frontend/*.css|frontend/*.json) npm --prefix frontend exec -- prettier --write \"$f\" ;; esac; }",
             "timeout": 30
           }
         ]

@@ -1,8 +1,6 @@
 # Contributing to ChatRoom
 
-Thanks for your interest in contributing.
-
-This repository uses **OpenSpec** for non-trivial changes. The goal is to keep the codebase understandable, runnable, and easy to maintain as a teaching project.
+Thanks for your interest in contributing. ChatRoom is being polished toward an archive-ready finish, so the best contributions are small, high-signal, and clearly grounded in the repository's existing goals.
 
 ## Before you start
 
@@ -27,6 +25,7 @@ Guidelines:
 - Keep one coherent change per effort.
 - Update specs and implementation together when behavior changes.
 - Prefer deleting stale docs/config to preserving low-value drift.
+- Avoid speculative tool or workflow expansion unless it materially improves this repository.
 
 ## Local setup
 
@@ -92,5 +91,5 @@ Before opening a PR, make sure:
 ## Getting help
 
 - Docs site: https://lessup.github.io/chatroom/
-- Issues: ../../issues
-- Discussions: ../../discussions
+- Issues: https://github.com/LessUp/chatroom/issues
+- Discussions: https://github.com/LessUp/chatroom/discussions

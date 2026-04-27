@@ -2,42 +2,20 @@
 
 Read [AGENTS.md](AGENTS.md) first. It is the canonical repository workflow guide.
 
-## What matters in this repo
+## Claude-specific deltas
 
-- This is a **teaching-oriented** project being prepared for an **archive-ready** finish.
-- The repository uses **OpenSpec**. Non-trivial work belongs in `openspec/changes/` and should follow `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive`.
-- Prefer **deletion and consolidation** over adding generic docs, scripts, or config.
-- Keep guidance **project-specific**. Avoid boilerplate that could apply to any repository.
+Use `AGENTS.md` for the shared repo rules. In Claude specifically:
 
-## Canonical locations
-
-- `openspec/specs/` — normative requirements
-- `openspec/changes/` — active change artifacts
-- `docs/` — guided docs and GitHub Pages content
-- `README*` — repo entry point
-
-## Toolchain baseline
-
-- Go 1.24
-- Node.js 22
-- npm for frontend and docs workflows
-- `gopls` + TypeScript language service + ESLint as the default LSP/diagnostic baseline
-
-## Existing commands
-
-```bash
-docker compose up -d postgres
-make lint
-go test -race ./...
-npm --prefix frontend run test
-npm --prefix frontend run build
-npm --prefix docs ci
-npm --prefix docs run docs:build
-```
+1. Use `/opsx:explore`, `/opsx:propose`, `/opsx:apply`, and `/opsx:archive` as the primary OpenSpec lifecycle.
+2. Prefer long-running autopilot plus milestone `/review` over routine `/fleet`.
+3. Keep the docs site distinct from the README. If a change alters both, tighten the boundary instead of duplicating content.
+4. Treat `.claude/` as a maintained repository surface: keep commands and hooks portable, explicit, and worth their cost.
 
 ## Specific cautions
 
 - Do not reintroduce legacy `/specs` references.
 - Do not keep machine-specific absolute paths in hooks or automation.
 - Do not preserve low-value changelog or release-note sprawl just for completeness.
-- Prefer long-running autopilot and milestone reviews over unnecessary `/fleet`.
+- The Go app reads environment variables directly; `.env` is not auto-loaded.
+- Go tests require PostgreSQL to be running.
+- Vite dev proxies `/api` and `/ws` to the Go backend on port `8080`.

@@ -78,19 +78,19 @@ export default defineConfig({
               items: [
                 { text: '快速开始', link: '/zh/getting-started' },
                 { text: '学习路径', link: '/zh/learning-path' },
+                { text: '开发指南', link: '/zh/development-guide' },
                 { text: '手动测试', link: '/zh/manual-testing' },
                 { text: '常见问题', link: '/zh/faq' },
               ],
             },
-            {
-              text: '📚 核心文档',
-              collapsed: false,
-              items: [
-                { text: 'API 文档', link: '/zh/api' },
-                { text: '架构文档', link: '/zh/architecture' },
-                { text: '设计文档', link: '/zh/design' },
-              ],
-            },
+              {
+                text: '📚 核心文档',
+                collapsed: false,
+                items: [
+                  { text: 'API 文档', link: '/zh/api' },
+                  { text: '架构文档', link: '/zh/architecture' },
+                ],
+              },
             {
               text: '🔧 运维指南',
               collapsed: false,
@@ -163,19 +163,19 @@ export default defineConfig({
               items: [
                 { text: 'Getting Started', link: '/en/getting-started' },
                 { text: 'Learning Path', link: '/en/learning-path' },
+                { text: 'Development Guide', link: '/en/development-guide' },
                 { text: 'Manual Testing', link: '/en/manual-testing' },
                 { text: 'FAQ', link: '/en/faq' },
               ],
             },
-            {
-              text: '📚 Core Documentation',
-              collapsed: false,
-              items: [
-                { text: 'API Documentation', link: '/en/api' },
-                { text: 'Architecture', link: '/en/architecture' },
-                { text: 'Design', link: '/en/design' },
-              ],
-            },
+              {
+                text: '📚 Core Documentation',
+                collapsed: false,
+                items: [
+                  { text: 'API Documentation', link: '/en/api' },
+                  { text: 'Architecture', link: '/en/architecture' },
+                ],
+              },
             {
               text: '🔧 Operations',
               collapsed: false,

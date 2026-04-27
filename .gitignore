@@ -39,6 +39,7 @@ build/
 *.swp
 *~
 .windsurf/
+.superpowers/
 
 # 系统文件
 .DS_Store
@@ -51,3 +52,6 @@ chatroom
 # BMad Method V6
 _bmad/
 _bmad-output/
+
+# oh-my-claudecode
+.omc/

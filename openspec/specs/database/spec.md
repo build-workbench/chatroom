@@ -4,11 +4,11 @@
 > **Created**: 2026-04-17
 > **Updated**: 2026-04-23
 
-This specification defines the database schema and data models for the ChatRoom application.
+## Purpose
 
----
+Define the database schema and data models for the ChatRoom application.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Database Technology
 The system SHALL use PostgreSQL 16 with GORM ORM.

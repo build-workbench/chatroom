@@ -30,6 +30,7 @@ features:
 - [学习路径](/zh/learning-path)
 - [架构文档](/zh/architecture)
 - [API 文档](/zh/api)
+- [监控指南](/zh/monitoring/README)
 - [常见问题](/zh/faq)
 
 ## 你可以重点看什么
@@ -45,3 +46,4 @@ features:
 
 - 规范主目录：[openspec/specs](https://github.com/LessUp/chatroom/tree/master/openspec/specs)
 - 活跃变更：[openspec/changes](https://github.com/LessUp/chatroom/tree/master/openspec/changes)
+- 仓库工作流：[AGENTS.md](https://github.com/LessUp/chatroom/blob/master/AGENTS.md)

@@ -175,7 +175,7 @@ make all
 - [手动测试实验](/zh/manual-testing) — 完整功能验证
 - [API 文档](/zh/api) — 接口详情
 - [架构文档](/zh/architecture) — 系统结构
-- [设计文档](/zh/design) — 设计决策
+- [学习路径](/zh/learning-path) — 推荐阅读路线
 
 ---
 

@@ -3,6 +3,7 @@ package db
 import (
 	"time"
 
+	"chatroom/internal/config"
 	"chatroom/internal/models"
 
 	"github.com/rs/zerolog/log"
@@ -13,15 +14,12 @@ import (
 
 const (
 	maxRetries     = 10
-	maxIdleConns   = 5
-	maxOpenConns   = 20
-	connMaxLife    = time.Hour
 	baseRetryDelay = 500 * time.Millisecond
 	retryIncrement = 200 * time.Millisecond
 )
 
 // Connect 负责建立到 Postgres 的连接，并带有简单的重试来等待容器就绪。
-func Connect(dsn string) (*gorm.DB, error) {
+func Connect(dsn string, cfg config.Config) (*gorm.DB, error) {
 	var gdb *gorm.DB
 	var err error
 	for i := range maxRetries {
@@ -29,9 +27,9 @@ func Connect(dsn string) (*gorm.DB, error) {
 		if err == nil {
 			sqlDB, err2 := gdb.DB()
 			if err2 == nil {
-				sqlDB.SetMaxIdleConns(maxIdleConns)
-				sqlDB.SetMaxOpenConns(maxOpenConns)
-				sqlDB.SetConnMaxLifetime(connMaxLife)
+				sqlDB.SetMaxIdleConns(cfg.DBMaxIdleConns)
+				sqlDB.SetMaxOpenConns(cfg.DBMaxOpenConns)
+				sqlDB.SetConnMaxLifetime(time.Hour)
 				return gdb, nil
 			}
 			err = err2

@@ -33,7 +33,7 @@ func main() {
 		log.Fatal().Err(err).Msg("config validate")
 	}
 
-	gdb, err := db.Connect(cfg.DatabaseDSN)
+	gdb, err := db.Connect(cfg.DatabaseDSN, cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("db connect")
 	}

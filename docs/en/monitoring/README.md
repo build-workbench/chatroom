@@ -101,31 +101,31 @@ groups:
 
 ### Request Rate
 
-```promql
+```
 rate(http_requests_total[5m])
 ```
 
 ### Error Rate
 
-```promql
+```
 sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
 ```
 
 ### P99 Latency
 
-```promql
+```
 histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))
 ```
 
 ### WebSocket Connection Count
 
-```promql
+```
 chat_ws_connections
 ```
 
 ### WebSocket Message Rate
 
-```promql
+```
 rate(chat_ws_messages_total[5m])
 ```
 

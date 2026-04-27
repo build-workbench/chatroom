@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import type { WsEvent } from './types'
 
 import { ChatRoom } from './components/ChatRoom'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { Sidebar } from './components/Sidebar'
 import { useAuth } from './hooks/useAuth'
 import { useChat } from './hooks/useChat'
@@ -62,39 +63,41 @@ export default function App() {
 	}
 
 	return (
-		<div className="h-full flex">
-			<Sidebar
-				user={auth.user}
-				rooms={chat.rooms}
-				currentRoomId={chat.currentRoomId}
-				roomQuery={chat.roomQuery}
-				newRoomName={chat.newRoomName}
-				onRoomQueryChange={chat.setRoomQuery}
-				onNewRoomNameChange={chat.setNewRoomName}
-				onCreateRoom={() => void chat.createRoom()}
-				onJoinRoom={(id, name, online) => void chat.joinRoom(id, name, online)}
-				onLogout={() => {
-					auth.logout()
-					toast.info('已退出登录')
-				}}
-			/>
-
-			<div className="flex-1 flex flex-col bg-dark-950">
-				<ChatRoom
+		<ErrorBoundary>
+			<div className="h-full flex">
+				<Sidebar
 					user={auth.user}
+					rooms={chat.rooms}
 					currentRoomId={chat.currentRoomId}
-					currentRoomName={chat.currentRoomName}
-					onlineCount={chat.onlineCount}
-					connStatus={connStatus}
-					items={chat.items}
-					draft={chat.draft}
-					typingNames={typingNames}
-					onDraftChange={chat.setDraft}
-					onSend={chat.sendMessage}
-					onTyping={() => socketRef.current?.sendTyping(true)}
-					onLoadMore={() => void chat.loadMoreHistory()}
+					roomQuery={chat.roomQuery}
+					newRoomName={chat.newRoomName}
+					onRoomQueryChange={chat.setRoomQuery}
+					onNewRoomNameChange={chat.setNewRoomName}
+					onCreateRoom={() => void chat.createRoom()}
+					onJoinRoom={(id, name, online) => void chat.joinRoom(id, name, online)}
+					onLogout={() => {
+						auth.logout()
+						toast.info('已退出登录')
+					}}
 				/>
+
+				<div className="flex-1 flex flex-col bg-dark-950">
+					<ChatRoom
+						user={auth.user}
+						currentRoomId={chat.currentRoomId}
+						currentRoomName={chat.currentRoomName}
+						onlineCount={chat.onlineCount}
+						connStatus={connStatus}
+						items={chat.items}
+						draft={chat.draft}
+						typingNames={typingNames}
+						onDraftChange={chat.setDraft}
+						onSend={chat.sendMessage}
+						onTyping={() => socketRef.current?.sendTyping(true)}
+						onLoadMore={() => void chat.loadMoreHistory()}
+					/>
+				</div>
 			</div>
-		</div>
+		</ErrorBoundary>
 	)
 }

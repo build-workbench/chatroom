@@ -24,6 +24,12 @@ type Config struct {
 	WSTicketTTLSeconds    int
 	AllowedOrigins        []string
 	PodID                 string
+	// WebSocket 配置
+	WsMaxMessageSize int64
+	WsMaxContentSize int
+	// 数据库连接池配置
+	DBMaxIdleConns int
+	DBMaxOpenConns int
 }
 
 // IsDev 返回当前是否处于开发环境。
@@ -43,6 +49,18 @@ func getenvInt(key string, def int) int {
 		return def
 	}
 	v, err := strconv.Atoi(s)
+	if err != nil || v <= 0 {
+		return def
+	}
+	return v
+}
+
+func getenvInt64(key string, def int64) int64 {
+	s := os.Getenv(key)
+	if s == "" {
+		return def
+	}
+	v, err := strconv.ParseInt(s, 10, 64)
 	if err != nil || v <= 0 {
 		return def
 	}
@@ -189,6 +207,12 @@ func Load() Config {
 		WSTicketTTLSeconds:    getenvInt("WS_TICKET_TTL_SECONDS", 60),
 		AllowedOrigins:        getenvCSV("ALLOWED_ORIGINS"),
 		PodID:                 getenv("APP_INSTANCE_ID", getenv("HOSTNAME", "local")),
+		// WebSocket 配置
+		WsMaxMessageSize: getenvInt64("WS_MAX_MESSAGE_SIZE", 1<<20), // 1MB
+		WsMaxContentSize: getenvInt("WS_MAX_CONTENT_SIZE", 2000),
+		// 数据库连接池配置
+		DBMaxIdleConns: getenvInt("DB_MAX_IDLE_CONNS", 5),
+		DBMaxOpenConns: getenvInt("DB_MAX_OPEN_CONNS", 20),
 	}
 }
 

@@ -4,12 +4,10 @@
 > **Created**: 2026-04-17
 > **Updated**: 2026-04-23
 
-This specification defines the testing and verification expectations for the ChatRoom repository.
+## Purpose
 
----
-
-## ADDED Requirements
-
+Define the testing and verification expectations for the ChatRoom repository.
+## Requirements
 ### Requirement: Go Test Naming Conventions
 Tests SHALL follow standard Go naming patterns and same-package conventions where the repository already uses them.
 
@@ -133,6 +131,31 @@ Cross-cutting cleanup SHALL validate the surfaces it changes instead of treating
 - **THEN** the affected existing test suites are updated or executed so the fix is verified
 
 ---
+
+### Requirement: Explicit Advisory Triage
+Build-surface dependency advisories SHALL be triaged into safe repository fixes or explicit upstream constraints before finalization is considered complete.
+
+#### Scenario: Dependency audit reports issues
+- **WHEN** `npm --prefix docs audit` reports advisories for the docs toolchain
+- **THEN** each issue is either fixed through a supported repository change or recorded as an upstream-constrained limitation with no safe local fix
+
+### Requirement: Verified Handoff Claims
+Final handoff summaries SHALL distinguish verified repository state from upstream limitations or deferred work.
+
+#### Scenario: Final status is documented
+- **WHEN** the handoff surface claims a task is complete or a problem remains
+- **THEN** the claim matches the current verified repository state and marks upstream-constrained items explicitly
+
+### Requirement: Finalization Program Verification
+The repository SHALL verify finalization work across code, docs, workflows, and handoff surfaces before declaring the program complete.
+
+#### Scenario: Cross-surface finalization work is completed
+- **WHEN** the finalization program changes repository guidance, workflows, runtime code, or docs
+- **THEN** the relevant existing verification commands are run for each touched surface and the resulting repository story remains internally consistent
+
+#### Scenario: Handoff readiness is evaluated
+- **WHEN** the repository is prepared for GLM takeover or immediate archival
+- **THEN** the program records what is complete, what is deferred, and which canonical sources describe the final state
 
 ## Change History
 

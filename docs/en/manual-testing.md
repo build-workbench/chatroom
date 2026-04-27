@@ -379,4 +379,4 @@ Complete this checklist to confirm core functionality:
 
 - [API Documentation](/en/api) — Interface details
 - [Architecture Documentation](/en/architecture) — System structure
-- [Design Documentation](/en/design) — Design decisions
+- [Learning Path](/en/learning-path) — Suggested study order

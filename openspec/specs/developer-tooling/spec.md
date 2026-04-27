@@ -4,12 +4,10 @@
 > **Created**: 2026-04-23
 > **Updated**: 2026-04-23
 
-This specification defines the supported local tooling baseline for contributors and AI-assisted workflows.
+## Purpose
 
----
-
-## ADDED Requirements
-
+Define the supported local tooling baseline for contributors and AI-assisted workflows.
+## Requirements
 ### Requirement: Toolchain Consistency
 The repository SHALL declare one coherent toolchain and package-manager story across documentation, scripts, and GitHub workflows.
 
@@ -53,3 +51,40 @@ Generated and transient outputs SHALL NOT remain tracked in version control unle
 #### Scenario: A generated artifact must remain tracked
 - **WHEN** a generated file is intentionally committed
 - **THEN** its purpose and regeneration path are documented in the repository guidance
+
+### Requirement: Docs Toolchain Hygiene
+The repository SHALL keep the documentation toolchain free of avoidable warning noise and SHALL apply safe patch-level dependency hygiene updates when they fit the supported version ranges.
+
+#### Scenario: Docs dependencies are reviewed
+- **WHEN** the docs dependency tree contains an advisory that can be fixed with a supported patch-level update
+- **THEN** the repository applies that update instead of leaving the warning unexplained
+
+#### Scenario: Docs build configuration is reviewed
+- **WHEN** build warnings are caused by repository-controlled content or configuration
+- **THEN** the warning source is corrected in-repo rather than tolerated as permanent noise
+
+### Requirement: AI Scratch Artifact Hygiene
+Transient AI session artifacts SHALL be ignored from version control unless the repository explicitly promotes them to canonical documentation.
+
+#### Scenario: AI tools create working state directories
+- **WHEN** local brainstorming or session tools produce scratch directories such as `.superpowers/`
+- **THEN** those directories are ignored from version control by default unless the project intentionally tracks a documented subset
+
+### Requirement: Minimal Repo-Local Skill Set
+Repo-local AI skill directories SHALL be limited to the workflows the repository intentionally supports by default.
+
+#### Scenario: Repo-local Claude skills are reviewed
+- **WHEN** `.claude/skills/` is audited during finalization
+- **THEN** generic or redundant skill packs that do not directly support the default OpenSpec or verification workflow are removed
+
+### Requirement: Final Tooling Rationalization
+The repository SHALL make explicit keep-or-remove decisions for AI/tooling surfaces before archive finalization is considered complete.
+
+#### Scenario: AI and editor tooling is reviewed
+- **WHEN** `.claude` assets, Copilot instructions, plugin posture, and LSP guidance are audited
+- **THEN** each retained surface has a clear repository-specific purpose and low-value or redundant tooling is removed or consolidated
+
+#### Scenario: Minimal integration policy is enforced
+- **WHEN** a new MCP, plugin, or tool-specific integration is considered during finalization
+- **THEN** it is rejected unless it has clear recurring value that outweighs its maintenance and context cost
+

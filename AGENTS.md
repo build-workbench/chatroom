@@ -10,6 +10,8 @@ ChatRoom is a teaching-oriented real-time chat application:
 
 The repository is being normalized for an archive-ready end state. Favor clarity, consistency, and maintainability over feature expansion or engineering theater.
 
+`AGENTS.md` is the canonical workflow guide. Tool-specific files such as `CLAUDE.md` and `.github/copilot-instructions.md` should only add concise tool-specific deltas.
+
 ## Canonical Surfaces
 
 | Surface | Purpose |

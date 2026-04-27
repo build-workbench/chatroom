@@ -30,6 +30,7 @@ features:
 - [Learning Path](/en/learning-path)
 - [Architecture](/en/architecture)
 - [API Reference](/en/api)
+- [Monitoring Guide](/en/monitoring/README)
 - [FAQ](/en/faq)
 
 ## What you can study in this repo
@@ -45,3 +46,4 @@ features:
 
 - Normative specs: [openspec/specs](https://github.com/LessUp/chatroom/tree/master/openspec/specs)
 - Active changes: [openspec/changes](https://github.com/LessUp/chatroom/tree/master/openspec/changes)
+- Repository workflow: [AGENTS.md](https://github.com/LessUp/chatroom/blob/master/AGENTS.md)

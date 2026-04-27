@@ -174,7 +174,7 @@ WebSocket 使用**一次性 Ticket** 认证，而非直接使用 Access Token：
 未命中白名单时，仅允许严格同源请求。
 
 **配置示例**：
-```env
+```dotenv
 ALLOWED_ORIGINS=https://chat.example.com,https://app.example.com:8443
 ```
 

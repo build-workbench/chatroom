@@ -25,7 +25,7 @@ ChatRoom is a teaching-oriented project designed with different learning paths f
 
 **Read**:
 - [Architecture](./architecture) - System overview
-- [Design](./design) - Design decisions
+- `cmd/server/main.go` - Startup flow and dependency wiring
 
 **Key Learning**:
 - Understand `internal/` directory organization
@@ -35,10 +35,10 @@ ChatRoom is a teaching-oriented project designed with different learning paths f
 **Practice**:
 ```bash
 # Analyze project structure
-tree internal/ -L 2
+find internal -maxdepth 2 -type f | sort | head -40
 
-# Understand dependencies
-cat internal/server/server.go | head -50
+# Understand startup wiring
+sed -n '1,120p' cmd/server/main.go
 ```
 
 ---
@@ -99,6 +99,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 #### Step 5: Docker & Kubernetes
 
 **Read**: `deploy/`
+- [Deploy assets on GitHub](https://github.com/LessUp/chatroom/tree/master/deploy)
 
 **Practice**:
 ```bash
@@ -150,7 +151,7 @@ If you don't have a specific goal, read in this order:
 2. [Manual Testing](./manual-testing) — Verify core features
 3. [API Documentation](./api) — Interface design
 4. [Architecture](./architecture) — System layers
-5. [Design](./design) — Design decisions
+5. [Monitoring Guide](./monitoring/README) — Operational surfaces
 
 ---
 

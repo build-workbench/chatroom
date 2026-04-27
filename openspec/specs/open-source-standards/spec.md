@@ -4,12 +4,10 @@
 > **Created**: 2026-03-08
 > **Updated**: 2026-04-23
 
-This specification defines the repository standards for public documentation, workflows, release history, and contributor-facing project hygiene.
+## Purpose
 
----
-
-## ADDED Requirements
-
+Define the repository standards for public documentation, workflows, release history, and contributor-facing project hygiene.
+## Requirements
 ### Requirement: Standard Project Files
 The repository SHALL contain a compact set of high-signal project files that match the project’s actual teaching-oriented workflow.
 
@@ -77,6 +75,35 @@ The repository SHALL follow semantic versioning and keep release history concise
 - **THEN** the release workflow produces the documented deliverables for supported platforms
 
 ---
+
+### Requirement: Truthful Community Contact Guidance
+Community-facing repository guidance SHALL use truthful contact and reporting instructions and MUST NOT rely on placeholder addresses or unverifiable support promises.
+
+#### Scenario: Security reporting guidance is reviewed
+- **WHEN** `SECURITY.md` or related public-facing docs are updated
+- **THEN** they describe a real repository-specific reporting path and avoid fake email addresses, placeholder channels, or unsupported response commitments
+
+#### Scenario: Contribution help links are reviewed
+- **WHEN** contributing documentation links readers to help or maintenance channels
+- **THEN** those links resolve to current repository surfaces and match the archive-ready maintenance posture
+
+### Requirement: Curated Archive-Ready Metadata
+GitHub About metadata SHALL be curated intentionally for the repository's archive-ready teaching identity.
+
+#### Scenario: Repository metadata is reviewed
+- **WHEN** description, homepage, or topics are updated during finalization
+- **THEN** they are set through a deliberate reviewed configuration and emphasize the project's teaching-oriented real-time chat identity without topic sprawl
+
+### Requirement: Final Public Presentation Alignment
+The repository SHALL complete finalization with GitHub metadata, community files, and public release information aligned to the canonical docs and specs.
+
+#### Scenario: Repository About metadata is reviewed
+- **WHEN** description, topics, homepage URL, or Pages positioning are updated
+- **THEN** they match the final teaching-oriented project story presented by README and the docs site
+
+#### Scenario: Community-facing files are audited
+- **WHEN** issue templates, pull request templates, and related public-facing guidance are reviewed during finalization
+- **THEN** only high-signal maintenance surfaces that match the archive-ready workflow are preserved
 
 ## Change History
 

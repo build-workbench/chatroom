@@ -20,10 +20,6 @@ import (
 )
 
 const (
-	// maxMessageSize 单条 WebSocket 消息最大字节数。
-	maxMessageSize = 1 << 20 // 1 MB
-	// maxContentLength 单条聊天消息最大字符数。
-	maxContentLength = 2000
 	// pongWait 等待客户端 Pong 的超时时间。
 	pongWait = 60 * time.Second
 	// pingInterval 向客户端发送 Ping 的间隔，必须小于 pongWait。
@@ -43,6 +39,7 @@ type Client struct {
 	sessionID string
 	userID    uint
 	uname     string
+	cfg       config.Config
 }
 
 func newUpgrader(cfg config.Config) websocket.Upgrader {
@@ -144,6 +141,7 @@ func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 			sessionID: claims.ID,
 			userID:    user.ID,
 			uname:     user.Username,
+			cfg:       cfg,
 		}
 		rh.register <- client
 
@@ -158,7 +156,7 @@ func (c *Client) readPump() {
 		c.room.unregister <- c
 		_ = c.conn.Close()
 	}()
-	c.conn.SetReadLimit(maxMessageSize)
+	c.conn.SetReadLimit(c.cfg.WsMaxMessageSize)
 	_ = c.conn.SetReadDeadline(time.Now().Add(pongWait)) //nolint:errcheck // deadline only affects subsequent reads
 	c.conn.SetPongHandler(func(string) error {
 		if c.hub != nil {
@@ -216,7 +214,7 @@ func (c *Client) handleMessage(content string) {
 	}
 	// 对消息内容进行 XSS 过滤
 	sanitizedContent := sanitize.Content(content)
-	if len(sanitizedContent) > maxContentLength {
+	if len(sanitizedContent) > c.cfg.WsMaxContentSize {
 		if b, err := json.Marshal(wsSimpleMsg{Type: "error", Content: "消息长度不能超过2000字符"}); err == nil {
 			select {
 			case c.send <- b:

@@ -174,7 +174,7 @@ Origin validation for non-`dev` environments:
 If whitelist miss, only strict same-origin requests are allowed.
 
 **Config Example**:
-```env
+```dotenv
 ALLOWED_ORIGINS=https://chat.example.com,https://app.example.com:8443
 ```
 

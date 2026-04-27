@@ -95,25 +95,25 @@ groups:
 
 ### 请求速率
 
-```promql
+```
 rate(http_requests_total[5m])
 ```
 
 ### 错误率
 
-```promql
+```
 sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
 ```
 
 ### P99 延迟
 
-```promql
+```
 histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))
 ```
 
 ### WebSocket 连接数
 
-```promql
+```
 chat_ws_connections
 ```
 

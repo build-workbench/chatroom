@@ -175,4 +175,4 @@ Detailed testing steps: [Manual Testing Guide](/en/manual-testing)
 - [Manual Testing](/en/manual-testing) — Complete functional verification
 - [API Documentation](/en/api) — Interface details
 - [Architecture](/en/architecture) — System structure
-- [Design](/en/design) — Design decisions
+- [Learning Path](/en/learning-path) — Suggested study routes
