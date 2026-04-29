@@ -34,7 +34,6 @@ RUN apk --no-cache add ca-certificates tzdata && \
 WORKDIR /app
 
 COPY --from=builder /chatroom /app/chatroom
-COPY --from=builder /app/web /app/web
 COPY --from=frontend /app/frontend/dist /app/frontend/dist
 
 RUN chown -R chatroom:chatroom /app

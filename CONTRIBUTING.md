@@ -73,6 +73,17 @@ npm --prefix docs run docs:build
 - Prefer npm consistently for frontend and docs workflows.
 - For AI-assisted work, keep repository instruction files aligned with actual practice.
 
+## Documentation maintenance
+
+### Bilingual docs sync
+
+The `docs/en/` and `docs/zh/` directories contain parallel documentation in English and Chinese. When adding or modifying documentation:
+
+- Maintain the same file structure in both directories
+- Use identical file names for corresponding documents
+- Ensure content parity between translations
+- Update both language versions in the same PR
+
 ## Pull requests
 
 A good PR includes:
