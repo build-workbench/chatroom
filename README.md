@@ -84,7 +84,6 @@ chatroom/
 ├── cmd/server/        # application entrypoint
 ├── internal/          # backend application code
 ├── frontend/          # React client
-├── web/               # static fallback UI
 ├── docs/              # documentation site
 ├── openspec/          # specs and active changes
 └── deploy/            # Docker and Kubernetes assets

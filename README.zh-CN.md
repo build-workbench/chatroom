@@ -84,7 +84,6 @@ chatroom/
 ├── cmd/server/        # 程序入口
 ├── internal/          # 后端应用代码
 ├── frontend/          # React 客户端
-├── web/               # 静态回退 UI
 ├── docs/              # 文档站
 ├── openspec/          # 规约与变更
 └── deploy/            # Docker / Kubernetes 配置
