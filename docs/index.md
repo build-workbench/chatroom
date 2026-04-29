@@ -4,6 +4,9 @@ hero:
   name: ChatRoom
   text: Learn how a real-time full-stack system fits together
   tagline: Go + React + PostgreSQL + WebSocket + OpenSpec, curated for an archive-ready finish
+  image:
+    src: /logo.svg
+    alt: ChatRoom Logo
   actions:
     - theme: brand
       text: 中文文档
@@ -16,11 +19,14 @@ hero:
       link: https://github.com/LessUp/chatroom
 
 features:
-  - title: Run the whole stack
+  - icon: 🚀
+    title: Run the whole stack
     details: Start PostgreSQL, launch the Go backend and React frontend, then walk the full auth, room, and messaging flow locally.
-  - title: Study one coherent system
+  - icon: 📚
+    title: Study one coherent system
     details: Follow architecture, API, persistence, WebSocket, monitoring, and release surfaces without reading a sprawling codebase.
-  - title: Inspect a disciplined repository
+  - icon: 🔍
+    title: Inspect a disciplined repository
     details: See how README, docs, OpenSpec, workflows, and release history stay separated instead of telling the same story in five places.
 ---
 
