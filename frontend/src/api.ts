@@ -51,6 +51,7 @@ export class Api {
   private callbacks: ApiAuthCallbacks
   private getAccessToken: () => string
   private getRefreshToken: () => string
+  private refreshPromise: Promise<boolean> | null = null
 
   constructor(opts: {
     getAccessToken: () => string
@@ -63,28 +64,38 @@ export class Api {
   }
 
   private async refresh(): Promise<boolean> {
+    // 如果已有刷新进行中，复用该 Promise
+    if (this.refreshPromise) {
+      return this.refreshPromise
+    }
+
     const refreshToken = this.getRefreshToken()
     if (!refreshToken) return false
 
-    let res: Response
-    try {
-      res = await fetch('/api/v1/auth/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-      })
-    } catch {
-      return false
-    }
+    this.refreshPromise = (async () => {
+      try {
+        const res = await fetch('/api/v1/auth/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        })
 
-    if (!res.ok) return false
+        if (!res.ok) return false
 
-    const data = (await safeJson<{ access_token: string; refresh_token: string }>(res))
-    if (!data.access_token || !data.refresh_token) return false
+        const data = await safeJson<{ access_token: string; refresh_token: string }>(res)
+        if (!data.access_token || !data.refresh_token) return false
 
-    saveTokens(data.access_token, data.refresh_token)
-    this.callbacks.onTokens?.(data.access_token, data.refresh_token)
-    return true
+        saveTokens(data.access_token, data.refresh_token)
+        this.callbacks.onTokens?.(data.access_token, data.refresh_token)
+        return true
+      } catch {
+        return false
+      } finally {
+        this.refreshPromise = null
+      }
+    })()
+
+    return this.refreshPromise
   }
 
   private async request<T>(

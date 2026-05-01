@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.0] - 2026-05-01
+
+### Changed
+- Enhanced password validation: minimum length increased from 4 to 8 characters
+- Fixed token refresh race condition in frontend API client
+- Updated CODE_OF_CONDUCT with proper contact information
+
+### Removed
+- Cleaned up redundant files: build artifacts, node_modules, plugin data
+- Removed outdated `docs/monitoring/` (use `docs/zh/monitoring/` instead)
+
+### Documentation
+- Synchronized VERSION and CHANGELOG to v1.0.0
+- Project now in archive-ready state
+
 ## [v0.3.0] - 2026-04-16
 
 ### Added

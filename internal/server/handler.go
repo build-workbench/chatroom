@@ -55,7 +55,7 @@ func NewHandler(userSvc UserService, roomSvc RoomService, msgSvc MessageService,
 
 type registerRequest struct {
 	Username string `json:"username" binding:"required,min=2,max=64"`
-	Password string `json:"password" binding:"required,min=4,max=128"`
+	Password string `json:"password" binding:"required,min=8,max=128"`
 }
 
 type loginRequest struct {
