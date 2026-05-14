@@ -308,4 +308,4 @@ flowchart TB
 
 ---
 
-🌐 **Languages**: English | [简体中文](/zh/architecture/system)
+🌐 **Languages**: English | [简体中文](/en/architecture/system)

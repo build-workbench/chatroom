@@ -150,4 +150,4 @@ spec:
 
 ---
 
-🌐 **Languages**: English | [简体中文](/zh/operations/deployment)
+🌐 **Languages**: English | [简体中文](/en/operations/deployment)

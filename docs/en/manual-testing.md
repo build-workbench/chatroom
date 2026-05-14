@@ -377,6 +377,6 @@ Complete this checklist to confirm core functionality:
 
 ## Further Reading
 
-- [API Documentation](/en/api) — Interface details
-- [Architecture Documentation](/en/architecture) — System structure
+- [API Documentation](/en/api/rest) — Interface details
+- [Architecture Documentation](/en/architecture/system) — System structure
 - [Learning Path](/en/learning-path) — Suggested study order

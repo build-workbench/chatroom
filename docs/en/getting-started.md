@@ -173,6 +173,6 @@ Detailed testing steps: [Manual Testing Guide](/en/manual-testing)
 ## Next Steps
 
 - [Manual Testing](/en/manual-testing) — Complete functional verification
-- [API Documentation](/en/api) — Interface details
-- [Architecture](/en/architecture) — System structure
+- [API Documentation](/en/api/rest) — Interface details
+- [Architecture](/en/architecture/system) — System structure
 - [Learning Path](/en/learning-path) — Suggested study routes

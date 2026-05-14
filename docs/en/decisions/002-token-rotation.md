@@ -119,4 +119,4 @@ Server-side Session + Cookie
 
 ---
 
-🌐 **Languages**: English | [简体中文](/zh/decisions/002-token-rotation)
+🌐 **Languages**: English | [简体中文](/en/decisions/002-token-rotation)

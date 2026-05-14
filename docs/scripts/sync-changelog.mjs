@@ -13,7 +13,7 @@ const docsDir = join(__dirname, '..')
 
 function syncChangelog() {
   const changelogPath = join(rootDir, 'CHANGELOG.md')
-  const docsChangelogZh = join(docsDir, 'zh', 'release-notes', 'changelog.md')
+  const docsChangelogZh = join(docsDir, 'release-notes', 'changelog.md')
   const docsChangelogEn = join(docsDir, 'en', 'release-notes', 'changelog.md')
 
   if (!existsSync(changelogPath)) {
@@ -29,7 +29,7 @@ function syncChangelog() {
   if (!existsSync(zhDir)) mkdirSync(zhDir, { recursive: true })
   if (!existsSync(enDir)) mkdirSync(enDir, { recursive: true })
 
-  // Create zh version with frontmatter
+  // Create zh version with frontmatter (now at root)
   const zhContent = `---
 title: 变更日志
 ---
@@ -39,7 +39,7 @@ title: 变更日志
 ${changelog}
 `
   writeFileSync(docsChangelogZh, zhContent)
-  console.log('Synced changelog to docs/zh/release-notes/changelog.md')
+  console.log('Synced changelog to docs/release-notes/changelog.md')
 
   // Create en version with frontmatter
   const enContent = `---

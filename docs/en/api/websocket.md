@@ -170,4 +170,4 @@ sequenceDiagram
 
 ---
 
-🌐 **Languages**: English | [简体中文](/zh/api/websocket)
+🌐 **Languages**: English | [简体中文](/en/api/websocket)

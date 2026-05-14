@@ -193,6 +193,6 @@ make test
 
 ## 更多资源
 
-- [API 文档](./api.md)
-- [架构文档](./architecture.md)
-- [监控指南](./monitoring/README.md)
+- [API 文档](/api/rest)
+- [架构文档](/architecture/system)
+- [监控指南](/monitoring/README)

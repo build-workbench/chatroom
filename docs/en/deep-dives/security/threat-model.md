@@ -152,4 +152,4 @@ flowchart TB
 
 ---
 
-🌐 **Languages**: English | [简体中文](/zh/deep-dives/security/threat-model)
+🌐 **Languages**: English | [简体中文](/en/deep-dives/security/threat-model)

@@ -151,4 +151,4 @@ Query messages table every N seconds for new messages
 
 ---
 
-🌐 **Languages**: English | [简体中文](/zh/decisions/003-distributed-sync)
+🌐 **Languages**: English | [简体中文](/en/decisions/003-distributed-sync)

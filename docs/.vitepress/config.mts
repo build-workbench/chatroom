@@ -2,9 +2,19 @@ import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 import llmstxt from 'vitepress-plugin-llms'
 
-const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? 'chatroom'
-const base = process.env.GITHUB_ACTIONS === 'true' ? `/${repoName}/` : '/'
-const siteUrl = `https://lessup.github.io/${repoName}/`
+// 环境变量驱动的 base path 配置
+const rawBase = process.env.VITEPRESS_BASE ?? (
+  process.env.GITHUB_ACTIONS === 'true'
+    ? `/${process.env.GITHUB_REPOSITORY?.split('/')[1] ?? 'chatroom'}/`
+    : '/'
+)
+const base = rawBase.startsWith('/')
+  ? rawBase.endsWith('/')
+    ? rawBase
+    : `${rawBase}/`
+  : `/${rawBase}/`
+
+const siteUrl = `https://lessup.github.io/chatroom/`
 
 export default withMermaid(defineConfig({
   // Core configuration
@@ -23,7 +33,7 @@ export default withMermaid(defineConfig({
   // HTML head configuration
   head: [
     ['link', { rel: 'canonical', href: siteUrl }],
-    ['meta', { name: 'theme-color', content: '#0f172a' }],
+    ['meta', { name: 'theme-color', content: '#1e40af' }],
     ['meta', { name: 'author', content: 'LessUp' }],
     ['meta', { name: 'keywords', content: 'ChatRoom, Go, React, WebSocket, PostgreSQL, real-time chat, architecture, whitepaper, 技术白皮书, 架构' }],
 
@@ -69,82 +79,84 @@ export default withMermaid(defineConfig({
     plugins: [llmstxt()],
   },
 
-  // Locale configuration
+  // Locale configuration - 中文优先策略
+  // root locale 映射到 '/' (中文)
+  // en locale 映射到 '/en/' (英文)
   locales: {
     root: {
       label: '简体中文',
       lang: 'zh-CN',
-      link: '/zh/',
+      // 不设置 link，root locale 默认映射到 '/'
       themeConfig: {
         nav: [
-          { text: '架构', link: '/zh/architecture/system', activeMatch: '/zh/architecture/' },
-          { text: '设计决策', link: '/zh/decisions/', activeMatch: '/zh/decisions/' },
-          { text: '技术深度', link: '/zh/deep-dives/performance/benchmarks', activeMatch: '/zh/deep-dives/' },
-          { text: 'API', link: '/zh/api/rest', activeMatch: '/zh/api/' },
-          { text: '快速开始', link: '/zh/getting-started' },
+          { text: '架构', link: '/architecture/system', activeMatch: '/architecture/' },
+          { text: '设计决策', link: '/decisions/', activeMatch: '/decisions/' },
+          { text: '技术深度', link: '/deep-dives/performance/benchmarks', activeMatch: '/deep-dives/' },
+          { text: 'API', link: '/api/rest', activeMatch: '/api/' },
+          { text: '快速开始', link: '/getting-started' },
         ],
         sidebar: {
-          '/zh/': [
+          '/': [
             {
               text: '入门',
               collapsed: false,
               items: [
-                { text: '快速开始', link: '/zh/getting-started' },
-                { text: '学习路径', link: '/zh/learning-path' },
-                { text: '开发指南', link: '/zh/development-guide' },
-                { text: '手动测试', link: '/zh/manual-testing' },
-                { text: '常见问题', link: '/zh/faq' },
+                { text: '快速开始', link: '/getting-started' },
+                { text: '学习路径', link: '/learning-path' },
+                { text: '开发指南', link: '/development-guide' },
+                { text: '手动测试', link: '/manual-testing' },
+                { text: '常见问题', link: '/faq' },
               ],
             },
             {
               text: '架构',
               collapsed: false,
               items: [
-                { text: '系统架构', link: '/zh/architecture/system' },
-                { text: '数据流', link: '/zh/architecture/data-flow' },
-                { text: '数据模型', link: '/zh/architecture/data-model' },
+                { text: '系统架构', link: '/architecture/system' },
+                { text: '数据流', link: '/architecture/data-flow' },
+                { text: '数据模型', link: '/architecture/data-model' },
               ],
             },
             {
               text: '设计决策 (ADR)',
               collapsed: false,
               items: [
-                { text: 'ADR-001 WebSocket 认证方案', link: '/zh/decisions/001-ws-auth' },
-                { text: 'ADR-002 Token Rotation 策略', link: '/zh/decisions/002-token-rotation' },
-                { text: 'ADR-003 分布式消息同步', link: '/zh/decisions/003-distributed-sync' },
+                { text: 'ADR-001 WebSocket 认证方案', link: '/decisions/001-ws-auth' },
+                { text: 'ADR-002 Token Rotation 策略', link: '/decisions/002-token-rotation' },
+                { text: 'ADR-003 分布式消息同步', link: '/decisions/003-distributed-sync' },
               ],
             },
             {
               text: '技术深度',
               collapsed: false,
               items: [
-                { text: '性能基准', link: '/zh/deep-dives/performance/benchmarks' },
-                { text: '威胁模型', link: '/zh/deep-dives/security/threat-model' },
-                { text: '认证深度分析', link: '/zh/deep-dives/security/auth-deep-dive' },
-                { text: '水平扩展', link: '/zh/deep-dives/scalability/horizontal' },
+                { text: '性能基准', link: '/deep-dives/performance/benchmarks' },
+                { text: '威胁模型', link: '/deep-dives/security/threat-model' },
+                { text: '认证深度分析', link: '/deep-dives/security/auth-deep-dive' },
+                { text: '水平扩展', link: '/deep-dives/scalability/horizontal' },
               ],
             },
             {
               text: 'API 参考',
               collapsed: false,
               items: [
-                { text: 'REST API', link: '/zh/api/rest' },
-                { text: 'WebSocket 协议', link: '/zh/api/websocket' },
+                { text: 'REST API', link: '/api/rest' },
+                { text: 'WebSocket 协议', link: '/api/websocket' },
               ],
             },
             {
               text: '运维',
               collapsed: false,
               items: [
-                { text: '部署架构', link: '/zh/operations/deployment' },
-                { text: '监控与可观测性', link: '/zh/operations/monitoring' },
+                { text: '部署架构', link: '/operations/deployment' },
+                { text: '监控与可观测性', link: '/operations/monitoring' },
               ],
             },
             {
               text: '项目',
               collapsed: true,
               items: [
-                { text: '变更日志', link: '/zh/release-notes/changelog' },
+                { text: '变更日志', link: '/release-notes/changelog' },
                 { text: '贡献指南', link: 'https://github.com/LessUp/chatroom/blob/master/CONTRIBUTING.md' },
                 { text: '安全策略', link: 'https://github.com/LessUp/chatroom/blob/master/SECURITY.md' },
               ],

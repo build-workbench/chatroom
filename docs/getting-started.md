@@ -166,16 +166,16 @@ make all
 4. 发送一条消息
 5. 刷新页面，确认历史消息加载
 
-详细测试步骤见：[手动测试实验](/zh/manual-testing)
+详细测试步骤见：[手动测试实验](/manual-testing)
 
 ---
 
 ## 下一步
 
-- [手动测试实验](/zh/manual-testing) — 完整功能验证
-- [API 文档](/zh/api) — 接口详情
-- [架构文档](/zh/architecture) — 系统结构
-- [学习路径](/zh/learning-path) — 推荐阅读路线
+- [手动测试实验](/manual-testing) — 完整功能验证
+- [API 文档](/api/rest) — 接口详情
+- [架构文档](/architecture/system) — 系统结构
+- [学习路径](/learning-path) — 推荐阅读路线
 
 ---
 

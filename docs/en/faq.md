@@ -253,8 +253,8 @@ See [Contributing Guide](https://github.com/LessUp/chatroom/blob/master/CONTRIBU
 
 ### What if I encounter problems?
 
-1. Check [API Documentation](/en/api)
-2. Check [Architecture Documentation](/en/architecture)
+1. Check [API Documentation](/en/api/rest)
+2. Check [Architecture Documentation](/en/architecture/system)
 3. Check [Manual Testing](/en/manual-testing)
 4. Search or ask in GitHub Issues
 

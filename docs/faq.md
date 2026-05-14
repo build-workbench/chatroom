@@ -253,9 +253,9 @@ make test && npm --prefix frontend run test
 
 ### 遇到问题怎么办？
 
-1. 查看 [API 文档](/zh/api)
-2. 查看 [架构文档](/zh/architecture)
-3. 查看 [手动测试实验](/zh/manual-testing)
+1. 查看 [API 文档](/api/rest)
+2. 查看 [架构文档](/architecture/system)
+3. 查看 [手动测试实验](/manual-testing)
 4. 在 GitHub Issues 中搜索或提问
 
 ---

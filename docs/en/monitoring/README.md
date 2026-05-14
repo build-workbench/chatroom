@@ -171,8 +171,8 @@ scrape_configs:
 
 - [Prometheus Documentation](https://prometheus.io/docs/)
 - [Grafana Documentation](https://grafana.com/docs/)
-- [Architecture Documentation](/en/architecture) — System metrics implementation details
+- [Architecture Documentation](/en/architecture/system) — System metrics implementation details
 
 ---
 
-🌐 **Languages**: English | [简体中文](/zh/monitoring/README)
+🌐 **Languages**: English | [简体中文](/en/monitoring/README)

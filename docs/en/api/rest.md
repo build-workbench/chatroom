@@ -204,4 +204,4 @@ All error responses use a unified format:
 
 ---
 
-🌐 **Languages**: English | [简体中文](/zh/api/rest)
+🌐 **Languages**: English | [简体中文](/en/api/rest)

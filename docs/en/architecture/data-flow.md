@@ -140,4 +140,4 @@ sequenceDiagram
 
 ---
 
-🌐 **Languages**: English | [简体中文](/zh/architecture/data-flow)
+🌐 **Languages**: English | [简体中文](/en/architecture/data-flow)

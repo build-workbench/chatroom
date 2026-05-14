@@ -193,6 +193,6 @@ go test ./...
 
 ## More Resources
 
-- [API Documentation](./api.md)
-- [Architecture](./architecture.md)
-- [Monitoring Guide](./monitoring/README.md)
+- [API Documentation](/en/api/rest)
+- [Architecture](/en/architecture/system)
+- [Monitoring Guide](/en/monitoring/README)

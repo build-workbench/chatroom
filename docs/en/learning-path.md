@@ -24,7 +24,7 @@ ChatRoom is a teaching-oriented project designed with different learning paths f
 #### Step 1: Project Structure
 
 **Read**:
-- [Architecture](./architecture) - System overview
+- [Architecture](/en/architecture/system) - System overview
 - `cmd/server/main.go` - Startup flow and dependency wiring
 
 **Key Learning**:
@@ -58,7 +58,7 @@ sed -n '1,120p' cmd/server/main.go
 
 **Read**:
 - `internal/auth/`
-- [API - Authentication](./api#authentication)
+- [API - Authentication](/en/api/rest#authentication)
 
 **Key Learning**:
 - Access Token vs Refresh Token
@@ -86,7 +86,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 **Read**:
 - `internal/ws/`
-- [Architecture - WebSocket Layer](./architecture#websocket-layer)
+- [Architecture - WebSocket Layer](/en/architecture/system#websocket-layer)
 
 **Key Learning**:
 - Hub pattern design
@@ -147,11 +147,11 @@ docker build -t chatroom:latest -f deploy/docker/Dockerfile .
 
 If you don't have a specific goal, read in this order:
 
-1. [Getting Started](./getting-started) — 5-min setup
-2. [Manual Testing](./manual-testing) — Verify core features
-3. [API Documentation](./api) — Interface design
-4. [Architecture](./architecture) — System layers
-5. [Monitoring Guide](./monitoring/README) — Operational surfaces
+1. [Getting Started](/en/getting-started) — 5-min setup
+2. [Manual Testing](/en/manual-testing) — Verify core features
+3. [API Documentation](/en/api/rest) — Interface design
+4. [Architecture](/en/architecture/system) — System layers
+5. [Monitoring Guide](/en/monitoring/README) — Operational surfaces
 
 ---
 
@@ -181,6 +181,6 @@ After reading a module, try modifying something:
 ### Get Help
 
 If stuck:
-- Check [FAQ](./faq)
+- Check [FAQ](/en/faq)
 - Open a GitHub Issue
 - Read code comments

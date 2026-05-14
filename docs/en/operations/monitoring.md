@@ -170,4 +170,4 @@ groups:
 
 ---
 
-🌐 **Languages**: English | [简体中文](/zh/operations/monitoring)
+🌐 **Languages**: English | [简体中文](/en/operations/monitoring)
