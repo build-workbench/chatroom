@@ -2,9 +2,9 @@
 layout: home
 ---
 
-# ChatRoom Technical Whitepaper
+# ChatRoom 技术白皮书
 
-> A real-time full-stack system architecture reference implementation
+> 实时全栈系统架构参考实现
 
 <div class="tech-badges">
   <span class="badge">Go 1.24</span>
@@ -14,65 +14,65 @@ layout: home
 </div>
 
 <div class="hero-subtitle">
-A teaching-oriented real-time chat application demonstrating core design patterns of modern full-stack systems
+一个教学导向的实时聊天室，展示现代全栈系统的核心设计模式
 </div>
 
-## Core Features
+## 核心特性
 
 <div class="feature-grid">
   <div class="feature-card">
-    <h3>🔐 JWT Dual Token Auth</h3>
-    <p>Short-lived Access Token + long-lived Refresh Token with automatic rotation to minimize leak risks</p>
+    <h3>🔐 JWT 双 Token 认证</h3>
+    <p>短期 Access Token + 长期 Refresh Token，自动轮换机制有效降低泄露风险</p>
   </div>
   <div class="feature-card">
-    <h3>🎫 WebSocket Ticket Auth</h3>
-    <p>One-time ticket authentication via Subprotocol, 60-second validity, prevents replay attacks</p>
+    <h3>🎫 WebSocket Ticket 认证</h3>
+    <p>一次性票据方案，通过 Subprotocol 传递，60秒有效期，防止重放攻击</p>
   </div>
   <div class="feature-card">
-    <h3>🌐 Distributed Sync</h3>
-    <p>Cross-instance broadcast via PostgreSQL LISTEN/NOTIFY, no Redis required, keeping architecture simple</p>
+    <h3>🌐 分布式消息同步</h3>
+    <p>基于 PostgreSQL LISTEN/NOTIFY 的跨实例广播，无需 Redis，保持架构简洁</p>
   </div>
   <div class="feature-card">
-    <h3>📊 Prometheus Observability</h3>
-    <p>Built-in metrics for connections, throughput, latency distribution, Grafana-ready</p>
+    <h3>📊 Prometheus 可观测性</h3>
+    <p>内置连接数、吞吐量、延迟分布等指标，支持 Grafana 可视化</p>
   </div>
 </div>
 
-## Quick Navigation
+## 快速导航
 
 <div class="nav-grid">
-  <a href="/en/whitepaper/" class="nav-card primary">
+  <a href="/zh/whitepaper/" class="nav-card primary">
     <div class="nav-icon">📖</div>
-    <div class="nav-title">Whitepaper</div>
-    <div class="nav-desc">Complete technical analysis</div>
+    <div class="nav-title">白皮书</div>
+    <div class="nav-desc">完整技术方案解析</div>
   </a>
-  <a href="/en/architecture/system" class="nav-card">
+  <a href="/zh/architecture/system" class="nav-card">
     <div class="nav-icon">🏗️</div>
-    <div class="nav-title">Architecture</div>
-    <div class="nav-desc">System layers & components</div>
+    <div class="nav-title">架构概览</div>
+    <div class="nav-desc">系统分层与组件交互</div>
   </a>
-  <a href="/en/tutorials/local-dev" class="nav-card">
+  <a href="/zh/tutorials/local-dev" class="nav-card">
     <div class="nav-icon">🚀</div>
-    <div class="nav-title">Getting Started</div>
-    <div class="nav-desc">Run the project in minutes</div>
+    <div class="nav-title">快速开始</div>
+    <div class="nav-desc">几分钟内启动项目</div>
   </a>
 </div>
 
-## Architecture Preview
+## 架构预览
 
 ```mermaid
 flowchart TB
-    subgraph Client["Client Layer"]
+    subgraph Client["客户端层"]
         B1[Browser<br/>React SPA]
         B2[Browser<br/>React SPA]
     end
 
-    subgraph App["Application Layer"]
+    subgraph App["应用层"]
         subgraph Gin["Gin HTTP Server"]
             REST[REST API]
             WS[WebSocket]
         end
-        subgraph Services["Service Layer"]
+        subgraph Services["Service 层"]
             UserService[UserService]
             RoomService[RoomService]
             MsgService[MessageService]
@@ -82,7 +82,7 @@ flowchart TB
         end
     end
 
-    subgraph Data["Data Layer"]
+    subgraph Data["数据层"]
         PG[(PostgreSQL 16)]
     end
 

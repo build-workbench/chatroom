@@ -33,7 +33,7 @@ export default withMermaid(defineConfig({
   // HTML head configuration
   head: [
     ['link', { rel: 'canonical', href: siteUrl }],
-    ['meta', { name: 'theme-color', content: '#1e40af' }],
+    ['meta', { name: 'theme-color', content: '#1e3a5f' }],
     ['meta', { name: 'author', content: 'LessUp' }],
     ['meta', { name: 'keywords', content: 'ChatRoom, Go, React, WebSocket, PostgreSQL, real-time chat, architecture, whitepaper, 技术白皮书, 架构' }],
 
@@ -57,6 +57,11 @@ export default withMermaid(defineConfig({
     ['link', { rel: 'icon', type: 'image/png', href: `${base}favicon.png` }],
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${base}apple-touch-icon.png` }],
     ['link', { rel: 'manifest', href: `${base}manifest.json` }],
+
+    // Fonts
+    ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
+    ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
+    ['link', { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap' }],
   ],
 
   // Markdown configuration
@@ -79,86 +84,86 @@ export default withMermaid(defineConfig({
     plugins: [llmstxt()],
   },
 
-  // Locale configuration - 中文优先策略
-  // root locale 映射到 '/' (中文)
-  // en locale 映射到 '/en/' (英文)
+  // Locale configuration - 中英文对称结构
   locales: {
     root: {
       label: '简体中文',
       lang: 'zh-CN',
-      // 不设置 link，root locale 默认映射到 '/'
+      link: '/',
       themeConfig: {
         nav: [
-          { text: '架构', link: '/architecture/system', activeMatch: '/architecture/' },
-          { text: '设计决策', link: '/decisions/', activeMatch: '/decisions/' },
-          { text: '技术深度', link: '/deep-dives/performance/benchmarks', activeMatch: '/deep-dives/' },
-          { text: 'API', link: '/api/rest', activeMatch: '/api/' },
-          { text: '快速开始', link: '/getting-started' },
+          { text: '白皮书', link: '/zh/whitepaper/', activeMatch: '/zh/whitepaper/' },
+          { text: '架构', link: '/zh/architecture/system', activeMatch: '/zh/architecture/' },
+          { text: '设计决策', link: '/zh/decisions/', activeMatch: '/zh/decisions/' },
+          { text: '技术深度', link: '/zh/deep-dives/performance/benchmarks', activeMatch: '/zh/deep-dives/' },
+          { text: 'API', link: '/zh/api/rest', activeMatch: '/zh/api/' },
+          { text: '教程', link: '/zh/tutorials/local-dev', activeMatch: '/zh/tutorials/' },
         ],
         sidebar: {
-          '/': [
+          '/zh/': [
             {
-              text: '入门',
+              text: '白皮书',
               collapsed: false,
               items: [
-                { text: '快速开始', link: '/getting-started' },
-                { text: '学习路径', link: '/learning-path' },
-                { text: '开发指南', link: '/development-guide' },
-                { text: '手动测试', link: '/manual-testing' },
-                { text: '常见问题', link: '/faq' },
+                { text: '执行摘要', link: '/zh/whitepaper/index' },
+                { text: '问题陈述', link: '/zh/whitepaper/problem' },
+                { text: '方案概述', link: '/zh/whitepaper/solution' },
+                { text: '技术架构', link: '/zh/whitepaper/architecture' },
+                { text: '关键决策', link: '/zh/whitepaper/decisions' },
               ],
             },
             {
               text: '架构',
               collapsed: false,
               items: [
-                { text: '系统架构', link: '/architecture/system' },
-                { text: '数据流', link: '/architecture/data-flow' },
-                { text: '数据模型', link: '/architecture/data-model' },
+                { text: '系统架构', link: '/zh/architecture/system' },
+                { text: '数据流', link: '/zh/architecture/data-flow' },
+                { text: '数据模型', link: '/zh/architecture/data-model' },
               ],
             },
             {
               text: '设计决策 (ADR)',
               collapsed: false,
               items: [
-                { text: 'ADR-001 WebSocket 认证方案', link: '/decisions/001-ws-auth' },
-                { text: 'ADR-002 Token Rotation 策略', link: '/decisions/002-token-rotation' },
-                { text: 'ADR-003 分布式消息同步', link: '/decisions/003-distributed-sync' },
+                { text: 'ADR-001 WebSocket 认证方案', link: '/zh/decisions/001-ws-auth' },
+                { text: 'ADR-002 Token Rotation 策略', link: '/zh/decisions/002-token-rotation' },
+                { text: 'ADR-003 分布式消息同步', link: '/zh/decisions/003-distributed-sync' },
               ],
             },
             {
               text: '技术深度',
               collapsed: false,
               items: [
-                { text: '性能基准', link: '/deep-dives/performance/benchmarks' },
-                { text: '威胁模型', link: '/deep-dives/security/threat-model' },
-                { text: '认证深度分析', link: '/deep-dives/security/auth-deep-dive' },
-                { text: '水平扩展', link: '/deep-dives/scalability/horizontal' },
+                { text: '性能基准', link: '/zh/deep-dives/performance/benchmarks' },
+                { text: '威胁模型', link: '/zh/deep-dives/security/threat-model' },
+                { text: '认证深度分析', link: '/zh/deep-dives/security/auth-deep-dive' },
+                { text: '水平扩展', link: '/zh/deep-dives/scalability/horizontal' },
               ],
             },
             {
               text: 'API 参考',
               collapsed: false,
               items: [
-                { text: 'REST API', link: '/api/rest' },
-                { text: 'WebSocket 协议', link: '/api/websocket' },
+                { text: 'REST API', link: '/zh/api/rest' },
+                { text: 'WebSocket 协议', link: '/zh/api/websocket' },
               ],
             },
             {
-              text: '运维',
+              text: '教程',
               collapsed: false,
               items: [
-                { text: '部署架构', link: '/operations/deployment' },
-                { text: '监控与可观测性', link: '/operations/monitoring' },
+                { text: '本地开发', link: '/zh/tutorials/local-dev' },
+                { text: '测试指南', link: '/zh/tutorials/testing' },
+                { text: '学习路径', link: '/zh/tutorials/learning-path' },
+                { text: '开发指南', link: '/zh/tutorials/development-guide' },
               ],
             },
             {
-              text: '项目',
+              text: '参考',
               collapsed: true,
               items: [
-                { text: '变更日志', link: '/release-notes/changelog' },
-                { text: '贡献指南', link: 'https://github.com/LessUp/chatroom/blob/master/CONTRIBUTING.md' },
-                { text: '安全策略', link: 'https://github.com/LessUp/chatroom/blob/master/SECURITY.md' },
+                { text: '常见问题', link: '/zh/reference/faq' },
+                { text: '变更日志', link: '/zh/reference/changelog' },
               ],
             },
           ],
@@ -204,23 +209,24 @@ export default withMermaid(defineConfig({
       link: '/en/',
       themeConfig: {
         nav: [
+          { text: 'Whitepaper', link: '/en/whitepaper/', activeMatch: '/en/whitepaper/' },
           { text: 'Architecture', link: '/en/architecture/system', activeMatch: '/en/architecture/' },
-          { text: 'Design Decisions', link: '/en/decisions/', activeMatch: '/en/decisions/' },
+          { text: 'Decisions', link: '/en/decisions/', activeMatch: '/en/decisions/' },
           { text: 'Deep Dives', link: '/en/deep-dives/performance/benchmarks', activeMatch: '/en/deep-dives/' },
           { text: 'API', link: '/en/api/rest', activeMatch: '/en/api/' },
-          { text: 'Getting Started', link: '/en/getting-started' },
+          { text: 'Tutorials', link: '/en/tutorials/local-dev', activeMatch: '/en/tutorials/' },
         ],
         sidebar: {
           '/en/': [
             {
-              text: 'Getting Started',
+              text: 'Whitepaper',
               collapsed: false,
               items: [
-                { text: 'Getting Started', link: '/en/getting-started' },
-                { text: 'Learning Path', link: '/en/learning-path' },
-                { text: 'Development Guide', link: '/en/development-guide' },
-                { text: 'Manual Testing', link: '/en/manual-testing' },
-                { text: 'FAQ', link: '/en/faq' },
+                { text: 'Executive Summary', link: '/en/whitepaper/index' },
+                { text: 'Problem Statement', link: '/en/whitepaper/problem' },
+                { text: 'Solution Overview', link: '/en/whitepaper/solution' },
+                { text: 'Architecture', link: '/en/whitepaper/architecture' },
+                { text: 'Key Decisions', link: '/en/whitepaper/decisions' },
               ],
             },
             {
@@ -260,20 +266,21 @@ export default withMermaid(defineConfig({
               ],
             },
             {
-              text: 'Operations',
+              text: 'Tutorials',
               collapsed: false,
               items: [
-                { text: 'Deployment', link: '/en/operations/deployment' },
-                { text: 'Monitoring & Observability', link: '/en/operations/monitoring' },
+                { text: 'Local Development', link: '/en/tutorials/local-dev' },
+                { text: 'Testing Guide', link: '/en/tutorials/testing' },
+                { text: 'Learning Path', link: '/en/tutorials/learning-path' },
+                { text: 'Development Guide', link: '/en/tutorials/development-guide' },
               ],
             },
             {
-              text: 'Project',
+              text: 'Reference',
               collapsed: true,
               items: [
-                { text: 'Changelog', link: '/en/release-notes/changelog' },
-                { text: 'Contributing', link: 'https://github.com/LessUp/chatroom/blob/master/CONTRIBUTING.md' },
-                { text: 'Security Policy', link: 'https://github.com/LessUp/chatroom/blob/master/SECURITY.md' },
+                { text: 'FAQ', link: '/en/reference/faq' },
+                { text: 'Changelog', link: '/en/reference/changelog' },
               ],
             },
           ],

@@ -1,6 +1,7 @@
 /**
  * Sync CHANGELOG.md from repo root to docs for inclusion in the docs site.
  * This script runs before each docs build to ensure changelog is up-to-date.
+ * Updated for new /zh/ + /en/ symmetric structure.
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
@@ -13,8 +14,9 @@ const docsDir = join(__dirname, '..')
 
 function syncChangelog() {
   const changelogPath = join(rootDir, 'CHANGELOG.md')
-  const docsChangelogZh = join(docsDir, 'release-notes', 'changelog.md')
-  const docsChangelogEn = join(docsDir, 'en', 'release-notes', 'changelog.md')
+  // New paths for symmetric structure
+  const docsChangelogZh = join(docsDir, 'zh', 'reference', 'changelog.md')
+  const docsChangelogEn = join(docsDir, 'en', 'reference', 'changelog.md')
 
   if (!existsSync(changelogPath)) {
     console.log('No CHANGELOG.md found at repo root, skipping sync')
@@ -29,7 +31,7 @@ function syncChangelog() {
   if (!existsSync(zhDir)) mkdirSync(zhDir, { recursive: true })
   if (!existsSync(enDir)) mkdirSync(enDir, { recursive: true })
 
-  // Create zh version with frontmatter (now at root)
+  // Create zh version with frontmatter
   const zhContent = `---
 title: 变更日志
 ---
@@ -39,7 +41,7 @@ title: 变更日志
 ${changelog}
 `
   writeFileSync(docsChangelogZh, zhContent)
-  console.log('Synced changelog to docs/release-notes/changelog.md')
+  console.log('Synced changelog to docs/zh/reference/changelog.md')
 
   // Create en version with frontmatter
   const enContent = `---
@@ -51,7 +53,7 @@ title: Changelog
 ${changelog}
 `
   writeFileSync(docsChangelogEn, enContent)
-  console.log('Synced changelog to docs/en/release-notes/changelog.md')
+  console.log('Synced changelog to docs/en/reference/changelog.md')
 }
 
 syncChangelog()
