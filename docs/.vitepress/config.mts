@@ -1,13 +1,15 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
+import llmstxt from 'vitepress-plugin-llms'
 
 const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? 'chatroom'
 const base = process.env.GITHUB_ACTIONS === 'true' ? `/${repoName}/` : '/'
 const siteUrl = `https://lessup.github.io/${repoName}/`
 
-export default defineConfig({
+export default withMermaid(defineConfig({
   // Core configuration
   title: 'ChatRoom',
-  description: 'A teaching-oriented real-time chat application with Go, React, PostgreSQL, and WebSocket',
+  description: 'Technical whitepaper for a teaching-oriented real-time chat application',
   base,
   cleanUrls: true,
   lastUpdated: true,
@@ -20,18 +22,17 @@ export default defineConfig({
 
   // HTML head configuration
   head: [
-    // Basic
     ['link', { rel: 'canonical', href: siteUrl }],
-    ['meta', { name: 'theme-color', content: '#2563eb' }],
+    ['meta', { name: 'theme-color', content: '#0f172a' }],
     ['meta', { name: 'author', content: 'LessUp' }],
-    ['meta', { name: 'keywords', content: 'ChatRoom, Go, React, WebSocket, PostgreSQL, real-time chat, teaching project, 全栈教学, 聊天室' }],
-    
+    ['meta', { name: 'keywords', content: 'ChatRoom, Go, React, WebSocket, PostgreSQL, real-time chat, architecture, whitepaper, 技术白皮书, 架构' }],
+
     // Viewport
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
 
     // Open Graph
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:site_name', content: 'ChatRoom Documentation' }],
+    ['meta', { property: 'og:site_name', content: 'ChatRoom Technical Whitepaper' }],
     ['meta', { property: 'og:url', content: siteUrl }],
     ['meta', { property: 'og:image', content: `${siteUrl}og-image.png` }],
     ['meta', { property: 'og:image:width', content: '1200' }],
@@ -57,6 +58,17 @@ export default defineConfig({
     },
   },
 
+  // Mermaid configuration
+  mermaid: {
+    startOnLoad: true,
+    theme: 'default',
+  },
+
+  // Vite plugins
+  vite: {
+    plugins: [llmstxt()],
+  },
+
   // Locale configuration
   locales: {
     root: {
@@ -65,15 +77,16 @@ export default defineConfig({
       link: '/zh/',
       themeConfig: {
         nav: [
+          { text: '架构', link: '/zh/architecture/system', activeMatch: '/zh/architecture/' },
+          { text: '设计决策', link: '/zh/decisions/', activeMatch: '/zh/decisions/' },
+          { text: '技术深度', link: '/zh/deep-dives/performance/benchmarks', activeMatch: '/zh/deep-dives/' },
+          { text: 'API', link: '/zh/api/rest', activeMatch: '/zh/api/' },
           { text: '快速开始', link: '/zh/getting-started' },
-          { text: '学习路径', link: '/zh/learning-path' },
-          { text: 'API', link: '/zh/api' },
-          { text: '架构', link: '/zh/architecture' },
         ],
         sidebar: {
           '/zh/': [
             {
-              text: '📖 入门指南',
+              text: '入门',
               collapsed: false,
               items: [
                 { text: '快速开始', link: '/zh/getting-started' },
@@ -83,28 +96,57 @@ export default defineConfig({
                 { text: '常见问题', link: '/zh/faq' },
               ],
             },
-              {
-                text: '📚 核心文档',
-                collapsed: false,
-                items: [
-                  { text: 'API 文档', link: '/zh/api' },
-                  { text: '架构文档', link: '/zh/architecture' },
-                ],
-              },
             {
-              text: '🔧 运维指南',
+              text: '架构',
               collapsed: false,
               items: [
-                { text: '监控指南', link: '/zh/monitoring/README' },
+                { text: '系统架构', link: '/zh/architecture/system' },
+                { text: '数据流', link: '/zh/architecture/data-flow' },
+                { text: '数据模型', link: '/zh/architecture/data-model' },
               ],
             },
             {
-              text: '📋 项目规范',
+              text: '设计决策 (ADR)',
+              collapsed: false,
+              items: [
+                { text: 'ADR-001 WebSocket 认证方案', link: '/zh/decisions/001-ws-auth' },
+                { text: 'ADR-002 Token Rotation 策略', link: '/zh/decisions/002-token-rotation' },
+                { text: 'ADR-003 分布式消息同步', link: '/zh/decisions/003-distributed-sync' },
+              ],
+            },
+            {
+              text: '技术深度',
+              collapsed: false,
+              items: [
+                { text: '性能基准', link: '/zh/deep-dives/performance/benchmarks' },
+                { text: '威胁模型', link: '/zh/deep-dives/security/threat-model' },
+                { text: '认证深度分析', link: '/zh/deep-dives/security/auth-deep-dive' },
+                { text: '水平扩展', link: '/zh/deep-dives/scalability/horizontal' },
+              ],
+            },
+            {
+              text: 'API 参考',
+              collapsed: false,
+              items: [
+                { text: 'REST API', link: '/zh/api/rest' },
+                { text: 'WebSocket 协议', link: '/zh/api/websocket' },
+              ],
+            },
+            {
+              text: '运维',
+              collapsed: false,
+              items: [
+                { text: '部署架构', link: '/zh/operations/deployment' },
+                { text: '监控与可观测性', link: '/zh/operations/monitoring' },
+              ],
+            },
+            {
+              text: '项目',
               collapsed: true,
               items: [
+                { text: '变更日志', link: '/zh/release-notes/changelog' },
                 { text: '贡献指南', link: 'https://github.com/LessUp/chatroom/blob/master/CONTRIBUTING.md' },
                 { text: '安全策略', link: 'https://github.com/LessUp/chatroom/blob/master/SECURITY.md' },
-                { text: '变更日志', link: 'https://github.com/LessUp/chatroom/blob/master/CHANGELOG.md' },
               ],
             },
           ],
@@ -150,15 +192,16 @@ export default defineConfig({
       link: '/en/',
       themeConfig: {
         nav: [
+          { text: 'Architecture', link: '/en/architecture/system', activeMatch: '/en/architecture/' },
+          { text: 'Design Decisions', link: '/en/decisions/', activeMatch: '/en/decisions/' },
+          { text: 'Deep Dives', link: '/en/deep-dives/performance/benchmarks', activeMatch: '/en/deep-dives/' },
+          { text: 'API', link: '/en/api/rest', activeMatch: '/en/api/' },
           { text: 'Getting Started', link: '/en/getting-started' },
-          { text: 'Learning Path', link: '/en/learning-path' },
-          { text: 'API', link: '/en/api' },
-          { text: 'Architecture', link: '/en/architecture' },
         ],
         sidebar: {
           '/en/': [
             {
-              text: '📖 Getting Started',
+              text: 'Getting Started',
               collapsed: false,
               items: [
                 { text: 'Getting Started', link: '/en/getting-started' },
@@ -168,28 +211,57 @@ export default defineConfig({
                 { text: 'FAQ', link: '/en/faq' },
               ],
             },
-              {
-                text: '📚 Core Documentation',
-                collapsed: false,
-                items: [
-                  { text: 'API Documentation', link: '/en/api' },
-                  { text: 'Architecture', link: '/en/architecture' },
-                ],
-              },
             {
-              text: '🔧 Operations',
+              text: 'Architecture',
               collapsed: false,
               items: [
-                { text: 'Monitoring Guide', link: '/en/monitoring/README' },
+                { text: 'System Architecture', link: '/en/architecture/system' },
+                { text: 'Data Flow', link: '/en/architecture/data-flow' },
+                { text: 'Data Model', link: '/en/architecture/data-model' },
               ],
             },
             {
-              text: '📋 Project Guidelines',
+              text: 'Design Decisions (ADR)',
+              collapsed: false,
+              items: [
+                { text: 'ADR-001 WebSocket Auth', link: '/en/decisions/001-ws-auth' },
+                { text: 'ADR-002 Token Rotation', link: '/en/decisions/002-token-rotation' },
+                { text: 'ADR-003 Distributed Sync', link: '/en/decisions/003-distributed-sync' },
+              ],
+            },
+            {
+              text: 'Deep Dives',
+              collapsed: false,
+              items: [
+                { text: 'Performance Benchmarks', link: '/en/deep-dives/performance/benchmarks' },
+                { text: 'Threat Model', link: '/en/deep-dives/security/threat-model' },
+                { text: 'Auth Deep Dive', link: '/en/deep-dives/security/auth-deep-dive' },
+                { text: 'Horizontal Scaling', link: '/en/deep-dives/scalability/horizontal' },
+              ],
+            },
+            {
+              text: 'API Reference',
+              collapsed: false,
+              items: [
+                { text: 'REST API', link: '/en/api/rest' },
+                { text: 'WebSocket Protocol', link: '/en/api/websocket' },
+              ],
+            },
+            {
+              text: 'Operations',
+              collapsed: false,
+              items: [
+                { text: 'Deployment', link: '/en/operations/deployment' },
+                { text: 'Monitoring & Observability', link: '/en/operations/monitoring' },
+              ],
+            },
+            {
+              text: 'Project',
               collapsed: true,
               items: [
+                { text: 'Changelog', link: '/en/release-notes/changelog' },
                 { text: 'Contributing', link: 'https://github.com/LessUp/chatroom/blob/master/CONTRIBUTING.md' },
                 { text: 'Security Policy', link: 'https://github.com/LessUp/chatroom/blob/master/SECURITY.md' },
-                { text: 'Changelog', link: 'https://github.com/LessUp/chatroom/blob/master/CHANGELOG.md' },
               ],
             },
           ],
@@ -243,4 +315,4 @@ export default defineConfig({
       pattern: 'https://github.com/LessUp/chatroom/edit/master/docs/:path',
     },
   },
-})
+}))
