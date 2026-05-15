@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { Api, getRequestErrorMessage, getRequestErrorStatus, isNetworkRequestError } from '../api'
+import { Api } from '../api'
+import { mapApiError } from '../error-utils'
 import { useToast } from '../toast-context'
 import { clearAuth, loadAuth, saveTokens, saveUser } from '../storage'
 import type { User } from '../types'
@@ -50,34 +51,6 @@ class AuthRuntime {
   }
 }
 
-function isServerErrorStatus(status: number | undefined): boolean {
-  return typeof status === 'number' && status >= 500
-}
-
-function getLoginErrorMessage(error: unknown): string {
-  if (isNetworkRequestError(error)) return '登录失败，请检查网络连接'
-  const status = getRequestErrorStatus(error)
-  const responseMessage = getRequestErrorMessage(error)
-
-  if (status === 429) return '登录过于频繁，请稍后再试'
-  if (status === 401 || responseMessage === 'invalid credentials') return '登录失败，用户名或密码错误'
-  if (status === 400 || responseMessage === 'invalid payload') return '登录失败，请输入有效的用户名和密码'
-  if (isServerErrorStatus(status) || responseMessage === 'login failed') return '登录失败，服务暂时不可用'
-  return '登录失败，请稍后重试'
-}
-
-function getRegisterErrorMessage(error: unknown): string {
-  if (isNetworkRequestError(error)) return '注册失败，请检查网络连接'
-  const status = getRequestErrorStatus(error)
-  const responseMessage = getRequestErrorMessage(error)
-
-  if (status === 429) return '注册过于频繁，请稍后再试'
-  if (status === 409 || responseMessage === 'username taken') return '注册失败，用户名已存在'
-  if (status === 400 || responseMessage === 'invalid payload') return '注册失败，请使用 2-64 位用户名和 4-128 位密码'
-  if (isServerErrorStatus(status) || responseMessage === 'failed to create user') return '注册失败，服务暂时不可用'
-  return '注册失败，请稍后重试'
-}
-
 export function useAuth(onLogout?: () => void): AuthState {
   const toast = useToast()
   const snapshot = useMemo(() => loadAuth(), [])
@@ -107,9 +80,15 @@ export function useAuth(onLogout?: () => void): AuthState {
   const refreshRef = useRef(refreshToken)
   const userRef = useRef<User | null>(user)
 
-  useEffect(() => { accessRef.current = accessToken }, [accessToken])
-  useEffect(() => { refreshRef.current = refreshToken }, [refreshToken])
-  useEffect(() => { userRef.current = user }, [user])
+  useEffect(() => {
+    accessRef.current = accessToken
+  }, [accessToken])
+  useEffect(() => {
+    refreshRef.current = refreshToken
+  }, [refreshToken])
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
 
   const logout = useCallback(() => {
     onLogout?.()
@@ -127,32 +106,38 @@ export function useAuth(onLogout?: () => void): AuthState {
     authRuntime.setUnauthorizedHandler(logout)
   }, [authRuntime, logout])
 
-  const handleLogin = useCallback(async (username: string, password: string) => {
-    try {
-      const data = await api.login(username, password)
-      saveTokens(data.access_token, data.refresh_token)
-      saveUser(data.user)
-      authRuntime.setTokens(data.access_token, data.refresh_token)
-      accessRef.current = data.access_token
-      refreshRef.current = data.refresh_token
-      userRef.current = data.user
-      setAccessToken(data.access_token)
-      setRefreshToken(data.refresh_token)
-      setUser(data.user)
-      toast.success(`欢迎回来，${data.user.username}！`)
-    } catch (error) {
-      toast.error(getLoginErrorMessage(error))
-    }
-  }, [api, authRuntime, toast])
+  const handleLogin = useCallback(
+    async (username: string, password: string) => {
+      try {
+        const data = await api.login(username, password)
+        saveTokens(data.access_token, data.refresh_token)
+        saveUser(data.user)
+        authRuntime.setTokens(data.access_token, data.refresh_token)
+        accessRef.current = data.access_token
+        refreshRef.current = data.refresh_token
+        userRef.current = data.user
+        setAccessToken(data.access_token)
+        setRefreshToken(data.refresh_token)
+        setUser(data.user)
+        toast.success(`欢迎回来，${data.user.username}！`)
+      } catch (error) {
+        toast.error(mapApiError(error, 'login'))
+      }
+    },
+    [api, authRuntime, toast],
+  )
 
-  const handleRegister = useCallback(async (username: string, password: string) => {
-    try {
-      await api.register(username, password)
-    } catch (error) {
-      toast.error(getRegisterErrorMessage(error))
-      throw error
-    }
-  }, [api, toast])
+  const handleRegister = useCallback(
+    async (username: string, password: string) => {
+      try {
+        await api.register(username, password)
+      } catch (error) {
+        toast.error(mapApiError(error, 'register'))
+        throw error
+      }
+    },
+    [api, toast],
+  )
 
   return {
     user,

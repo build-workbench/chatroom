@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
+	"gorm.io/gorm"
 )
 
 // IsUniqueViolation 判断数据库错误是否为唯一约束冲突。
@@ -24,4 +25,9 @@ func IsUniqueViolation(err error) bool {
 	msg := strings.ToLower(err.Error())
 	return strings.Contains(msg, "unique constraint failed") ||
 		strings.Contains(msg, "duplicate key")
+}
+
+// IsNotFound 判断错误是否为记录不存在。
+func IsNotFound(err error) bool {
+	return errors.Is(err, gorm.ErrRecordNotFound)
 }

@@ -210,7 +210,7 @@ func TestValidateAndConsumeWSTicket(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GenerateWSTicket() error = %v", err)
 	}
-	if err := SaveWSTicket(db, ticketID, 7, 9, expiresAt); err != nil {
+	if err := SaveWSTicket(NewGormAdapter(db), ticketID, 7, 9, expiresAt); err != nil {
 		t.Fatalf("SaveWSTicket() error = %v", err)
 	}
 

@@ -9,9 +9,7 @@ import (
 
 	"chatroom/internal/auth"
 	"chatroom/internal/config"
-	"chatroom/internal/metrics"
 	"chatroom/internal/models"
-	"chatroom/internal/sanitize"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -34,7 +32,7 @@ type Client struct {
 	room      *RoomHub
 	conn      *websocket.Conn
 	send      chan []byte
-	db        *gorm.DB
+	processor MessageProcessor
 	hub       *Hub
 	sessionID string
 	userID    uint
@@ -132,11 +130,18 @@ func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 			return
 		}
 		rh := h.GetRoom(uint(rid64))
+		processor := NewDefaultMessageProcessor(db, rh, h, MessageProcessorConfig{
+			RoomID:     uint(rid64),
+			UserID:     user.ID,
+			Username:   user.Username,
+			MaxSize:    cfg.WsMaxMessageSize,
+			MaxContent: cfg.WsMaxContentSize,
+		})
 		client := &Client{
 			room:      rh,
 			conn:      conn,
 			send:      make(chan []byte, sendBufSize),
-			db:        db,
+			processor: processor,
 			hub:       h,
 			sessionID: claims.ID,
 			userID:    user.ID,
@@ -209,37 +214,24 @@ func (c *Client) readPump() {
 
 // handleMessage 校验并持久化聊天消息，然后广播给房间内的所有客户端。
 func (c *Client) handleMessage(content string) {
-	if content == "" {
+	result := c.processor.Process(content)
+	if result == nil {
 		return
 	}
-	// 对消息内容进行 XSS 过滤
-	sanitizedContent := sanitize.Content(content)
-	if len(sanitizedContent) > c.cfg.WsMaxContentSize {
-		if b, err := json.Marshal(wsSimpleMsg{Type: "error", Content: "消息长度不能超过2000字符"}); err == nil {
-			select {
-			case c.send <- b:
-			default:
-			}
+	b, err := json.Marshal(result.Message)
+	if err != nil {
+		return
+	}
+	if result.Broadcast {
+		c.room.broadcast <- b
+		if c.hub != nil {
+			c.hub.publish(c.room.roomID, b)
 		}
-		return
-	}
-	msg := models.Message{RoomID: c.room.roomID, UserID: c.userID, Content: sanitizedContent}
-	if err := c.db.Create(&msg).Error; err != nil {
-		log.Error().Err(err).Uint("room_id", c.room.roomID).Uint("user_id", c.userID).Msg("ws persist message")
-		if b, err := json.Marshal(wsSimpleMsg{Type: "error", Content: "消息发送失败"}); err == nil {
-			select {
-			case c.send <- b:
-			default:
-			}
+	} else {
+		select {
+		case c.send <- b:
+		default:
 		}
-		return
-	}
-	out := OutboundMessage{Type: "message", ID: msg.ID, RoomID: msg.RoomID, UserID: msg.UserID, Username: c.uname, Content: msg.Content, CreatedAt: msg.CreatedAt}
-	b, _ := json.Marshal(out) //nolint:errcheck // OutboundMessage fields are JSON-safe
-	metrics.WsMessagesTotal.Inc()
-	c.room.broadcast <- b
-	if c.hub != nil {
-		c.hub.publish(c.room.roomID, b)
 	}
 }
 
