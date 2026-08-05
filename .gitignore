@@ -29,6 +29,7 @@ dist/
 build/
 
 # 环境与本地配置
+.claude/settings.local.json
 .env
 .env.*
 !.env.example

@@ -1,177 +1,67 @@
-.PHONY: all build test lint fmt clean docker docker-build docker-run dev help
+.PHONY: all build test lint fmt clean run dev db docker-build docker-run docker-stop help
 
-# Variables
-BINARY_NAME=chatroom
-BUILD_DIR=bin
-GO=go
-GOFLAGS=-race
-DOCKER_IMAGE=chatroom
-VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
-GIT_COMMIT?=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-BUILD_TIME?=$(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
-LDFLAGS=-ldflags "-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME)"
+BINARY_NAME  := chatroom
+BUILD_DIR    := bin
+DOCKER_IMAGE := chatroom
+VERSION      ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+GIT_COMMIT   ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
+BUILD_TIME   ?= $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
+LDFLAGS      := -ldflags "-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME)"
 
-# Default target
-all: lint test frontend-test build
+all: lint test build
 
-# Build the application
 build:
-	@echo "Building $(BINARY_NAME)..."
 	@mkdir -p $(BUILD_DIR)
-	$(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/server
+	go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/server
 
-# Build for multiple platforms
-build-all:
-	@echo "Building for multiple platforms..."
-	@mkdir -p $(BUILD_DIR)
-	GOOS=linux GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 ./cmd/server
-	GOOS=linux GOARCH=arm64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-arm64 ./cmd/server
-	GOOS=darwin GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64 ./cmd/server
-	GOOS=darwin GOARCH=arm64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64 ./cmd/server
-	GOOS=windows GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe ./cmd/server
-
-# Run tests
 test:
-	@echo "Running tests..."
-	$(GO) test $(GOFLAGS) -cover ./...
+	go test -race -cover ./...
 
-# Run tests with coverage report
-test-coverage:
-	@echo "Running tests with coverage..."
-	$(GO) test $(GOFLAGS) -coverprofile=coverage.out -covermode=atomic ./...
-	$(GO) tool cover -html=coverage.out -o coverage.html
-	@echo "Coverage report generated: coverage.html"
-
-# Run linter
 lint:
-	@echo "Running linter..."
 	@if command -v golangci-lint >/dev/null 2>&1; then \
 		golangci-lint run ./...; \
 	else \
-		echo "golangci-lint not installed. Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"; \
+		echo "golangci-lint 未安装：go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest" >&2; \
 		exit 1; \
 	fi
 
-# Format code
 fmt:
-	@echo "Formatting code..."
-	$(GO) fmt ./...
-	@if command -v goimports >/dev/null 2>&1; then \
-		goimports -w -local chatroom .; \
-	fi
+	go fmt ./...
+	@if command -v goimports >/dev/null 2>&1; then goimports -w -local chatroom .; fi
 
-# Run go vet
-vet:
-	@echo "Running go vet..."
-	$(GO) vet ./...
-
-# Clean build artifacts
 clean:
-	@echo "Cleaning..."
-	@rm -rf $(BUILD_DIR)
-	@rm -f coverage.out coverage.html
+	rm -rf $(BUILD_DIR) coverage.out coverage.html
 
-# Build Docker image
+run: build
+	./$(BUILD_DIR)/$(BINARY_NAME)
+
+dev:
+	./scripts/dev.sh
+
+db:
+	docker compose up -d postgres
+
 docker-build:
-	@echo "Building Docker image..."
 	docker build -t $(DOCKER_IMAGE):$(VERSION) -f deploy/docker/Dockerfile .
 	docker tag $(DOCKER_IMAGE):$(VERSION) $(DOCKER_IMAGE):latest
 
-# Run with Docker Compose
 docker-run:
-	@echo "Starting services with Docker Compose..."
 	docker compose up -d
 
-# Stop Docker Compose services
 docker-stop:
-	@echo "Stopping services..."
 	docker compose down
 
-# Start development environment
-dev:
-	@echo "Starting development environment..."
-	./scripts/dev.sh
-
-# Start database only
-db:
-	@echo "Starting database..."
-	docker compose up -d postgres
-
-# Run the application
-run: build
-	@echo "Running $(BINARY_NAME)..."
-	./$(BUILD_DIR)/$(BINARY_NAME)
-
-# Install development tools
-tools:
-	@echo "Installing development tools..."
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	go install golang.org/x/tools/cmd/goimports@latest
-	go install github.com/securego/gosec/v2/cmd/gosec@latest
-
-# Generate mocks (if using mockgen)
-mocks:
-	@echo "Generating mocks..."
-	@if command -v mockgen >/dev/null 2>&1; then \
-		go generate ./...; \
-	else \
-		echo "mockgen not installed. Install with: go install go.uber.org/mock/mockgen@latest"; \
-	fi
-
-# Frontend commands
-frontend-install:
-	@echo "Installing frontend dependencies..."
-	cd frontend && npm ci
-
-frontend-build:
-	@echo "Building frontend..."
-	cd frontend && npm run build
-
-frontend-lint:
-	@echo "Linting frontend..."
-	cd frontend && npm run lint
-
-frontend-test:
-	@echo "Testing frontend..."
-	cd frontend && npm run test
-
-# Docs site commands
-docs-install:
-	@echo "Installing docs dependencies..."
-	cd docs && npm install
-
-docs-dev:
-	@echo "Starting docs dev server..."
-	cd docs && npm run docs:dev
-
-docs-build:
-	@echo "Building docs site..."
-	cd docs && npm run docs:build
-
-# Full test (backend + frontend)
-test-all: test frontend-test
-	@echo "All tests passed."
-
-# Help
 help:
-	@echo "Available targets:"
-	@echo "  all            - Run lint, test, and build"
-	@echo "  build          - Build the application"
-	@echo "  build-all      - Build for multiple platforms"
-	@echo "  test           - Run Go tests"
-	@echo "  test-all       - Run Go + frontend tests"
-	@echo "  test-coverage  - Run tests with coverage report"
-	@echo "  lint           - Run golangci-lint"
-	@echo "  fmt            - Format code"
-	@echo "  vet            - Run go vet"
-	@echo "  clean          - Clean build artifacts"
-	@echo "  docker-build   - Build Docker image"
-	@echo "  docker-run     - Start services with Docker Compose"
-	@echo "  docker-stop    - Stop Docker Compose services"
-	@echo "  dev            - Start development environment"
-	@echo "  db             - Start database only"
-	@echo "  run            - Build and run the application"
-	@echo "  tools          - Install development tools"
-	@echo "  frontend-*     - Frontend related commands"
-	@echo "  docs-*         - Documentation site commands"
-	@echo "  help           - Show this help message"
+	@echo "目标："
+	@echo "  all          - lint + test + build"
+	@echo "  build        - 编译后端二进制"
+	@echo "  test         - 运行 Go 测试（-race -cover）"
+	@echo "  lint         - 运行 golangci-lint"
+	@echo "  fmt          - 格式化 Go 代码"
+	@echo "  clean        - 清理构建产物"
+	@echo "  run          - 编译并运行"
+	@echo "  dev          - 启动开发环境（postgres + 后端）"
+	@echo "  db           - 仅启动数据库"
+	@echo "  docker-build - 构建 Docker 镜像"
+	@echo "  docker-run   - 通过 docker compose 启动服务"
+	@echo "  docker-stop  - 停止 docker compose 服务"
