@@ -1,7 +1,5 @@
 /**
- * Sync CHANGELOG.md from repo root to docs for inclusion in the docs site.
- * This script runs before each docs build to ensure changelog is up-to-date.
- * Updated for new /zh/ + /en/ symmetric structure.
+ * Sync CHANGELOG.md from repo root into the docs site (single Chinese locale).
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
@@ -10,50 +8,22 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const rootDir = join(__dirname, '..', '..')
-const docsDir = join(__dirname, '..')
+const docsChangelog = join(__dirname, '..', 'reference', 'changelog.md')
 
-function syncChangelog() {
-  const changelogPath = join(rootDir, 'CHANGELOG.md')
-  // New paths for symmetric structure
-  const docsChangelogZh = join(docsDir, 'zh', 'reference', 'changelog.md')
-  const docsChangelogEn = join(docsDir, 'en', 'reference', 'changelog.md')
+const changelogPath = join(rootDir, 'CHANGELOG.md')
+if (!existsSync(changelogPath)) {
+  console.log('No CHANGELOG.md found at repo root, skipping sync')
+  process.exit(0)
+}
 
-  if (!existsSync(changelogPath)) {
-    console.log('No CHANGELOG.md found at repo root, skipping sync')
-    return
-  }
-
-  const changelog = readFileSync(changelogPath, 'utf-8')
-
-  // Ensure directories exist
-  const zhDir = dirname(docsChangelogZh)
-  const enDir = dirname(docsChangelogEn)
-  if (!existsSync(zhDir)) mkdirSync(zhDir, { recursive: true })
-  if (!existsSync(enDir)) mkdirSync(enDir, { recursive: true })
-
-  // Create zh version with frontmatter
-  const zhContent = `---
+mkdirSync(dirname(docsChangelog), { recursive: true })
+const changelog = readFileSync(changelogPath, 'utf-8')
+writeFileSync(docsChangelog, `---
 title: 变更日志
 ---
 
 # 变更日志
 
 ${changelog}
-`
-  writeFileSync(docsChangelogZh, zhContent)
-  console.log('Synced changelog to docs/zh/reference/changelog.md')
-
-  // Create en version with frontmatter
-  const enContent = `---
-title: Changelog
----
-
-# Changelog
-
-${changelog}
-`
-  writeFileSync(docsChangelogEn, enContent)
-  console.log('Synced changelog to docs/en/reference/changelog.md')
-}
-
-syncChangelog()
+`)
+console.log('Synced changelog to docs/reference/changelog.md')

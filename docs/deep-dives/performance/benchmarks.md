@@ -125,4 +125,3 @@ CREATE INDEX idx_ws_sessions_room ON ws_sessions(room_id);
 
 ---
 
-🌐 **Languages**: [English](/en/deep-dives/performance/benchmarks) | 简体中文

@@ -150,4 +150,3 @@ erDiagram
 
 ---
 
-🌐 **Languages**: [English](/en/architecture/data-model) | 简体中文

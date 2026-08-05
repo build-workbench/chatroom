@@ -204,4 +204,3 @@ Content-Type: application/json
 
 ---
 
-🌐 **Languages**: [English](/en/api/rest) | 简体中文

@@ -151,4 +151,3 @@ Producer → Message Queue → Consumers
 
 ---
 
-🌐 **Languages**: [English](/en/decisions/003-distributed-sync) | 简体中文

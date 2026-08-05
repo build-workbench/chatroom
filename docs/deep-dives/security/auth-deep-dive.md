@@ -170,4 +170,3 @@ err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 
 ---
 
-🌐 **Languages**: [English](/en/deep-dives/security/auth-deep-dive) | 简体中文

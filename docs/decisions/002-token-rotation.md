@@ -119,4 +119,3 @@ Token 有效期: 15 分钟
 
 ---
 
-🌐 **Languages**: [English](/en/decisions/002-token-rotation) | 简体中文

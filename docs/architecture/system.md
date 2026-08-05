@@ -39,11 +39,9 @@ chatroom/
 │       └── *.ts             # API、Socket、Storage 等
 ├── web/                     # 静态回退 UI
 ├── docs/                    # VitePress 文档站
-├── deploy/                  # 部署配置
-│   ├── docker/              # Dockerfile
-│   ├── k8s/                 # Kubernetes 清单
-│   └── prometheus/          # Prometheus 配置
-└── openspec/                # 规约与活跃变更
+└── deploy/                  # 部署配置
+    ├── docker/              # Dockerfile
+    └── prometheus/          # Prometheus 配置
 ```
 
 ## 整体架构
@@ -308,4 +306,3 @@ flowchart TB
 
 ---
 
-🌐 **Languages**: [English](/en/architecture/system) | 简体中文

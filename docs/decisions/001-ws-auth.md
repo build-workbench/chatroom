@@ -105,4 +105,3 @@ const ws = new WebSocket(url, ['chatroom.v1', `token.<jwt>`]);
 
 ---
 
-🌐 **Languages**: [English](/en/decisions/001-ws-auth) | 简体中文

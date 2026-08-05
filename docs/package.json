@@ -8,9 +8,7 @@
     "docs:dev": "npm run sync && vitepress dev .",
     "docs:build": "npm run sync && vitepress build .",
     "docs:preview": "vitepress preview .",
-    "docs:serve": "vitepress serve .",
-    "lint:md": "markdownlint-cli2 '**/*.md' --config .markdownlint.json",
-    "lint:links": "lychee . --config lychee.toml"
+    "docs:serve": "vitepress serve ."
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

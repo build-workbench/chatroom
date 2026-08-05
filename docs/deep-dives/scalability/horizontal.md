@@ -178,4 +178,3 @@ upstream chatroom {
 
 ---
 
-🌐 **Languages**: [English](/en/deep-dives/scalability/horizontal) | 简体中文
