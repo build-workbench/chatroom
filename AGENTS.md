@@ -7,7 +7,7 @@ ChatRoom is a teaching-oriented real-time chat application:
 - **Frontend**: React 19, TypeScript, Vite 7, Tailwind CSS v4
 - **Docs**: VitePress
 
-Favor clarity, consistency, and maintainability over feature expansion or engineering theater.
+This is a **single-instance** teaching project: no multi-replica deployment, distributed session sync, or monitoring stack. Favor clarity, consistency, and maintainability over feature expansion or engineering theater.
 
 `AGENTS.md` is the single canonical instruction file for coding agents; do not maintain redundant tool-specific copies.
 
@@ -55,7 +55,7 @@ npm --prefix docs run docs:build
 - The Go app reads environment variables directly; `.env` is not auto-loaded.
 - Go tests require PostgreSQL to be running.
 - Vite dev proxies `/api` and `/ws` to the Go backend on port `8080`.
-- Go serves `frontend/dist` if present, otherwise it falls back to `web/`.
+- Go serves `frontend/dist` if present, otherwise it falls back to a `web/` static directory if one exists.
 - The docs site is the public GitHub Pages surface; keep it distinct from the README.
 
 ## Change Quality Bar

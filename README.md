@@ -1,11 +1,11 @@
 # ChatRoom
 
 [![CI](https://github.com/LessUp/chatroom/actions/workflows/ci.yml/badge.svg)](https://github.com/LessUp/chatroom/actions/workflows/ci.yml)
-[![Docs](https://github.com/LessUp/chatroom/actions/workflows/pages.yml/badge.svg)](https://lessup.github.io/chatroom/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![GitHub release](https://img.shields.io/github/v/release/LessUp/chatroom)](https://github.com/LessUp/chatroom/releases)
+|[![Docs](https://github.com/LessUp/chatroom/actions/workflows/pages.yml/badge.svg)](https://lessup.github.io/chatroom/)
+|[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+|[![GitHub release](https://img.shields.io/github/v/release/LessUp/chatroom)](https://github.com/LessUp/chatroom/releases)
 
-一个面向教学的实时聊天室项目，用来展示如何把 **Go**、**React**、**PostgreSQL**、**WebSocket**、**测试** 和 **可观测性** 组合成一个可运行、可理解的全栈系统。
+一个面向教学的实时聊天室项目，用来展示如何把 **Go**、**React**、**PostgreSQL**、**WebSocket** 和 **测试** 组合成一个可运行、可理解的全栈系统。
 
 ## 这个项目适合什么场景
 
@@ -14,7 +14,7 @@
 - **能读懂**：后端、前端、文档各自边界清晰
 - **能教学**：适合学习一个实时系统是如何组织起来的
 
-如果你想找一个不臃肿、但又覆盖认证、房间、消息、WebSocket、监控和发布流程的全栈示例，这个项目就是为此准备的。
+这是一个**单实例**教学项目，不包含多副本部署、分布式同步或监控体系。如果你想找一个不臃肿、但又覆盖认证、房间、消息、WebSocket 和发布流程的全栈示例，这个项目就是为此准备的。
 
 ## 你能从这里学到什么
 
@@ -22,14 +22,14 @@
 - 房间级 WebSocket 通信与消息持久化
 - Go 后端的 handler / service / data model 组织方式
 - React + TypeScript 聊天客户端的状态与通信结构
-- Prometheus 指标、健康检查、发布工作流
+- Docker 多阶段构建与 GitHub Actions 发布工作流
 
 ## 快速开始
 
 ### 前置要求
 
 - Go 1.24
-- Node.js 24
+- Node.js 22+
 - Docker
 
 ### 本地运行
@@ -71,7 +71,6 @@ npm --prefix frontend run dev
 | 后端 | Go 1.24, Gin, GORM, Gorilla WebSocket, zerolog |
 | 前端 | React 19, TypeScript, Vite 7, Tailwind CSS v4 |
 | 数据库 | PostgreSQL 16 |
-| 可观测性 | Prometheus, Grafana |
 | 交付 | Docker, GitHub Actions, GitHub Pages |
 
 ## 项目结构
@@ -82,7 +81,7 @@ chatroom/
 ├── internal/          # 后端应用代码
 ├── frontend/          # React 客户端
 ├── docs/              # 文档站（中文）
-└── deploy/            # Docker 与监控配置
+└── deploy/            # Docker 配置
 ```
 
 ## 验证命令
