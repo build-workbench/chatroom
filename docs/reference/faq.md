@@ -6,15 +6,14 @@
 
 **不是。** 它的主要目标是个人练手与教学演示。
 
-但它并不只是一个"只会本地跑一下"的 demo。项目包含：
+项目包含的工程化实践本身就是学习材料：
 
-- 完整的测试覆盖（Go + 前端）
-- CI/CD 流水线
-- Docker 与 Kubernetes 部署配置
-- Prometheus 监控指标
+- Go + 前端的双端测试
+- CI 流水线（GitHub Actions）
+- Docker 多阶段构建
 - VitePress 文档站
 
-这些工程化实践本身就是很好的学习材料。
+这是一个**单实例**教学项目，不包含多副本部署、分布式同步或监控体系。
 
 ### 我能学到什么？
 
@@ -23,7 +22,6 @@
 - JWT + Refresh Token 鉴权流程
 - GORM 与 PostgreSQL 的配合
 - WebSocket 房间广播实现
-- 分布式消息同步（PostgreSQL NOTIFY）
 
 **前端**：
 - React Hooks 状态管理
@@ -34,8 +32,6 @@
 **工程化**：
 - 测试编写与 CI 配置
 - Docker 多阶段构建
-- Kubernetes 部署清单
-- Prometheus 监控集成
 
 ---
 
@@ -52,15 +48,11 @@
 | 实时消息 | WebSocket |
 | 在线状态、输入提示 | WebSocket |
 
-REST 适合"请求-响应"模式，WebSocket 适合"实时推送"。这也是很多现代应用的标准架构。
+REST 适合"请求-响应"模式，WebSocket 适合"实时推送"。
 
-### 为什么用 PostgreSQL 而不是 Redis？
+### 为什么用 PostgreSQL？
 
-**当前阶段**：PostgreSQL 足够满足需求，减少技术栈复杂度。
-
-**分布式支持**：使用 PostgreSQL `LISTEN/NOTIFY` 实现跨实例消息同步，无需引入 Redis。
-
-**未来扩展**：如需更高性能或更丰富的功能，可以平滑迁移到 Redis Pub/Sub。
+PostgreSQL 同时承担关系数据存储和 WebSocket 房间状态，单一数据源减少技术栈复杂度，适合教学。
 
 ### 为什么用 Tailwind CSS v4？
 
@@ -73,22 +65,10 @@ REST 适合"请求-响应"模式，WebSocket 适合"实时推送"。这也是很
 
 ## 前端问题
 
-### 为什么同时有 `frontend/` 和 `web/`？
-
-| 目录 | 内容 | 用途 |
-|------|------|------|
-| `frontend/` | React 应用 | 开发、测试、构建 |
-| `web/` | 静态 HTML/JS | `frontend/dist` 不存在时的回退 |
-
-这是一个适合教学的设计：
-- 展示"构建产物托管"概念
-- 即使前端构建失败，项目仍可运行
-
 ### 前端测试用的是什么？
 
 - **测试框架**：Vitest
 - **测试类型**：单元测试（API、Socket、Storage）
-- **测试数量**：20 个测试用例
 
 运行测试：
 ```bash
@@ -184,12 +164,9 @@ ALLOWED_ORIGINS=https://chat.example.com,https://app.example.com:8443
 # 完整环境（数据库 + 应用）
 docker compose up -d
 
-# 仅数据库
+# 仅数据库，后端本地运行
 docker compose up -d postgres
 go run ./cmd/server
-
-# 含监控
-docker compose --profile monitoring up -d
 ```
 
 ### 文档站如何发布？
@@ -200,18 +177,13 @@ docker compose --profile monitoring up -d
 2. 自动构建 VitePress 文档站
 3. 部署到 GitHub Pages
 
-首次使用需在仓库设置中启用 GitHub Pages。
-
 ---
 
 ## 测试问题
 
 ### Go 测试为什么需要 PostgreSQL？
 
-部分测试需要真实数据库：
-- 用户注册/登录
-- Token 存储/验证
-- 消息持久化
+部分测试需要真实数据库：用户注册/登录、Token 存储/验证、消息持久化。
 
 ```bash
 # 启动数据库
@@ -238,44 +210,10 @@ make test && npm --prefix frontend run test
 
 ---
 
-## 开发问题
-
-### 如何贡献代码？
-
-1. Fork 仓库
-2. 创建分支：`git checkout -b feature/your-feature`
-3. 提交代码：遵循提交信息规范（中文，祈使句）
-4. 确保测试通过：`make test`
-5. 确保代码检查通过：`make lint`
-6. 创建 Pull Request
-
-详见 [协作指南](https://github.com/LessUp/chatroom/blob/master/AGENTS.md)。
-
-### 遇到问题怎么办？
-
-1. 查看 [API 文档](/api/rest)
-2. 查看 [架构文档](/architecture/system)
-3. 查看 [手动测试实验](/tutorials/testing)
-4. 在 GitHub Issues 中搜索或提问
-
----
-
 ## 其他问题
-
-### 项目的 Git 分支策略是什么？
-
-- `master`：主分支，默认分支
-- `feature/*`：功能分支
-- `fix/*`：修复分支
 
 ### 版本号规则？
 
-遵循 [语义化版本](https://semver.org/lang/zh-CN/)：
-- `MAJOR`：不兼容的 API 变更
-- `MINOR`：向后兼容的功能新增
-- `PATCH`：向后兼容的问题修复
-
-当前版本：`0.2.x`
+遵循 [语义化版本](https://semver.org/lang/zh-CN/)。版本历史见 [`CHANGELOG.md`](https://github.com/LessUp/chatroom/blob/master/CHANGELOG.md)。
 
 ---
-

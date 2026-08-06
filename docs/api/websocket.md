@@ -48,12 +48,10 @@ sequenceDiagram
     Client->>Server: 连接请求 (携带 Ticket)
     Server->>DB: 验证 Ticket
     Server->>DB: 消费 Ticket
-    Server->>DB: 创建 Session
     Server-->>Client: 连接建立
     Server->>Client: 广播 join 事件
     Note over Client,Server: 开始收发消息
     Client->>Server: 断开连接
-    Server->>DB: 删除 Session
     Server->>Client: 广播 leave 事件
 ```
 

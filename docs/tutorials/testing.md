@@ -379,7 +379,6 @@ curl http://localhost:8080/metrics | grep http_requests_total
 
 - [API 文档](/api/rest) — 接口详情
 - [架构文档](/architecture/system) — 系统结构
-- [学习路径](/tutorials/learning-path) — 推荐阅读顺序
 
 ---
 

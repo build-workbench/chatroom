@@ -71,7 +71,6 @@ sequenceDiagram
     FE->>BE: WebSocket 连接<br/>Subprotocol: ["chatroom.v1", "ticket.<ticket>"]
     BE->>DB: 验证 Ticket
     BE->>DB: 消费 Ticket (一次性)
-    BE->>DB: 创建 Session
     BE->>Hub: 注册 Client
     Hub->>Hub: 广播 join 事件
     BE-->>FE: 连接建立 + join 事件
@@ -96,28 +95,6 @@ sequenceDiagram
     Hub->>ClientA: { type: "message", id, ... }
     Hub->>ClientB: { type: "message", id, ... }
     ClientB-->>UserB: 显示新消息
-```
-
-## 分布式消息同步
-
-```mermaid
-sequenceDiagram
-    participant ClientA as Client A<br/>(实例 A)
-    participant InstanceA as 实例 A
-    participant PG as PostgreSQL
-    participant InstanceB as 实例 B
-    participant ClientB as Client B<br/>(实例 B)
-
-    ClientA->>InstanceA: 发送消息
-    InstanceA->>PG: 持久化消息
-    InstanceA->>PG: NOTIFY chatroom_ws_events
-    InstanceA->>InstanceA: 广播给本实例 Client
-
-    PG-->>InstanceA: LISTEN 通知
-    PG-->>InstanceB: LISTEN 通知
-    
-    InstanceB->>InstanceB: 解析通知
-    InstanceB->>ClientB: 广播消息
 ```
 
 ## 输入状态流

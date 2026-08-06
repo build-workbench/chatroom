@@ -18,7 +18,7 @@ const siteUrl = `https://lessup.github.io/chatroom/`
 
 export default withMermaid(defineConfig({
   title: 'ChatRoom',
-  description: '面向教学的实时聊天室技术白皮书',
+  description: '面向教学的实时聊天室',
   lang: 'zh-CN',
   base,
   cleanUrls: true,
@@ -33,10 +33,10 @@ export default withMermaid(defineConfig({
     ['link', { rel: 'canonical', href: siteUrl }],
     ['meta', { name: 'theme-color', content: '#1e3a5f' }],
     ['meta', { name: 'author', content: 'LessUp' }],
-    ['meta', { name: 'keywords', content: 'ChatRoom, Go, React, WebSocket, PostgreSQL, 实时聊天, 架构, 技术白皮书' }],
+    ['meta', { name: 'keywords', content: 'ChatRoom, Go, React, WebSocket, PostgreSQL, 实时聊天, 教学项目' }],
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:site_name', content: 'ChatRoom 技术白皮书' }],
+    ['meta', { property: 'og:site_name', content: 'ChatRoom 教学文档' }],
     ['meta', { property: 'og:url', content: siteUrl }],
     ['meta', { property: 'og:image', content: `${siteUrl}og-image.png` }],
     ['meta', { property: 'og:image:width', content: '1200' }],
@@ -78,25 +78,11 @@ export default withMermaid(defineConfig({
       text: '在 GitHub 上编辑此页',
     },
     nav: [
-      { text: '白皮书', link: '/whitepaper/', activeMatch: '/whitepaper/' },
       { text: '架构', link: '/architecture/system', activeMatch: '/architecture/' },
-      { text: '设计决策', link: '/decisions/', activeMatch: '/decisions/' },
-      { text: '技术深度', link: '/deep-dives/performance/benchmarks', activeMatch: '/deep-dives/' },
       { text: 'API', link: '/api/rest', activeMatch: '/api/' },
       { text: '教程', link: '/tutorials/local-dev', activeMatch: '/tutorials/' },
     ],
     sidebar: [
-      {
-        text: '白皮书',
-        collapsed: false,
-        items: [
-          { text: '执行摘要', link: '/whitepaper/index' },
-          { text: '问题陈述', link: '/whitepaper/problem' },
-          { text: '方案概述', link: '/whitepaper/solution' },
-          { text: '技术架构', link: '/whitepaper/architecture' },
-          { text: '关键决策', link: '/whitepaper/decisions' },
-        ],
-      },
       {
         text: '架构',
         collapsed: false,
@@ -104,25 +90,6 @@ export default withMermaid(defineConfig({
           { text: '系统架构', link: '/architecture/system' },
           { text: '数据流', link: '/architecture/data-flow' },
           { text: '数据模型', link: '/architecture/data-model' },
-        ],
-      },
-      {
-        text: '设计决策 (ADR)',
-        collapsed: false,
-        items: [
-          { text: 'ADR-001 WebSocket 认证方案', link: '/decisions/001-ws-auth' },
-          { text: 'ADR-002 Token Rotation 策略', link: '/decisions/002-token-rotation' },
-          { text: 'ADR-003 分布式消息同步', link: '/decisions/003-distributed-sync' },
-        ],
-      },
-      {
-        text: '技术深度',
-        collapsed: false,
-        items: [
-          { text: '性能基准', link: '/deep-dives/performance/benchmarks' },
-          { text: '威胁模型', link: '/deep-dives/security/threat-model' },
-          { text: '认证深度分析', link: '/deep-dives/security/auth-deep-dive' },
-          { text: '水平扩展', link: '/deep-dives/scalability/horizontal' },
         ],
       },
       {
@@ -139,8 +106,6 @@ export default withMermaid(defineConfig({
         items: [
           { text: '本地开发', link: '/tutorials/local-dev' },
           { text: '测试指南', link: '/tutorials/testing' },
-          { text: '学习路径', link: '/tutorials/learning-path' },
-          { text: '开发指南', link: '/tutorials/development-guide' },
         ],
       },
       {

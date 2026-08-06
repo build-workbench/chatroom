@@ -36,7 +36,7 @@ Content-Type: application/json
 | 字段 | 类型 | 必填 | 约束 | 描述 |
 |------|------|------|------|------|
 | username | string | 是 | 2-64 字符 | 用户名，唯一 |
-| password | string | 是 | 4-128 字符 | 密码 |
+| password | string | 是 | 8-128 字符 | 密码 |
 
 **错误响应**
 
@@ -171,10 +171,9 @@ Content-Type: application/json
 | 端点 | 用途 |
 |------|------|
 | `GET /health` | 存活检查 |
-| `GET /healthz` | K8s 存活检查 |
+| `GET /healthz` | 简洁存活检查 |
 | `GET /ready` | 就绪检查（含数据库连通性） |
 | `GET /version` | 版本信息 |
-| `GET /metrics` | Prometheus 指标 |
 
 ## 错误处理
 

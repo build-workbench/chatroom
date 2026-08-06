@@ -50,7 +50,6 @@ npm --prefix frontend run dev
 | 健康检查 | http://localhost:8080/health |
 | 就绪检查 | http://localhost:8080/ready |
 | 版本信息 | http://localhost:8080/version |
-| Prometheus 指标 | http://localhost:8080/metrics |
 
 ---
 
@@ -60,30 +59,24 @@ npm --prefix frontend run dev
 chatroom/
 ├── cmd/server/          # 程序入口
 ├── internal/            # 后端核心代码
-│   ├── auth/            # JWT、密码、Token
-│   ├── config/          # 配置管理
+│   ├── auth/            # JWT、密码、WebSocket 票据
+│   ├── config/          # 配置与日志
 │   ├── db/              # 数据库连接
-│   ├── server/          # HTTP 路由
+│   ├── models/          # 数据模型
+│   ├── sanitize/        # 输入清洗
+│   ├── server/          # HTTP 路由与中间件
 │   ├── service/         # 业务逻辑
 │   └── ws/              # WebSocket
 ├── frontend/            # React 前端
-├── web/                 # 静态回退 UI
 ├── docs/                # VitePress 文档站
-└── deploy/              # Docker / Kubernetes
+└── deploy/              # Docker 配置
 ```
 
 ---
 
 ## 前端说明
 
-仓库包含两套前端：
-
-| 目录 | 内容 | 用途 |
-|------|------|------|
-| `frontend/` | React 应用 | 开发、测试、构建 |
-| `web/` | 静态 HTML/JS | 构建产物不存在时的回退 |
-
-后端优先服务 `frontend/dist`；如果不存在，回退到 `web/`。
+后端优先服务 `frontend/dist`（构建产物）；如果不存在，则回退到可选的 `web/` 静态目录。日常开发只需关心 `frontend/`。
 
 ---
 
@@ -175,7 +168,6 @@ make all
 - [手动测试实验](/tutorials/testing) — 完整功能验证
 - [API 文档](/api/rest) — 接口详情
 - [架构文档](/architecture/system) — 系统结构
-- [学习路径](/tutorials/learning-path) — 推荐阅读路线
 
 ---
 
