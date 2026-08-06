@@ -9,7 +9,6 @@ import (
 
 	"chatroom/internal/auth"
 	"chatroom/internal/config"
-	"chatroom/internal/mw"
 	"chatroom/internal/sanitize"
 	"chatroom/internal/service"
 
@@ -213,13 +212,13 @@ func (h *Handler) CreateRoom(c *gin.Context) {
 		badRequest(c, "invalid payload")
 		return
 	}
-	room, err := h.roomSvc.Create(req.Name, mw.GetUserID(c))
+	room, err := h.roomSvc.Create(req.Name, GetUserID(c))
 	if err != nil {
 		if errors.Is(err, service.ErrRoomNameTaken) {
 			c.JSON(http.StatusConflict, gin.H{"error": "room name taken"})
 			return
 		}
-		log.Error().Err(err).Uint("owner_id", mw.GetUserID(c)).Str("name", req.Name).Msg("create room")
+		log.Error().Err(err).Uint("owner_id", GetUserID(c)).Str("name", req.Name).Msg("create room")
 		serverError(c, "failed to create room")
 		return
 	}
@@ -289,9 +288,9 @@ func (h *Handler) CreateWSTicket(c *gin.Context) {
 		serverError(c, "failed to create ws ticket")
 		return
 	}
-	ticket, err := auth.GenerateAndStoreWSTicket(h.db, mw.GetUserID(c), req.RoomID, h.cfg.JWTSecret, h.cfg.WSTicketTTLSeconds)
+	ticket, err := auth.GenerateAndStoreWSTicket(h.db, GetUserID(c), req.RoomID, h.cfg.JWTSecret, h.cfg.WSTicketTTLSeconds)
 	if err != nil {
-		log.Error().Err(err).Uint("room_id", req.RoomID).Uint("user_id", mw.GetUserID(c)).Msg("create ws ticket")
+		log.Error().Err(err).Uint("room_id", req.RoomID).Uint("user_id", GetUserID(c)).Msg("create ws ticket")
 		serverError(c, "failed to create ws ticket")
 		return
 	}

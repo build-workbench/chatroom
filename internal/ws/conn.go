@@ -33,8 +33,6 @@ type Client struct {
 	conn      *websocket.Conn
 	send      chan []byte
 	processor MessageProcessor
-	hub       *Hub
-	sessionID string
 	userID    uint
 	uname     string
 	cfg       config.Config
@@ -130,7 +128,7 @@ func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 			return
 		}
 		rh := h.GetRoom(uint(rid64))
-		processor := NewDefaultMessageProcessor(db, rh, h, MessageProcessorConfig{
+		processor := NewDefaultMessageProcessor(db, rh, MessageProcessorConfig{
 			RoomID:     uint(rid64),
 			UserID:     user.ID,
 			Username:   user.Username,
@@ -142,8 +140,6 @@ func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 			conn:      conn,
 			send:      make(chan []byte, sendBufSize),
 			processor: processor,
-			hub:       h,
-			sessionID: claims.ID,
 			userID:    user.ID,
 			uname:     user.Username,
 			cfg:       cfg,
@@ -164,9 +160,6 @@ func (c *Client) readPump() {
 	c.conn.SetReadLimit(c.cfg.WsMaxMessageSize)
 	_ = c.conn.SetReadDeadline(time.Now().Add(pongWait)) //nolint:errcheck // deadline only affects subsequent reads
 	c.conn.SetPongHandler(func(string) error {
-		if c.hub != nil {
-			c.hub.trackHeartbeat(c.sessionID)
-		}
 		return c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	})
 	for {
@@ -184,9 +177,6 @@ func (c *Client) readPump() {
 
 		switch in.Type {
 		case "ping":
-			if c.hub != nil {
-				c.hub.trackHeartbeat(c.sessionID)
-			}
 			if b, err := json.Marshal(wsSimpleMsg{Type: "pong"}); err == nil {
 				select {
 				case c.send <- b:
@@ -198,9 +188,6 @@ func (c *Client) readPump() {
 			evt := wsTypingEvent{Type: "typing", RoomID: c.room.roomID, UserID: c.userID, Username: c.uname, IsTyping: in.IsTyping}
 			if b, err := json.Marshal(evt); err == nil {
 				c.room.broadcast <- b
-				if c.hub != nil {
-					c.hub.publish(c.room.roomID, b)
-				}
 			}
 
 		case "message":
@@ -224,9 +211,6 @@ func (c *Client) handleMessage(content string) {
 	}
 	if result.Broadcast {
 		c.room.broadcast <- b
-		if c.hub != nil {
-			c.hub.publish(c.room.roomID, b)
-		}
 	} else {
 		select {
 		case c.send <- b:

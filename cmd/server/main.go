@@ -11,7 +11,6 @@ import (
 
 	"chatroom/internal/config"
 	"chatroom/internal/db"
-	clog "chatroom/internal/log"
 	"chatroom/internal/server"
 	"chatroom/internal/ws"
 
@@ -28,7 +27,7 @@ var (
 func main() {
 	// main 函数负责加载配置、初始化日志、连接数据库并启动 Gin 服务。
 	cfg := config.Load()
-	clog.Init(cfg)
+	config.InitLog(cfg)
 	if err := config.Validate(cfg); err != nil {
 		log.Fatal().Err(err).Msg("config validate")
 	}

@@ -5,23 +5,18 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"chatroom/internal/metrics"
 )
 
 // Hub 管理房间级别的子 Hub，实现延迟创建与并发安全。
 type Hub struct {
 	mu           sync.RWMutex
 	rooms        map[uint]*RoomHub
-	realtime     *Realtime
 	cleanupAfter time.Duration
 }
 
 func NewHub() *Hub {
 	return &Hub{rooms: make(map[uint]*RoomHub), cleanupAfter: 3 * time.Minute}
 }
-
-func (h *Hub) SetRealtime(rt *Realtime) { h.realtime = rt }
 
 // GetRoom 若房间未初始化则懒加载一个 RoomHub。
 func (h *Hub) GetRoom(roomID uint) *RoomHub {
@@ -45,16 +40,6 @@ func (h *Hub) GetRoom(roomID uint) *RoomHub {
 	return room
 }
 
-func (h *Hub) BroadcastExisting(roomID uint, data []byte) {
-	h.mu.RLock()
-	room := h.rooms[roomID]
-	h.mu.RUnlock()
-	if room == nil {
-		return
-	}
-	room.broadcast <- data
-}
-
 func (h *Hub) Online(roomID uint) int {
 	h.mu.RLock()
 	room := h.rooms[roomID]
@@ -63,39 +48,6 @@ func (h *Hub) Online(roomID uint) int {
 		return 0
 	}
 	return room.Online()
-}
-
-func (h *Hub) countOnline(roomID uint) int {
-	if h.realtime != nil {
-		if n, err := h.realtime.CountRoomOnline(roomID, 45*time.Second); err == nil {
-			return n
-		}
-	}
-	return h.Online(roomID)
-}
-
-func (h *Hub) publish(roomID uint, data []byte) {
-	if h.realtime != nil {
-		_ = h.realtime.Publish(roomID, data) //nolint:errcheck // realtime publish is best-effort
-	}
-}
-
-func (h *Hub) trackRegister(client *Client) {
-	if h.realtime != nil {
-		_ = h.realtime.RegisterSession(client.sessionID, client.room.roomID, client.userID) //nolint:errcheck // session tracking is best-effort
-	}
-}
-
-func (h *Hub) trackHeartbeat(sessionID string) {
-	if h.realtime != nil {
-		_ = h.realtime.TouchSession(sessionID) //nolint:errcheck // heartbeat tracking is best-effort
-	}
-}
-
-func (h *Hub) trackUnregister(sessionID string) {
-	if h.realtime != nil {
-		_ = h.realtime.DeleteSession(sessionID) //nolint:errcheck // session cleanup is best-effort
-	}
 }
 
 func (h *Hub) cleanupRoomLater(room *RoomHub) {
@@ -158,7 +110,6 @@ func (rh *RoomHub) broadcastToClients(data []byte) {
 			// 先从 map 中删除，再关闭通道，防止 unregister case 重复关闭
 			delete(rh.clients, cli)
 			close(cli.send)
-			metrics.WsConnections.Dec()
 		}
 	}
 }
@@ -203,21 +154,8 @@ func (rh *RoomHub) run() {
 		case c := <-rh.register:
 			rh.clients[c] = true
 			rh.updateOnline()
-			metrics.WsConnections.Inc()
-			if rh.parent != nil {
-				rh.parent.trackRegister(c)
-			}
-			online := rh.Online()
-			if rh.parent != nil {
-				online = rh.parent.countOnline(rh.roomID)
-			}
-			evt := wsPresenceEvent{Type: "join", RoomID: rh.roomID, UserID: c.userID, Username: c.uname, Online: online}
+			evt := wsPresenceEvent{Type: "join", RoomID: rh.roomID, UserID: c.userID, Username: c.uname, Online: rh.Online()}
 			rh.broadcastEvent(evt)
-			if rh.parent != nil {
-				if b, err := json.Marshal(evt); err == nil {
-					rh.parent.publish(rh.roomID, b)
-				}
-			}
 
 		case c := <-rh.unregister:
 			if _, ok := rh.clients[c]; !ok {
@@ -226,23 +164,10 @@ func (rh *RoomHub) run() {
 			delete(rh.clients, c)
 			close(c.send)
 			rh.updateOnline()
-			metrics.WsConnections.Dec()
-			if rh.parent != nil {
-				rh.parent.trackUnregister(c.sessionID)
-			}
-			online := rh.Online()
-			if rh.parent != nil {
-				online = rh.parent.countOnline(rh.roomID)
-			}
-			evt := wsPresenceEvent{Type: "leave", RoomID: rh.roomID, UserID: c.userID, Username: c.uname, Online: online}
+			evt := wsPresenceEvent{Type: "leave", RoomID: rh.roomID, UserID: c.userID, Username: c.uname, Online: rh.Online()}
 			rh.broadcastEvent(evt)
-			if rh.parent != nil {
-				if b, err := json.Marshal(evt); err == nil {
-					rh.parent.publish(rh.roomID, b)
-				}
-				if len(rh.clients) == 0 {
-					rh.parent.cleanupRoomLater(rh)
-				}
+			if rh.parent != nil && len(rh.clients) == 0 {
+				rh.parent.cleanupRoomLater(rh)
 			}
 
 		case msg := <-rh.broadcast:

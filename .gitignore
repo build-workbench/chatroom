@@ -47,8 +47,9 @@ build/
 Thumbs.db
 
 # 临时编译产物
-server
-chatroom
+/bin/
+/server
+/chatroom
 
 # BMad Method V6
 _bmad/

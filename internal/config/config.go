@@ -9,6 +9,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 // Config 描述启动服务所需的关键参数。
@@ -23,7 +27,6 @@ type Config struct {
 	RefreshTokenTTLDays   int
 	WSTicketTTLSeconds    int
 	AllowedOrigins        []string
-	PodID                 string
 	// WebSocket 配置
 	WsMaxMessageSize int64
 	WsMaxContentSize int
@@ -206,7 +209,6 @@ func Load() Config {
 		RefreshTokenTTLDays:   getenvInt("REFRESH_TOKEN_TTL_DAYS", 7),
 		WSTicketTTLSeconds:    getenvInt("WS_TICKET_TTL_SECONDS", 60),
 		AllowedOrigins:        getenvCSV("ALLOWED_ORIGINS"),
-		PodID:                 getenv("APP_INSTANCE_ID", getenv("HOSTNAME", "local")),
 		// WebSocket 配置
 		WsMaxMessageSize: getenvInt64("WS_MAX_MESSAGE_SIZE", 1<<20), // 1MB
 		WsMaxContentSize: getenvInt("WS_MAX_CONTENT_SIZE", 2000),
@@ -227,9 +229,6 @@ func Validate(cfg Config) error {
 	if cfg.WSTicketTTLSeconds <= 0 {
 		return errors.New("WS_TICKET_TTL_SECONDS must be greater than zero")
 	}
-	if strings.TrimSpace(cfg.PodID) == "" {
-		return errors.New("APP_INSTANCE_ID must not be empty")
-	}
 	if cfg.Env != "dev" && cfg.JWTSecret == "dev-secret-change-me" {
 		return errors.New("JWT_SECRET is using the default value")
 	}
@@ -243,4 +242,24 @@ func Validate(cfg Config) error {
 		return fmt.Errorf("LOG_LEVEL %q is invalid, expected one of: trace, debug, info, warn, error, fatal", cfg.LogLevel)
 	}
 	return nil
+}
+
+// InitLog 根据配置设置 Zerolog 输出格式与日志级别。
+// 开发环境默认使用更易读的控制台模式，生产环境默认输出 JSON。
+func InitLog(cfg Config) {
+	zerolog.TimeFieldFormat = time.RFC3339
+
+	level, err := zerolog.ParseLevel(cfg.LogLevel)
+	if err != nil {
+		level = zerolog.InfoLevel
+	}
+	zerolog.SetGlobalLevel(level)
+
+	useConsole := cfg.LogFormat == "console" || (cfg.LogFormat == "" && cfg.IsDev())
+	if useConsole {
+		cw := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+		log.Logger = zerolog.New(cw).With().Timestamp().Logger()
+		return
+	}
+	log.Logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
 }

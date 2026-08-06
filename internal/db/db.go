@@ -43,7 +43,7 @@ func Connect(dsn string, cfg config.Config) (*gorm.DB, error) {
 
 // Migrate 自动迁移教学环境涉及的全部表结构。
 func Migrate(gdb *gorm.DB) error {
-	return gdb.AutoMigrate(&models.User{}, &models.Room{}, &models.Message{}, &models.RefreshToken{}, &models.WSSession{}, &models.WSTicket{})
+	return gdb.AutoMigrate(&models.User{}, &models.Room{}, &models.Message{}, &models.RefreshToken{}, &models.WSTicket{})
 }
 
 // StartCleanup 启动后台定时清理任务，清理过期的 token 和 ticket。
@@ -84,13 +84,5 @@ func runCleanup(gdb *gorm.DB) {
 		log.Warn().Err(result.Error).Msg("cleanup ws tickets")
 	} else if result.RowsAffected > 0 {
 		log.Debug().Int64("count", result.RowsAffected).Msg("cleaned up ws tickets")
-	}
-
-	// 清理超时的 WS sessions（心跳超时 45 秒，保留 5 分钟兜底）
-	if result := gdb.Where("last_seen_at < ?", now.Add(-5*time.Minute)).
-		Delete(&models.WSSession{}); result.Error != nil {
-		log.Warn().Err(result.Error).Msg("cleanup ws sessions")
-	} else if result.RowsAffected > 0 {
-		log.Debug().Int64("count", result.RowsAffected).Msg("cleaned up ws sessions")
 	}
 }

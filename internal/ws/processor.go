@@ -1,9 +1,6 @@
 package ws
 
 import (
-	"encoding/json"
-
-	"chatroom/internal/metrics"
 	"chatroom/internal/models"
 	"chatroom/internal/sanitize"
 
@@ -38,16 +35,14 @@ type MessageProcessorConfig struct {
 type DefaultMessageProcessor struct {
 	db     *gorm.DB
 	room   *RoomHub
-	hub    *Hub
 	config MessageProcessorConfig
 }
 
 // NewDefaultMessageProcessor 创建默认消息处理器。
-func NewDefaultMessageProcessor(db *gorm.DB, room *RoomHub, hub *Hub, cfg MessageProcessorConfig) *DefaultMessageProcessor {
+func NewDefaultMessageProcessor(db *gorm.DB, room *RoomHub, cfg MessageProcessorConfig) *DefaultMessageProcessor {
 	return &DefaultMessageProcessor{
 		db:     db,
 		room:   room,
-		hub:    hub,
 		config: cfg,
 	}
 }
@@ -86,31 +81,16 @@ func (p *DefaultMessageProcessor) Process(content string) *ProcessResult {
 		}
 	}
 
-	out := &OutboundMessage{
-		Type:      "message",
-		ID:        msg.ID,
-		RoomID:    msg.RoomID,
-		UserID:    msg.UserID,
-		Username:  p.config.Username,
-		Content:   msg.Content,
-		CreatedAt: msg.CreatedAt,
-	}
-
-	metrics.WsMessagesTotal.Inc()
 	return &ProcessResult{
-		Message:   out,
+		Message: &OutboundMessage{
+			Type:      "message",
+			ID:        msg.ID,
+			RoomID:    msg.RoomID,
+			UserID:    msg.UserID,
+			Username:  p.config.Username,
+			Content:   msg.Content,
+			CreatedAt: msg.CreatedAt,
+		},
 		Broadcast: true,
-	}
-}
-
-// BroadcastMessage 广播消息到房间。
-func BroadcastMessage(room *RoomHub, hub *Hub, msg *OutboundMessage) {
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return // OutboundMessage fields are JSON-safe
-	}
-	room.broadcast <- b
-	if hub != nil {
-		hub.publish(room.roomID, b)
 	}
 }

@@ -182,7 +182,7 @@ func TestServeAppRejectsReservedRoutes(t *testing.T) {
 		serveApp(c, tmpDir)
 	})
 
-	for _, path := range []string{"/api/v1/auth/login", "/health", "/ready", "/metrics", "/ws"} {
+	for _, path := range []string{"/api/v1/auth/login", "/health", "/ready", "/ws"} {
 		t.Run(path, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, path, nil)
 			w := httptest.NewRecorder()
@@ -598,24 +598,5 @@ func TestCreateWSTicket(t *testing.T) {
 	}
 	if count != 1 {
 		t.Fatalf("ws ticket count = %d, want 1", count)
-	}
-}
-
-func TestMetricsEndpoint(t *testing.T) {
-	_, handler := setupTestRouter(t)
-
-	req := httptest.NewRequest(http.MethodGet, "/metrics", nil)
-	w := httptest.NewRecorder()
-
-	(*handler).ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("GET /metrics status = %d, want %d", w.Code, http.StatusOK)
-	}
-
-	// Prometheus metrics should contain some standard metrics
-	body := w.Body.String()
-	if !strings.Contains(body, "go_") {
-		t.Error("GET /metrics should contain Go runtime metrics")
 	}
 }
