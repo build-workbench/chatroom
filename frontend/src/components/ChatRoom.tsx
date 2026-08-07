@@ -76,7 +76,7 @@ export function ChatRoom({
             </div>
           </div>
         </div>
-        <div />
+
       </div>
 
       {/* 消息列表 */}

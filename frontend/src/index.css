@@ -171,11 +171,6 @@ body {
 	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
 }
 
-.unread-badge {
-	background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-	box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
-}
-
 @keyframes connection-pulse {
 	0%,
 	100% {
@@ -196,15 +191,6 @@ body {
 	padding: 1px 4px;
 	border-radius: 4px;
 	font-weight: 500;
-}
-
-.msg-actions {
-	opacity: 0;
-	transition: opacity 0.2s ease;
-}
-
-.msg-wrapper:hover .msg-actions {
-	opacity: 1;
 }
 
 :focus-visible {
