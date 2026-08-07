@@ -13,7 +13,7 @@
 - ✅ 在线人数、输入状态正常
 - ✅ 历史消息加载正常
 - ✅ Token 自动刷新正常
-- ✅ 静态回退界面正常
+- ✅ 构建产物部署正常
 
 ---
 
@@ -93,7 +93,7 @@ curl http://localhost:8080/version
 ### 验证要点
 
 - 用户名唯一性校验（注册重复用户名应失败）
-- 密码长度校验（4-128 字符）
+- 密码长度校验（8-128 字符）
 - 登录成功后 Token 正确存储
 
 ### 进阶：命令行验证
@@ -285,25 +285,35 @@ localStorage.setItem('chat_access', 'invalid_token')
 
 ---
 
-## 实验 9：静态回退界面
+## 实验 9：构建产物部署
 
 ### 操作
 
-1. 停止前端开发服务器
-2. 确保没有 `frontend/dist` 目录
-3. 只启动后端：`go run ./cmd/server`
-4. 访问 http://localhost:8080
+```bash
+# 1. 构建前端
+npm --prefix frontend run build
+
+# 2. 停止前端开发服务器（如果还在运行）
+
+# 3. 启动后端（会自动检测 frontend/dist）
+go run ./cmd/server
+```
 
 ### 预期结果
 
-- 页面正常显示（使用 `web/` 目录的静态文件）
-- 功能与 React 前端基本一致
-- 可以注册、登录、发送消息
+- 访问 http://localhost:8080 直接打开完整界面
+- 功能与开发模式一致：注册、登录、聊天、实时通信
+- 不需要前端开发服务器
 
 ### 验证要点
 
-- 静态文件回退机制正常
-- `web/` 目录作为备用 UI
+- `frontend/dist` 构建产物被后端正确服务
+- 前端路由的 SPA 回退正常（刷新非根路径不 404）
+- API 和 WebSocket 端点不受静态文件服务影响
+
+### 设计说明
+
+后端通过 `resolveAppRoot()` 按优先级探测静态文件目录：先找 `frontend/dist`，找不到则回退到可选的 `web/` 目录。日常开发和教学只需关心 `frontend/`。
 
 ---
 
@@ -332,27 +342,6 @@ done
 
 ---
 
-## 实验 11：健康检查与监控
-
-### 操作
-
-```bash
-# Prometheus 指标
-curl http://localhost:8080/metrics | grep chat
-
-# 查看具体指标
-curl http://localhost:8080/metrics | grep chat_ws_connections
-curl http://localhost:8080/metrics | grep http_requests_total
-```
-
-### 预期结果
-
-- 返回 Prometheus 格式的指标数据
-- `chat_ws_connections` 显示当前连接数
-- `http_requests_total` 显示请求计数
-
----
-
 ## 测试清单
 
 完成以下清单，确认核心功能正常：
@@ -371,14 +360,11 @@ curl http://localhost:8080/metrics | grep http_requests_total
 | 10 | 历史消息加载 | ☐ |
 | 11 | Token 自动刷新 | ☐ |
 | 12 | 断线重连 | ☐ |
-| 13 | 静态回退界面 | ☐ |
+| 13 | 构建产物部署 | ☐ |
 
 ---
 
 ## 课后阅读
 
-- [API 文档](/api/rest) — 接口详情
-- [架构文档](/architecture/system) — 系统结构
-
----
-
+- [API 文档](/api/rest) - 接口详情
+- [架构文档](/architecture/system) - 系统结构

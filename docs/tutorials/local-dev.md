@@ -6,7 +6,7 @@
 
 ## 项目定位
 
-ChatRoom 是一个用于个人练手和教学演示的实时聊天室。
+ChatRoom 是一个全栈开发教学项目，用 Go + React + PostgreSQL + WebSocket 演示一个实时聊天室的完整实现。
 
 它优先保证：
 
@@ -120,7 +120,6 @@ chatroom/
 |------|----------|----------|----------|
 | 本地开发 | Go + Vite dev | localhost:5173 | 日常开发 |
 | 构建产物 | Go + frontend/dist | localhost:8080 | 接近发布 |
-| 静态回退 | Go + web/ | localhost:8080 | 演示场景 |
 | Docker Compose | 全栈容器 | localhost:8080 | 快速体验 |
 
 ---
@@ -165,9 +164,6 @@ make all
 
 ## 下一步
 
-- [手动测试实验](/tutorials/testing) — 完整功能验证
-- [API 文档](/api/rest) — 接口详情
-- [架构文档](/architecture/system) — 系统结构
-
----
-
+- [手动测试实验](/tutorials/testing) - 完整功能验证
+- [API 文档](/api/rest) - 接口详情
+- [架构文档](/architecture/system) - 系统结构

@@ -30,7 +30,7 @@ for _ in {1..20}; do
 done
 
 if ! command -v go >/dev/null 2>&1; then
-	echo "未检测到 Go 开发环境，请安装 Go 1.21+。" >&2
+	echo "未检测到 Go 开发环境，请安装 Go 1.24+。" >&2
 	exit 1
 fi
 
