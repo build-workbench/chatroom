@@ -35,7 +35,7 @@ sequenceDiagram
     participant DB as PostgreSQL
 
     FE->>MW: 请求 (带过期 Access Token)
-    MW->>MW: 解析 JWT → 发现过期
+    MW->>MW: 解析 JWT -> 发现过期
     MW-->>FE: 401 Unauthorized
     
     FE->>BE: POST /api/v1/auth/refresh<br/>{ refresh_token }
@@ -83,15 +83,19 @@ sequenceDiagram
 sequenceDiagram
     participant UserA as 用户 A
     participant ClientA as Client A
-    participant Hub as RoomHub
+    participant Proc as MessageProcessor
     participant DB as PostgreSQL
+    participant Hub as RoomHub
     participant ClientB as Client B
     participant UserB as 用户 B
 
     UserA->>ClientA: 发送消息
-    ClientA->>Hub: { type: "message", content: "..." }
-    Hub->>DB: 持久化消息
-    DB-->>Hub: 消息 ID
+    ClientA->>Proc: Process(content)
+    Proc->>Proc: XSS 过滤 + 长度校验
+    Proc->>DB: 持久化消息
+    DB-->>Proc: 消息 ID + CreatedAt
+    Proc-->>ClientA: ProcessResult{Message, Broadcast=true}
+    ClientA->>Hub: broadcast <- msg
     Hub->>ClientA: { type: "message", id, ... }
     Hub->>ClientB: { type: "message", id, ... }
     ClientB-->>UserB: 显示新消息
@@ -109,11 +113,12 @@ sequenceDiagram
     UserA->>ClientA: 开始输入
     ClientA->>Hub: { type: "typing", is_typing: true }
     Hub->>ClientB: { type: "typing", username: "A", is_typing: true }
+    ClientB->>ClientB: 显示 "A 正在输入..." + 启动 3 秒超时
     
-    Note over UserA: 停止输入 (3秒后)
-    ClientA->>Hub: { type: "typing", is_typing: false }
-    Hub->>ClientB: { type: "typing", username: "A", is_typing: false }
+    Note over ClientB: 3 秒内未收到新的 typing 事件
+    ClientB->>ClientB: 超时触发，自动清除输入提示
 ```
 
----
+> **设计说明**：发送方只发 `is_typing: true`，不发送 `false`。接收方为每个用户维护一个 3 秒定时器，超时后自动清除输入提示。这简化了发送方的逻辑，代价是接收方需要管理定时器。
 
+---
