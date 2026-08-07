@@ -14,7 +14,6 @@ var (
 
 	// 令牌相关错误
 	ErrInvalidToken = errors.New("invalid token")
-	ErrTokenExpired = errors.New("token expired")
 
 	// 通用错误
 	ErrInternal = errors.New("internal error")

@@ -8,14 +8,7 @@ import (
 	"testing"
 )
 
-// TestProperty_CodeFormattingConsistency verifies that all Go source files
-// in the project are properly formatted according to gofmt.
-//
-// Property 1: Code Formatting Consistency
-// For any Go source file in the project, running gofmt -d should produce
-// no output (no formatting changes needed).
-//
-// **Validates: Requirements 3.3**
+// TestProperty_CodeFormattingConsistency 验证项目内所有 Go 源文件符合 gofmt 格式。
 func TestProperty_CodeFormattingConsistency(t *testing.T) {
 	// Find project root (go up from tests/quality)
 	projectRoot, err := findProjectRoot()
@@ -33,7 +26,7 @@ func TestProperty_CodeFormattingConsistency(t *testing.T) {
 		// Skip vendor, .git, and other non-source directories
 		if info.IsDir() {
 			name := info.Name()
-			if name == "vendor" || name == ".git" || name == "node_modules" || name == ".kiro" {
+			if name == "vendor" || name == ".git" || name == "node_modules" {
 				return filepath.SkipDir
 			}
 			return nil
