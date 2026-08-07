@@ -14,7 +14,7 @@ const base = rawBase.startsWith('/')
     : `${rawBase}/`
   : `/${rawBase}/`
 
-const siteUrl = `https://lessup.github.io/chatroom/`
+const siteUrl = `https://vibe-knight.github.io/chatroom/`
 
 export default withMermaid(defineConfig({
   title: 'ChatRoom',
@@ -32,7 +32,7 @@ export default withMermaid(defineConfig({
   head: [
     ['link', { rel: 'canonical', href: siteUrl }],
     ['meta', { name: 'theme-color', content: '#1e3a5f' }],
-    ['meta', { name: 'author', content: 'LessUp' }],
+    ['meta', { name: 'author', content: 'vibe-knight' }],
     ['meta', { name: 'keywords', content: 'ChatRoom, Go, React, WebSocket, PostgreSQL, 实时聊天, 教学项目' }],
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
     ['meta', { property: 'og:type', content: 'website' }],
@@ -70,11 +70,11 @@ export default withMermaid(defineConfig({
     siteTitle: 'ChatRoom',
     logo: '/logo.svg',
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/LessUp/chatroom' },
+      { icon: 'github', link: 'https://github.com/vibe-knight/chatroom' },
     ],
     externalLinkIcon: true,
     editLink: {
-      pattern: 'https://github.com/LessUp/chatroom/edit/master/docs/:path',
+      pattern: 'https://github.com/vibe-knight/chatroom/edit/master/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
     nav: [
@@ -121,7 +121,7 @@ export default withMermaid(defineConfig({
     docFooter: { prev: '上一页', next: '下一页' },
     footer: {
       message: '基于 MIT 许可证发布',
-      copyright: 'Copyright © 2025-2026 LessUp',
+      copyright: 'Copyright © 2025-2026 vibe-knight',
     },
     lastUpdated: { text: '最后更新于' },
     returnToTopLabel: '回到顶部',
