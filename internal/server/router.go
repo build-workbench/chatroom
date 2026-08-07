@@ -24,40 +24,24 @@ type BuildInfo struct {
 	GoVersion string
 }
 
+// resolveAppRoot 按优先级探测前端静态文件目录：
+// 1. 可执行文件同目录的 frontend/dist（Docker 部署场景）
+// 2. 当前工作目录的 frontend/dist（本地开发场景）
+// 3. 可选的 web/ 目录（静态回退）
 func resolveAppRoot() string {
-	baseDirs := []string{"."}
+	candidates := []string{"frontend/dist", "web"}
 	if exePath, err := os.Executable(); err == nil {
-		baseDirs = append(baseDirs, filepath.Dir(exePath))
+		candidates = append([]string{
+			filepath.Join(filepath.Dir(exePath), "frontend", "dist"),
+			filepath.Join(filepath.Dir(exePath), "web"),
+		}, candidates...)
 	}
-	baseDirs = append(baseDirs, "..", filepath.Join("..", ".."))
-
-	seen := make(map[string]struct{}, len(baseDirs))
-	for _, baseDir := range baseDirs {
-		absBase, err := filepath.Abs(baseDir)
-		if err != nil {
-			continue
-		}
-		if _, ok := seen[absBase]; ok {
-			continue
-		}
-		seen[absBase] = struct{}{}
-
-		distDir := filepath.Join(absBase, "frontend", "dist")
-		if _, err := os.Stat(filepath.Join(distDir, "index.html")); err == nil {
-			return distDir
+	for _, dir := range candidates {
+		if _, err := os.Stat(filepath.Join(dir, "index.html")); err == nil {
+			return dir
 		}
 	}
-	for _, baseDir := range baseDirs {
-		absBase, err := filepath.Abs(baseDir)
-		if err != nil {
-			continue
-		}
-		webDir := filepath.Join(absBase, "web")
-		if _, err := os.Stat(filepath.Join(webDir, "index.html")); err == nil {
-			return webDir
-		}
-	}
-	return filepath.Join(".", "web")
+	return "web"
 }
 
 func serveApp(c *gin.Context, rootDir string) {
