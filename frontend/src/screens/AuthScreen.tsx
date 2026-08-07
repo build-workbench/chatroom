@@ -99,7 +99,7 @@ export function AuthScreen(props: {
             </svg>
           </div>
           <h1 className="text-3xl font-bold gradient-text">ChatRoom</h1>
-          <p className="text-gray-500 mt-2 text-sm">新一代实时通讯体验</p>
+          <p className="text-gray-500 mt-2 text-sm">Go + React + WebSocket 实时聊天</p>
         </div>
 
         <div className="flex mb-6 p-1 bg-dark-800/50 rounded-xl" role="tablist" aria-label="登录或注册">
@@ -285,7 +285,7 @@ export function AuthScreen(props: {
           </div>
         )}
 
-        <p className="mt-6 text-center text-xs text-gray-600">练手项目 · 实时消息演示 · 本地可运行</p>
+        <p className="mt-6 text-center text-xs text-gray-600">教学项目 · 全栈实时聊天 · 本地可运行</p>
       </div>
     </div>
   )
