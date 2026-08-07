@@ -59,7 +59,7 @@ export function mapApiError(error: unknown, context: ApiErrorContext): string {
 
     case 'register':
       if (status === 409 || responseMessage === 'username taken') return '注册失败，用户名已存在'
-      if (status === 400 || responseMessage === 'invalid payload') return '注册失败，请使用 2-64 位用户名和 4-128 位密码'
+      if (status === 400 || responseMessage === 'invalid payload') return '注册失败，请使用 2-64 位用户名和 8-128 位密码'
       if (isServerErrorStatus(status) || responseMessage === 'failed to create user') return '注册失败，服务暂时不可用'
       break
 

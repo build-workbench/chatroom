@@ -53,8 +53,8 @@ export function AuthScreen(props: {
       return
     }
 
-    if (p.length < 4) {
-      toast.error('密码至少4个字符')
+    if (p.length < 8) {
+      toast.error('密码至少8个字符')
       return
     }
 
@@ -261,7 +261,7 @@ export function AuthScreen(props: {
                   disabled={busy}
                 />
               </div>
-              <p className="text-xs text-gray-500">密码长度 4-128 个字符</p>
+              <p className="text-xs text-gray-500">密码长度 8-128 个字符</p>
             </div>
 
             <button
