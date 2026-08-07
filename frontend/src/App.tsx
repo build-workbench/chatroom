@@ -15,7 +15,11 @@ import { useToast } from './toast-context'
 export default function App() {
 	const toast = useToast()
 
-	// 用 ref 打破 hooks 之间的循环依赖：socket 需要 auth/chat，auth 需要 socket/chat
+	// 用 ref 打破 hooks 之间的循环依赖。
+	// useChatSocket 需要 auth 的 token 和 chat 的事件回调；
+	// useChat 需要 socket 的引用；auth 的 logout 需要 socket/chat 的清理。
+	// 直接传函数会在每次渲染时创建新闭包，导致 hooks 的 useEffect 反复触发。
+	// 用 ref 存函数引用，在 useEffect 中同步，既避免循环依赖又保持引用稳定。
 	const chatResetRef = useRef<() => void>(() => {})
 	const socketCloseRef = useRef<() => void>(() => {})
 

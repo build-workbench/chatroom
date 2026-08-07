@@ -19,6 +19,11 @@ export interface AuthState {
   logout: () => void
 }
 
+// AuthRuntime 在 React state 之外维护 token 的最新值。
+// 解决的问题：Api 类在构造时捕获 getAccessToken 回调，
+// 如果直接用 state 值，token 刷新后 Api 闭包仍持有旧值。
+// AuthRuntime 用实例属性存 token，回调读取的是实例属性而非闭包变量，
+// 因此刷新后 Api 能立即拿到新 token，不需要重建 Api 实例。
 class AuthRuntime {
   private accessTokenValue: string
   private refreshTokenValue: string

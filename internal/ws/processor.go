@@ -10,6 +10,11 @@ import (
 
 // MessageProcessor 定义消息处理的接口。
 // 将消息验证、清洗、持久化、广播的职责从连接处理器中分离。
+//
+// 教学说明：这里使用接口而非直接在 conn 上实现，是为了演示"职责分离"--
+// conn 只管读写 WebSocket 帧，processor 负责业务逻辑（校验、入库、组装响应）。
+// 当前只有一个实现 DefaultMessageProcessor，但接口使得未来可以替换为
+// 不同的处理策略（如限流、敏感词过滤）而无需修改 conn 代码。
 type MessageProcessor interface {
 	// Process 处理消息，返回处理结果和错误。
 	// 如果返回 nil，表示消息已成功处理并广播。
