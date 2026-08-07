@@ -53,7 +53,7 @@ npm --prefix docs run docs:build
 ## Repo-Specific Gotchas
 
 - The Go app reads environment variables directly; `.env` is not auto-loaded.
-- Go tests require PostgreSQL to be running.
+- Go tests use SQLite in-memory; PostgreSQL is only needed for running the actual server.
 - Vite dev proxies `/api` and `/ws` to the Go backend on port `8080`.
 - Go serves `frontend/dist` if present, otherwise it falls back to a `web/` static directory if one exists.
 - The docs site is the public GitHub Pages surface; keep it distinct from the README.

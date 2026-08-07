@@ -39,21 +39,6 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: chatroom_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -67,10 +52,6 @@ jobs:
         run: go mod download
 
       - name: Run tests
-        env:
-          DATABASE_DSN: postgres://postgres:postgres@localhost:5432/chatroom_test?sslmode=disable
-          JWT_SECRET: test-secret-for-ci
-          APP_ENV: test
         run: go test -race -cover ./...
 
   frontend:

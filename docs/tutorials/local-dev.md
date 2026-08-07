@@ -127,7 +127,7 @@ chatroom/
 ## 常用命令
 
 ```bash
-# Go 测试
+# Go 测试（使用 SQLite 内存数据库，不需要 PostgreSQL）
 go test -race ./...
 
 # 前端测试

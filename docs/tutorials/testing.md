@@ -32,6 +32,8 @@ go run ./cmd/server
 npm --prefix frontend run dev
 ```
 
+> 手动测试需要运行中的 PostgreSQL 和后端服务。Go 单元测试则使用 SQLite 内存数据库，不依赖 PostgreSQL。
+
 ### 访问地址
 
 | 服务 | 地址 |

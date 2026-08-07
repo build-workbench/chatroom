@@ -173,15 +173,12 @@ go run ./cmd/server
 
 ## 测试问题
 
-### Go 测试为什么需要 PostgreSQL？
+### Go 测试需要 PostgreSQL 吗？
 
-部分测试需要真实数据库：用户注册/登录、Token 存储/验证、消息持久化。
+不需要。测试使用 SQLite 内存数据库，不依赖外部服务。
 
 ```bash
-# 启动数据库
-docker compose up -d postgres
-
-# 运行测试
+# 直接运行测试
 go test -race ./...
 ```
 
