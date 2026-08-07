@@ -4,10 +4,10 @@ layout: home
 
 # ChatRoom
 
-> 一个面向教学的实时聊天室：Go + React + PostgreSQL + WebSocket
+> 一个全栈开发教学项目：Go + React + PostgreSQL + WebSocket
 
 <div class="hero-subtitle">
-展示如何把认证、房间、消息、WebSocket 组合成一个可运行、可理解的全栈系统
+用认证、房间、消息、实时通信串联一个可运行、可读懂的全栈系统
 </div>
 
 ## 核心特性
@@ -36,6 +36,21 @@ layout: home
     <div class="nav-desc">REST 与 WebSocket 协议</div>
   </a>
 </div>
+
+## 推荐阅读路线
+
+建议按以下顺序通读源码，每一步都能在几分钟内读完：
+
+1. `cmd/server/main.go` — 启动流程
+2. `internal/config/config.go` — 配置与日志
+3. `internal/server/router.go` — 路由全貌
+4. `internal/server/handler.go` — HTTP Handler
+5. `internal/auth/auth.go` — JWT 与票据认证
+6. `internal/service/user.go` — 注册、登录、Token 轮换
+7. `internal/ws/hub.go` — WebSocket 房间模型
+8. `internal/ws/conn.go` — 连接管理与消息分发
+9. `frontend/src/App.tsx` — 前端 Hooks 组合
+10. `frontend/src/hooks/useChatSocket.ts` — WS 事件分发
 
 ## 架构预览
 

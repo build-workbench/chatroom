@@ -2,9 +2,9 @@
 
 ## 项目定位
 
-### 这个项目是面向生产的吗？
+### 这是一个什么项目？
 
-**不是。** 它的主要目标是个人练手与教学演示。
+一个**定稿的全栈开发教学项目**：代码不再迭代，定位为学习参考。它用 Go + React + PostgreSQL + WebSocket 实现了一个实时聊天室，覆盖认证、房间、消息、实时通信的完整链路。
 
 项目包含的工程化实践本身就是学习材料：
 
@@ -32,6 +32,10 @@
 **工程化**：
 - 测试编写与 CI 配置
 - Docker 多阶段构建
+
+### 推荐的源码阅读顺序？
+
+见 [快速开始](/tutorials/local-dev) 页面的"推荐阅读路线"，或直接查看 [README](https://github.com/LessUp/chatroom) 中的阅读路线表。
 
 ---
 
@@ -88,18 +92,6 @@ localStorage 有 XSS 风险，但教学项目优先考虑简单易懂。
 ---
 
 ## 后端问题
-
-### 我应该先看哪部分代码？
-
-推荐阅读顺序：
-
-1. `cmd/server/main.go` — 理解启动流程
-2. `internal/config/config.go` — 理解配置来源
-3. `internal/server/router.go` — 理解路由结构
-4. `internal/service/user.go` — 理解业务逻辑
-5. `internal/ws/hub.go` — 理解 WebSocket 房间模型
-6. `internal/ws/conn.go` — 理解消息处理
-7. `frontend/src/App.tsx` — 理解前端架构
 
 ### 配置是如何加载的？
 
@@ -215,5 +207,3 @@ make test && npm --prefix frontend run test
 ### 版本号规则？
 
 遵循 [语义化版本](https://semver.org/lang/zh-CN/)。版本历史见 [`CHANGELOG.md`](https://github.com/LessUp/chatroom/blob/master/CHANGELOG.md)。
-
----
