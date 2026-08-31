@@ -1,7 +1,7 @@
 # ChatRoom
 
-[![CI](https://github.com/vibe-knight/chatroom/actions/workflows/ci.yml/badge.svg)](https://github.com/vibe-knight/chatroom/actions/workflows/ci.yml)
-|[![Docs](https://github.com/vibe-knight/chatroom/actions/workflows/pages.yml/badge.svg)](https://vibe-knight.github.io/chatroom/)
+[![CI](https://github.com/build-workbench/chatroom/actions/workflows/ci.yml/badge.svg)](https://github.com/build-workbench/chatroom/actions/workflows/ci.yml)
+|[![Docs](https://github.com/build-workbench/chatroom/actions/workflows/pages.yml/badge.svg)](https://build-workbench.github.io/chatroom/)
 |[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 一个全栈开发教学项目，用 **Go + React + PostgreSQL + WebSocket** 实现一个可运行、可读懂的实时聊天室。
@@ -40,11 +40,11 @@
 
 ## 界面预览
 
-![聊天室界面](https://vibe-knight.github.io/chatroom/screenshots/chatroom.png)
+![聊天室界面](https://build-workbench.github.io/chatroom/screenshots/chatroom.png)
 
 *房间内的实时聊天界面：左侧房间列表与在线人数，右侧消息流与输入框*
 
-![登录页](https://vibe-knight.github.io/chatroom/screenshots/auth.png)
+![登录页](https://build-workbench.github.io/chatroom/screenshots/auth.png)
 
 *登录 / 注册页：JWT 双 Token 认证的入口*
 
@@ -59,7 +59,7 @@
 ### 本地运行
 
 ```bash
-git clone https://github.com/vibe-knight/chatroom.git
+git clone https://github.com/build-workbench/chatroom.git
 cd chatroom
 
 docker compose up -d postgres
@@ -78,18 +78,18 @@ npm --prefix frontend run dev
 |------|------|
 | 前端开发服务器 | http://localhost:5173 |
 | 后端 | http://localhost:8080 |
-| 文档站 | https://vibe-knight.github.io/chatroom/ |
+| 文档站 | https://build-workbench.github.io/chatroom/ |
 
 ## 文档
 
 完整文档托管在 GitHub Pages：
 
-- **[快速开始](https://vibe-knight.github.io/chatroom/tutorials/local-dev)** — 几分钟启动项目
-- **[系统架构](https://vibe-knight.github.io/chatroom/architecture/system)** — 分层与组件交互
-- **[数据流](https://vibe-knight.github.io/chatroom/architecture/data-flow)** — 认证与消息流转图
-- **[REST API](https://vibe-knight.github.io/chatroom/api/rest)** — 接口参考
-- **[WebSocket 协议](https://vibe-knight.github.io/chatroom/api/websocket)** — 消息格式与心跳
-- **[手动测试实验](https://vibe-knight.github.io/chatroom/tutorials/testing)** — 10 个实验验证全部功能
+- **[快速开始](https://build-workbench.github.io/chatroom/tutorials/local-dev)** — 几分钟启动项目
+- **[系统架构](https://build-workbench.github.io/chatroom/architecture/system)** — 分层与组件交互
+- **[数据流](https://build-workbench.github.io/chatroom/architecture/data-flow)** — 认证与消息流转图
+- **[REST API](https://build-workbench.github.io/chatroom/api/rest)** — 接口参考
+- **[WebSocket 协议](https://build-workbench.github.io/chatroom/api/websocket)** — 消息格式与心跳
+- **[手动测试实验](https://build-workbench.github.io/chatroom/tutorials/testing)** — 10 个实验验证全部功能
 
 ## 技术概览
 
