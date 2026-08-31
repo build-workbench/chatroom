@@ -44,10 +44,6 @@
 
 *房间内的实时聊天界面：左侧房间列表与在线人数，右侧消息流与输入框*
 
-![登录页](https://build-workbench.github.io/chatroom/screenshots/auth.png)
-
-*登录 / 注册页：JWT 双 Token 认证的入口*
-
 ## 快速开始
 
 ### 前置要求

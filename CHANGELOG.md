@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 全面改进：修复前后端不一致、清理死代码、简化复杂逻辑、补充测试。
 
 ### Added
-- README「界面预览」：新增登录页与聊天室实时界面截图（`docs/public/screenshots/`）
+- README「界面预览」：新增聊天室实时界面截图（`docs/public/screenshots/`）
 - `processor_test.go`：5 个测试覆盖空消息、正常消息、XSS 过滤、超长内容、持久化失败
 - `middleware_test.go`：9 个测试覆盖限流器（允许/拒绝/隔离）、CORS（dev/prod/no-origin）、Bearer 提取、IP 解析
 - 代码注释：MessageProcessor 接口设计理由、App.tsx ref 循环依赖模式说明、AuthRuntime 存在原因

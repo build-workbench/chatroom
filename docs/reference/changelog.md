@@ -15,7 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 全面改进：修复前后端不一致、清理死代码、简化复杂逻辑、补充测试。
 
+### Added
+- README「界面预览」：新增聊天室实时界面截图（`docs/public/screenshots/`）
+- `processor_test.go`：5 个测试覆盖空消息、正常消息、XSS 过滤、超长内容、持久化失败
+- `middleware_test.go`：9 个测试覆盖限流器（允许/拒绝/隔离）、CORS（dev/prod/no-origin）、Bearer 提取、IP 解析
+- 代码注释：MessageProcessor 接口设计理由、App.tsx ref 循环依赖模式说明、AuthRuntime 存在原因
+
 ### Fixed
+- `internal/ws/conn.go`：WebSocket 升级时使用 `Upgrade(..., nil)`，去掉重复写入的 `Sec-WebSocket-Protocol` 响应头（浏览器会因重复响应头解析异常而中断握手，close 1006）
+- `frontend/src/App.tsx`：登录后加载房间列表的 effect 不再依赖整个 `chat` 对象，改为 ref 稳定引用，避免每次渲染重复触发 `reloadRooms`（曾打满限速导致 429 toast）
 - 前端密码校验从 min 4 改为 min 8，与后端 binding 一致
 - data-flow.md 输入状态流图：移除虚构的 is_typing:false，补充接收方超时机制说明
 - AuthScreen 营销化文案替换为事实描述
@@ -26,15 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `index.css` 中 .unread-badge 和 .msg-actions 死 CSS
 - `ChatRoom.tsx` 中空占位 `<div />`
 - CI 中多余的 PostgreSQL service container（测试使用 SQLite 内存数据库）
-
-### Changed
-- `resolveAppRoot()` 从 30 行多轮探测简化为 15 行候选列表
-- 文档修正：Go 测试使用 SQLite 内存数据库，不依赖 PostgreSQL（AGENTS.md、faq.md、testing.md、local-dev.md）
-
-### Added
-- `processor_test.go`：5 个测试覆盖空消息、正常消息、XSS 过滤、超长内容、持久化失败
-- `middleware_test.go`：9 个测试覆盖限流器（允许/拒绝/隔离）、CORS（dev/prod/no-origin）、Bearer 提取、IP 解析
-- 代码注释：MessageProcessor 接口设计理由、App.tsx ref 循环依赖模式说明、AuthRuntime 存在原因
 
 ## [v2.0.0] - 2026-08-07
 
