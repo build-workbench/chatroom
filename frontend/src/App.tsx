@@ -54,13 +54,19 @@ export default function App() {
 		chatAddMessageRef.current = chat.addMessage
 	})
 
-	// 登录后加载房间列表
+	// 登录后加载房间列表。用一个只读 ref 保存 reloadRooms，避免把整个
+	// chat 对象放进依赖数组——useChat 每次渲染都会返回新对象，会导致
+	// 该 effect 反复触发 reloadRooms，进而把房间列表接口的限速打满。
+	const reloadRoomsRef = useRef<() => Promise<void>>(async () => {})
+	useEffect(() => {
+		reloadRoomsRef.current = chat.reloadRooms
+	})
 	useEffect(() => {
 		if (!auth.user || !auth.accessToken) return
-		chat.reloadRooms().catch((error) => {
+		reloadRoomsRef.current().catch((error) => {
 			console.error('Failed to load rooms:', error)
 		})
-	}, [auth.user, auth.accessToken, chat])
+	}, [auth.user, auth.accessToken])
 
 	if (!auth.user) {
 		return <AuthScreen onLogin={auth.handleLogin} onRegister={auth.handleRegister} />
