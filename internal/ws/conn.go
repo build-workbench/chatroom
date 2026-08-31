@@ -122,7 +122,11 @@ func Serve(h *Hub, db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 			return
 		}
 
-		conn, err := upgrader.Upgrade(c.Writer, c.Request, http.Header{"Sec-WebSocket-Protocol": []string{"chatroom.v1"}})
+		// 协议协商由 upgrader 的 Subprotocols 字段完成，Upgrade 内部会
+		// 把选中的子协议写入响应头；不要再用 responseHeader 重复写
+		// Sec-WebSocket-Protocol，否则会产生两个相同的响应头，导致
+		// 浏览器解析异常并中断握手（close 1006）。
+		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
 			log.Error().Err(err).Uint64("room_id", rid64).Str("remote", c.Request.RemoteAddr).Msg("ws upgrade")
 			return
