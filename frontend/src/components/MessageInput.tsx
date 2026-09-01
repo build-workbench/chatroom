@@ -43,19 +43,19 @@ export function MessageInput({
 
   return (
     <>
-      <div className="px-6 h-6 flex items-center">
-        <div className={`text-xs text-gray-500 flex items-center gap-1.5 transition-opacity duration-300 ${typingNames.length ? '' : 'opacity-0'}`}>
+      <div className="px-6 h-6 flex items-center bg-white/60 backdrop-blur">
+        <div className={`text-xs text-slate-500 flex items-center gap-1.5 transition-opacity duration-300 ${typingNames.length ? 'opacity-100' : 'opacity-0'}`}>
           <span className="flex gap-1">
-            <span className="w-1.5 h-1.5 bg-primary-400 rounded-full typing-dot" />
-            <span className="w-1.5 h-1.5 bg-primary-400 rounded-full typing-dot" />
-            <span className="w-1.5 h-1.5 bg-primary-400 rounded-full typing-dot" />
+            <span className="w-1.5 h-1.5 bg-primary-500 rounded-full typing-dot" />
+            <span className="w-1.5 h-1.5 bg-primary-500 rounded-full typing-dot" />
+            <span className="w-1.5 h-1.5 bg-primary-500 rounded-full typing-dot" />
           </span>
           <span>{formatTyping(typingNames)}</span>
         </div>
       </div>
 
-      <div className="p-4 bg-dark-900/80 glass border-t border-dark-800">
-        <div className="flex items-end gap-3">
+      <div className="p-4 bg-white border-t border-slate-200 shadow-[0_-1px_12px_rgba(15,23,42,0.04)]">
+        <div className="flex items-end gap-3 max-w-4xl mx-auto">
           <div className="flex-1 relative">
             <textarea
               ref={textareaRef}
@@ -72,7 +72,7 @@ export function MessageInput({
                 }
               }}
               rows={1}
-              className="w-full bg-dark-800/50 border border-dark-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 input-glow transition-all resize-none"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-400 input-glow transition-all resize-none shadow-sm"
               placeholder="输入消息... (Enter 发送, Shift+Enter 换行)"
               style={{ maxHeight: 120 }}
             />
@@ -80,7 +80,7 @@ export function MessageInput({
           <button
             type="button"
             onClick={handleSend}
-            className="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white p-3 rounded-xl font-medium transition-all btn-shine shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40"
+            className="bg-gradient-to-br from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white p-3.5 rounded-2xl font-medium transition-all btn-shine shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/25 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center"
             aria-label="发送消息"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,6 +93,7 @@ export function MessageInput({
             </svg>
           </button>
         </div>
+        <p className="text-[11px] text-center text-slate-400 mt-2">按 Enter 快速发送 · Shift+Enter 换行</p>
       </div>
     </>
   )

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- 前端整体切换为浅色精美主题：雾蓝留白、柔和阴影与圆角卡片，重构 `index.css`、`AuthScreen`、`Sidebar`、`ChatRoom`、`MessageList`、`MessageInput`、`ErrorBoundary`、`Toast`，提升长时间阅读与演示体验
+- README 界面预览更新为浅色主题截图（`docs/public/screenshots/chatroom.png` 1440×900，平均亮度 247），深色预览已替换
+
 ## [v2.1.0] - 2026-08-07
 
 全面改进：修复前后端不一致、清理死代码、简化复杂逻辑、补充测试。

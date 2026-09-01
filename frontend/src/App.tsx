@@ -91,7 +91,7 @@ export default function App() {
 					}}
 				/>
 
-				<div className="flex-1 flex flex-col bg-dark-950">
+				<div className="flex-1 flex flex-col bg-[#f8fafc]">
 					<ChatRoom
 						user={auth.user}
 						currentRoomId={chat.currentRoomId}

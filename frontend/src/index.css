@@ -1,6 +1,31 @@
 @import "tailwindcss";
 
-/* --- Tailwind CSS v4 Theme 配置 --- */
+/* 自托管字体: Code New Roman(英文) + Resource Han Rounded CN(中文, GB2312子集) */
+@font-face {
+  font-family: 'Resource Han Rounded CN';
+  src: url('/fonts/han-rounded.woff2') format('woff2');
+  font-weight: 100 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Resource Han Rounded CN';
+  src: url('/fonts/han-rounded-bold.woff2') format('woff2');
+  font-weight: 600 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Code New Roman';
+  src: url('/fonts/code-new-roman.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- Tailwind CSS v4 Theme 配置 — 浅色精美主题 --- */
 @theme {
 	--color-primary-50: #eff6ff;
 	--color-primary-100: #dbeafe;
@@ -12,10 +37,17 @@
 	--color-primary-700: #1d4ed8;
 	--color-primary-800: #1e40af;
 	--color-primary-900: #1e3a8a;
-	--color-dark-700: #334155;
-	--color-dark-800: #1e293b;
-	--color-dark-900: #0f172a;
-	--color-dark-950: #020617;
+
+	/* 兼容旧 dark 语义：重映射到浅色 slate 体系，避免全量重写类名时仍可呈现浅色 */
+	--color-dark-700: #e2e8f0;
+	--color-dark-800: #f1f5f9;
+	--color-dark-900: #ffffff;
+	--color-dark-950: #f8fafc;
+
+	--color-surface: #ffffff;
+	--color-surface-soft: #f8fafc;
+	--color-border: #e2e8f0;
+	--color-border-soft: #f1f5f9;
 
 	--animate-slide-up: slide-up 0.3s ease-out;
 	--animate-scale-in: scale-in 0.2s ease-out;
@@ -46,7 +78,19 @@ body,
 
 body {
 	margin: 0;
-	font-family: 'Inter', system-ui, sans-serif;
+	font-family: 'Code New Roman', 'Resource Han Rounded CN', 'Inter', system-ui, sans-serif;
+	background: #f8fafc;
+	color: #1e293b;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	/* 柔和的整体背景纹理 */
+	background-image:
+		radial-gradient(at 20% 10%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+		radial-gradient(at 80% 90%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+}
+
+::selection {
+	background: rgba(59, 130, 246, 0.18);
 }
 
 ::-webkit-scrollbar {
@@ -59,12 +103,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-	background: rgba(99, 102, 241, 0.3);
-	border-radius: 3px;
+	background: rgba(148, 163, 184, 0.45);
+	border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: rgba(99, 102, 241, 0.5);
+	background: rgba(100, 116, 139, 0.55);
 }
 
 /* --- 组件样式 --- */
@@ -75,22 +119,34 @@ body {
 }
 
 .glass-dark {
-	background: rgba(15, 23, 42, 0.85);
+	background: rgba(255, 255, 255, 0.86);
+	border: 1px solid rgba(226, 232, 240, 0.9);
+	box-shadow:
+		0 1px 2px rgba(15, 23, 42, 0.06),
+		0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
 .msg-own {
 	background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+	color: white;
 	border-radius: 18px 18px 4px 18px;
+	box-shadow:
+		0 1px 2px rgba(37, 99, 235, 0.18),
+		0 4px 12px rgba(37, 99, 235, 0.18);
 }
 
 .msg-other {
-	background: rgba(30, 41, 59, 0.9);
-	border: 1px solid rgba(71, 85, 105, 0.3);
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
 	border-radius: 18px 18px 18px 4px;
+	box-shadow:
+		0 1px 2px rgba(15, 23, 42, 0.04),
+		0 4px 12px rgba(15, 23, 42, 0.04);
+	color: #334155;
 }
 
 .gradient-text {
-	background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+	background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #db2777 100%);
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
@@ -98,8 +154,9 @@ body {
 
 .input-glow:focus {
 	box-shadow:
-		0 0 0 3px rgba(59, 130, 246, 0.2),
-		0 0 20px rgba(59, 130, 246, 0.1);
+		0 0 0 3px rgba(59, 130, 246, 0.14),
+		0 1px 2px rgba(15, 23, 42, 0.05);
+	border-color: #3b82f6 !important;
 }
 
 .btn-shine {
@@ -114,7 +171,7 @@ body {
 	left: -100%;
 	width: 100%;
 	height: 100%;
-	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
 	transition: left 0.5s;
 }
 
@@ -129,8 +186,8 @@ body {
 		transform: scale(1);
 	}
 	50% {
-		opacity: 0.7;
-		transform: scale(1.1);
+		opacity: 0.85;
+		transform: scale(1.08);
 	}
 }
 
@@ -159,16 +216,21 @@ body {
 }
 
 .room-item:hover {
-	transform: translateX(4px);
+	transform: translateX(2px);
+	background: #f8fafc;
 }
 
 .room-item.active {
-	background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, transparent 100%);
-	border-left: 3px solid #3b82f6;
+	background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.03) 100%);
+	border-left: 3px solid #2563eb;
+	box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.08);
 }
 
 .avatar-ring {
-	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+	box-shadow:
+		0 0 0 2px #ffffff,
+		0 0 0 4px rgba(59, 130, 246, 0.18),
+		0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 @keyframes connection-pulse {
@@ -177,7 +239,7 @@ body {
 		opacity: 1;
 	}
 	50% {
-		opacity: 0.5;
+		opacity: 0.6;
 	}
 }
 
@@ -186,11 +248,12 @@ body {
 }
 
 .mention {
-	color: #60a5fa;
-	background: rgba(59, 130, 246, 0.15);
-	padding: 1px 4px;
-	border-radius: 4px;
-	font-weight: 500;
+	color: #2563eb;
+	background: rgba(59, 130, 246, 0.1);
+	padding: 1px 5px;
+	border-radius: 6px;
+	font-weight: 600;
+	border: 1px solid rgba(59, 130, 246, 0.14);
 }
 
 :focus-visible {
@@ -200,5 +263,5 @@ body {
 
 * {
 	scrollbar-width: thin;
-	scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+	scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
 }

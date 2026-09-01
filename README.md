@@ -40,9 +40,9 @@
 
 ## 界面预览
 
-![聊天室界面](https://build-workbench.github.io/chatroom/screenshots/chatroom.png)
+![聊天室界面 — 浅色精美主题](https://build-workbench.github.io/chatroom/screenshots/chatroom.png)
 
-*房间内的实时聊天界面：左侧房间列表与在线人数，右侧消息流与输入框*
+*浅色精美主题：左侧房间列表与在线人数，右侧消息流与输入区 · 雾蓝留白、柔和阴影、圆角卡片，轻盈通透适合长时间阅读与演示*
 
 ## 快速开始
 
