@@ -8,6 +8,8 @@ interface MessageInputProps {
   onTyping: () => void
 }
 
+const QUICK_EMOJIS = ['👍', '❤️', '🔥', '🎉', '😂', '🚀', '✨', '👋', '💡']
+
 function formatTyping(names: string[]): string {
   if (names.length === 0) return ''
   if (names.length === 1) return `${names[0]} 正在输入...`
@@ -32,6 +34,7 @@ export function MessageInput({
   }, [])
 
   const handleSend = useCallback(() => {
+    if (!draft.trim()) return
     onSend()
     requestAnimationFrame(() => {
       const el = textareaRef.current
@@ -39,24 +42,68 @@ export function MessageInput({
         el.style.height = 'auto'
       }
     })
-  }, [onSend])
+  }, [draft, onSend])
+
+  const handleAddEmoji = useCallback(
+    (emoji: string) => {
+      onDraftChange(draft + emoji)
+      onTyping()
+      setTimeout(() => {
+        textareaRef.current?.focus()
+        autoResize()
+      }, 0)
+    },
+    [draft, onDraftChange, onTyping, autoResize],
+  )
+
+  const handleClear = useCallback(() => {
+    onDraftChange('')
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.focus()
+    }
+  }, [onDraftChange])
 
   return (
-    <>
-      <div className="px-6 h-6 flex items-center bg-white/60 backdrop-blur">
-        <div className={`text-xs text-slate-500 flex items-center gap-1.5 transition-opacity duration-300 ${typingNames.length ? 'opacity-100' : 'opacity-0'}`}>
-          <span className="flex gap-1">
-            <span className="w-1.5 h-1.5 bg-primary-500 rounded-full typing-dot" />
-            <span className="w-1.5 h-1.5 bg-primary-500 rounded-full typing-dot" />
-            <span className="w-1.5 h-1.5 bg-primary-500 rounded-full typing-dot" />
-          </span>
-          <span>{formatTyping(typingNames)}</span>
+    <footer className="bg-white/90 backdrop-blur-md border-t border-slate-200/80 shadow-[0_-4px_16px_rgba(15,23,42,0.02)] select-none">
+      {/* 顶部输入中感知栏与快捷 Emoji 反应栏 */}
+      <div className="px-4 sm:px-6 pt-2.5 pb-1 flex items-center justify-between gap-2">
+        {/* 输入中提示 */}
+        <div className="h-5 flex items-center">
+          <div
+            className={`text-xs text-slate-500 flex items-center gap-1.5 transition-opacity duration-300 ${
+              typingNames.length ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <span className="flex gap-1 items-center">
+              <span className="w-1.5 h-1.5 bg-primary-500 rounded-full typing-dot" />
+              <span className="w-1.5 h-1.5 bg-primary-500 rounded-full typing-dot" />
+              <span className="w-1.5 h-1.5 bg-primary-500 rounded-full typing-dot" />
+            </span>
+            <span className="text-[11px] font-medium text-slate-600">{formatTyping(typingNames)}</span>
+          </div>
+        </div>
+
+        {/* 快捷表情选择栏 */}
+        <div className="flex items-center gap-1 overflow-x-auto py-0.5">
+          {QUICK_EMOJIS.map((emoji) => (
+            <button
+              key={emoji}
+              type="button"
+              onClick={() => handleAddEmoji(emoji)}
+              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 active:scale-90 text-sm transition-transform cursor-pointer"
+              title={`插入 ${emoji}`}
+            >
+              {emoji}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="p-4 bg-white border-t border-slate-200 shadow-[0_-1px_12px_rgba(15,23,42,0.04)]">
-        <div className="flex items-end gap-3 max-w-4xl mx-auto">
-          <div className="flex-1 relative">
+      {/* 主输入输入框卡片 */}
+      <div className="px-4 sm:px-6 pb-3 pt-1">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative flex items-end gap-2 bg-slate-50/90 hover:bg-white focus-within:bg-white border border-slate-200/90 focus-within:border-primary-400 focus-within:ring-3 focus-within:ring-primary-500/10 rounded-2xl p-2 transition-all shadow-xs">
             <textarea
               ref={textareaRef}
               value={draft}
@@ -72,29 +119,49 @@ export function MessageInput({
                 }
               }}
               rows={1}
-              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-400 input-glow transition-all resize-none shadow-sm"
+              className="flex-1 bg-transparent px-3 py-1.5 text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none resize-none leading-relaxed select-text"
               placeholder="输入消息... (Enter 发送, Shift+Enter 换行)"
               style={{ maxHeight: 120 }}
             />
+
+            {draft ? (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer self-center"
+                title="清空内容"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!draft.trim()}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-40 disabled:hover:from-blue-600 disabled:hover:to-indigo-600 text-white p-2.5 rounded-xl transition-all btn-shine shadow-xs hover:shadow-md hover:shadow-blue-500/20 active:scale-95 flex items-center justify-center cursor-pointer"
+              aria-label="发送消息"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
+              </svg>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleSend}
-            className="bg-gradient-to-br from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white p-3.5 rounded-2xl font-medium transition-all btn-shine shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/25 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center"
-            aria-label="发送消息"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
-            </svg>
-          </button>
+
+          <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5 px-2">
+            <span>按 <kbd className="px-1 py-0.2 bg-slate-100 rounded text-[10px] font-mono border border-slate-200">Enter</kbd> 发送 · <kbd className="px-1 py-0.2 bg-slate-100 rounded text-[10px] font-mono border border-slate-200">Shift + Enter</kbd> 换行</span>
+            {draft.length > 0 && <span>{draft.length} 字符</span>}
+          </div>
         </div>
-        <p className="text-[11px] text-center text-slate-400 mt-2">按 Enter 快速发送 · Shift+Enter 换行</p>
       </div>
-    </>
+    </footer>
   )
 }
+

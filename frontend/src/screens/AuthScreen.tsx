@@ -11,9 +11,11 @@ export function AuthScreen(props: {
 
   const [loginUsername, setLoginUsername] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
 
   const [regUsername, setRegUsername] = useState('')
   const [regPassword, setRegPassword] = useState('')
+  const [showRegPassword, setShowRegPassword] = useState(false)
 
   const [busy, setBusy] = useState(false)
 
@@ -79,32 +81,40 @@ export function AuthScreen(props: {
     }
   }
 
+  function fillDemoAccount(name = 'demo_user', pwd = 'password123') {
+    setLoginUsername(name)
+    setLoginPassword(pwd)
+    toast.info(`已填入测试账号：${name}`)
+  }
+
   return (
-    <div className="min-h-full flex items-center justify-center p-4 bg-[#f8fafc] relative overflow-hidden">
-      {/* 柔和装饰背景 */}
+    <div className="min-h-full flex items-center justify-center p-4 sm:p-6 bg-[#f8fafc] relative overflow-hidden selection:bg-blue-100 selection:text-blue-700">
+      {/* 柔和环境光与微质感点阵 */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-violet-50/40" />
-        <div className="absolute -top-40 -right-40 w-[520px] h-[520px] bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full blur-3xl opacity-60" />
-        <div className="absolute -bottom-40 -left-40 w-[560px] h-[560px] bg-gradient-to-tr from-violet-100 to-purple-100 rounded-full blur-3xl opacity-50" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[720px] bg-gradient-to-br from-sky-50/80 to-blue-50/40 rounded-full blur-3xl opacity-40" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/70 via-slate-50 to-indigo-50/50" />
+        <div className="absolute inset-0 dot-pattern opacity-40" />
+        <div className="absolute -top-32 -right-32 w-[520px] h-[520px] bg-gradient-to-br from-blue-200/50 to-indigo-200/40 rounded-full blur-3xl opacity-70 animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute -bottom-32 -left-32 w-[540px] h-[540px] bg-gradient-to-tr from-violet-200/40 to-sky-200/50 rounded-full blur-3xl opacity-60 animate-pulse" style={{ animationDuration: '10s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-br from-primary-100/30 via-transparent to-transparent rounded-full blur-3xl opacity-50 pointer-events-none" />
       </div>
 
-      <div className="relative w-full max-w-md">
-        {/* 顶部品牌 */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-xs font-medium text-slate-600 mb-4">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            Go + React · WebSocket · 教学项目
+      <div className="relative w-full max-w-[440px] z-10">
+        {/* 顶部品牌与定位 */}
+        <div className="text-center mb-5">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-sm text-xs font-medium text-slate-600 transition-all hover:border-slate-300">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full status-online" />
+            <span>Go 1.24 + React 19 · WebSocket 实时聊天</span>
           </div>
         </div>
 
-        <div className="relative bg-white p-8 rounded-[24px] shadow-[0_8px_32px_rgba(15,23,42,0.08),0_1px_3px_rgba(15,23,42,0.06)] border border-slate-200/70 animate-scale-in overflow-hidden">
-          {/* 卡片顶部装饰线 */}
-          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-primary-500 via-violet-500 to-fuchsia-500" />
+        {/* 核心登录卡片 */}
+        <div className="relative bg-white/95 backdrop-blur-xl p-8 sm:p-9 rounded-[28px] shadow-[0_16px_40px_-10px_rgba(15,23,42,0.08),0_1px_3px_rgba(15,23,42,0.04)] border border-slate-200/80 animate-scale-in overflow-hidden">
+          {/* 顶部细微渐变光带 */}
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500" />
 
-          <div className="text-center mb-7">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600 to-violet-600 shadow-lg shadow-primary-500/20 ring-1 ring-primary-500/10 mb-4">
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-primary-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 ring-4 ring-blue-500/10 mb-3.5 transition-transform hover:scale-105 duration-200">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -113,48 +123,59 @@ export function AuthScreen(props: {
                 />
               </svg>
             </div>
-            <h1 className="text-[26px] font-bold tracking-tight text-slate-900">ChatRoom</h1>
-            <p className="text-sm text-slate-500 mt-1">轻盈 · 清晰 · 实时 · 适合学习的全栈聊天室</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              Chat<span className="text-primary-600">Room</span>
+            </h1>
+            <p className="text-xs text-slate-500 mt-1.5 font-normal leading-relaxed">
+              轻盈通透 · 实时推送 · 全栈教学项目
+            </p>
           </div>
 
-          <div className="flex mb-6 p-1 bg-slate-100 rounded-2xl" role="tablist" aria-label="登录或注册">
+          {/* 登录 / 注册 分段切换控制器 */}
+          <div className="flex mb-6 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/60" role="tablist" aria-label="登录或注册">
             <button
               type="button"
               role="tab"
               aria-selected={tab === 'login'}
-              className={
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 tab === 'login'
-                  ? 'flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all bg-white text-slate-900 shadow-sm border border-slate-200'
-                  : 'flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all text-slate-500 hover:text-slate-700'
-              }
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200/80'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+              }`}
               onClick={() => setTab('login')}
               disabled={busy}
             >
+              <svg className="w-4 h-4 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
               登录
             </button>
             <button
               type="button"
               role="tab"
               aria-selected={tab === 'register'}
-              className={
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 tab === 'register'
-                  ? 'flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all bg-white text-slate-900 shadow-sm border border-slate-200'
-                  : 'flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all text-slate-500 hover:text-slate-700'
-              }
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200/80'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+              }`}
               onClick={() => setTab('register')}
               disabled={busy}
             >
+              <svg className="w-4 h-4 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
               注册
             </button>
           </div>
 
           {tab === 'login' ? (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide">用户名</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-600 tracking-tight">用户名</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-primary-500 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 group-focus-within:text-primary-600 transition-colors pointer-events-none">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -169,18 +190,19 @@ export function AuthScreen(props: {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') void handleLogin()
                     }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-400 input-glow transition-all shadow-sm"
+                    className="w-full bg-slate-50/90 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-500 input-glow transition-all shadow-xs"
                     placeholder="输入用户名"
                     disabled={busy}
+                    autoComplete="username"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide">密码</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-600 tracking-tight">密码</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-primary-500 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 group-focus-within:text-primary-600 transition-colors pointer-events-none">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -195,41 +217,81 @@ export function AuthScreen(props: {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') void handleLogin()
                     }}
-                    type="password"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-400 input-glow transition-all shadow-sm"
+                    type={showLoginPassword ? 'text' : 'password'}
+                    className="w-full bg-slate-50/90 border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-500 input-glow transition-all shadow-xs"
                     placeholder="输入密码"
                     disabled={busy}
+                    autoComplete="current-password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    title={showLoginPassword ? '隐藏密码' : '显示密码'}
+                    tabIndex={-1}
+                  >
+                    {showLoginPassword ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
+              </div>
+
+              {/* 快捷测试账号填充小提示 */}
+              <div className="pt-1 flex items-center justify-between text-xs">
+                <span className="text-slate-400">没有账号？先注册或</span>
+                <button
+                  type="button"
+                  onClick={() => fillDemoAccount('demo_user', 'password123')}
+                  className="text-primary-600 hover:text-primary-700 font-medium hover:underline cursor-pointer inline-flex items-center gap-1"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  一键填入演示账号
+                </button>
               </div>
 
               <button
                 type="button"
                 onClick={() => void handleLogin()}
                 disabled={busy}
-                className="w-full bg-gradient-to-br from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-3 px-4 rounded-xl transition-all btn-shine shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/25 hover:-translate-y-px active:translate-y-0 disabled:opacity-60 disabled:hover:translate-y-0 mt-2"
+                className="w-full bg-gradient-to-r from-blue-600 via-primary-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl transition-all btn-shine shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-px active:translate-y-0 active:scale-[0.99] disabled:opacity-60 disabled:hover:translate-y-0 mt-2 cursor-pointer"
               >
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                    />
-                  </svg>
-                  登录
+                  {busy ? (
+                    <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                      />
+                    </svg>
+                  )}
+                  {busy ? '正在登录...' : '立即登录'}
                 </span>
               </button>
-              <p className="text-xs text-center text-slate-400">示例账号可直接注册体验 · 支持 JWT 双 Token</p>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide">用户名</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-600 tracking-tight">用户名</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-primary-500 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 group-focus-within:text-primary-600 transition-colors pointer-events-none">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -244,19 +306,20 @@ export function AuthScreen(props: {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') void handleRegister()
                     }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-400 input-glow transition-all shadow-sm"
-                    placeholder="创建用户名"
+                    className="w-full bg-slate-50/90 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-500 input-glow transition-all shadow-xs"
+                    placeholder="创建个性用户名 (2-64字符)"
                     disabled={busy}
+                    autoComplete="username"
                   />
                 </div>
-                <p className="text-xs text-slate-400">用户名长度 2-64 个字符</p>
+                <p className="text-[11px] text-slate-400 pl-1">用户名用于聊天室内身份辨识与 @ 提及</p>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide">密码</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-600 tracking-tight">密码</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-primary-500 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 group-focus-within:text-primary-600 transition-colors pointer-events-none">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -271,41 +334,88 @@ export function AuthScreen(props: {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') void handleRegister()
                     }}
-                    type="password"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-400 input-glow transition-all shadow-sm"
-                    placeholder="创建密码"
+                    type={showRegPassword ? 'text' : 'password'}
+                    className="w-full bg-slate-50/90 border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary-500 input-glow transition-all shadow-xs"
+                    placeholder="创建密码 (至少8位字符)"
                     disabled={busy}
+                    autoComplete="new-password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    title={showRegPassword ? '隐藏密码' : '显示密码'}
+                    tabIndex={-1}
+                  >
+                    {showRegPassword ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
-                <p className="text-xs text-slate-400">密码长度 8-128 个字符</p>
+                <p className="text-[11px] text-slate-400 pl-1">支持英文字母、数字和常见符号</p>
               </div>
 
               <button
                 type="button"
                 onClick={() => void handleRegister()}
                 disabled={busy}
-                className="w-full bg-gradient-to-br from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold py-3 px-4 rounded-xl transition-all btn-shine shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/25 hover:-translate-y-px active:translate-y-0 disabled:opacity-60 mt-2"
+                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold py-2.5 px-4 rounded-xl transition-all btn-shine shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/25 hover:-translate-y-px active:translate-y-0 active:scale-[0.99] disabled:opacity-60 mt-2 cursor-pointer"
               >
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                    />
-                  </svg>
-                  创建账号
+                  {busy ? (
+                    <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                      />
+                    </svg>
+                  )}
+                  {busy ? '正在创建...' : '注册并体验'}
                 </span>
               </button>
             </div>
           )}
 
-          <p className="mt-6 text-center text-xs text-slate-400">教学项目 · 全栈实时聊天 · 本地可运行 · 代码即文档</p>
+          {/* 特性徽章指示 */}
+          <div className="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 gap-2 text-[11px] text-slate-500">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              <span>毫秒级全双工推送</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+              <span>JWT 双 Token 续签</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>多房间实时在线隔离</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+              <span>历史消息平滑滚动</span>
+            </div>
+          </div>
         </div>
 
-        <p className="mt-4 text-center text-xs text-slate-400">浅色精美模式 · 轻盈通透 · 适合演示与阅读</p>
+        <p className="mt-4 text-center text-xs text-slate-400">
+          ChatRoom · Clean Architecture & Real-Time Engineering
+        </p>
       </div>
     </div>
   )
 }
+

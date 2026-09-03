@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 精简并优化 README.md：去除大量 emoji，表述更加干练务实，以清晰列表呈现功能特性、技术栈及运行指引，修复截图为相对路径
 - 前端整体切换为浅色精美主题：雾蓝留白、柔和阴影与圆角卡片，重构 `index.css`、`AuthScreen`、`Sidebar`、`ChatRoom`、`MessageList`、`MessageInput`、`ErrorBoundary`、`Toast`，提升长时间阅读与演示体验
 - README 界面预览更新为浅色主题截图（`docs/public/screenshots/chatroom.png` 1440×900，平均亮度 247），深色预览已替换
+- 前端界面显示效果优化：消息气泡尾巴指示、自己消息显示头像、头像 hover 放大效果、滚动到底部快捷按钮、帮助面板点击外部关闭、Toast 退出动画、活跃房间左侧色条、头像渐变色扩展至 8 种
 
 ## [v2.1.0] - 2026-08-07
 

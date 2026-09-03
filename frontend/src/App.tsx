@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { WsEvent } from './types'
 
@@ -14,6 +14,7 @@ import { useToast } from './toast-context'
 
 export default function App() {
 	const toast = useToast()
+	const [sidebarOpen, setSidebarOpen] = useState(false)
 
 	// 用 ref 打破 hooks 之间的循环依赖。
 	// useChatSocket 需要 auth 的 token 和 chat 的事件回调；
@@ -74,24 +75,42 @@ export default function App() {
 
 	return (
 		<ErrorBoundary>
-			<div className="h-full flex">
-				<Sidebar
-					user={auth.user}
-					rooms={chat.rooms}
-					currentRoomId={chat.currentRoomId}
-					roomQuery={chat.roomQuery}
-					newRoomName={chat.newRoomName}
-					onRoomQueryChange={chat.setRoomQuery}
-					onNewRoomNameChange={chat.setNewRoomName}
-					onCreateRoom={() => void chat.createRoom()}
-					onJoinRoom={(id, name, online) => void chat.joinRoom(id, name, online)}
-					onLogout={() => {
-						auth.logout()
-						toast.info('已退出登录')
-					}}
-				/>
+			<div className="h-full flex relative overflow-hidden">
+				{/* 移动端侧边栏遮罩 */}
+				{sidebarOpen && (
+					<div
+						className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 md:hidden animate-fade-in"
+						onClick={() => setSidebarOpen(false)}
+					/>
+				)}
 
-				<div className="flex-1 flex flex-col bg-[#f8fafc]">
+				{/* 侧边栏容器：桌面端常驻，移动端为侧滑抽屉 */}
+				<div
+					className={`fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 ease-out md:relative md:translate-x-0 ${
+						sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+					}`}
+				>
+					<Sidebar
+						user={auth.user}
+						rooms={chat.rooms}
+						currentRoomId={chat.currentRoomId}
+						roomQuery={chat.roomQuery}
+						newRoomName={chat.newRoomName}
+						onRoomQueryChange={chat.setRoomQuery}
+						onNewRoomNameChange={chat.setNewRoomName}
+						onCreateRoom={() => void chat.createRoom()}
+						onJoinRoom={(id, name, online) => {
+							void chat.joinRoom(id, name, online)
+							setSidebarOpen(false)
+						}}
+						onLogout={() => {
+							auth.logout()
+							toast.info('已退出登录')
+						}}
+					/>
+				</div>
+
+				<div className="flex-1 flex flex-col bg-[#f8fafc] min-w-0">
 					<ChatRoom
 						user={auth.user}
 						currentRoomId={chat.currentRoomId}
@@ -105,6 +124,7 @@ export default function App() {
 						onSend={chat.sendMessage}
 						onTyping={() => socketRef.current?.sendTyping(true)}
 						onLoadMore={() => void chat.loadMoreHistory()}
+						onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
 					/>
 				</div>
 			</div>
