@@ -4,7 +4,7 @@
 [![Docs](https://github.com/build-workbench/chatroom/actions/workflows/pages.yml/badge.svg)](https://build-workbench.github.io/chatroom/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-一个全栈开发教学项目，用 **Go + React + PostgreSQL + WebSocket** 实现一个可运行、可读懂的实时聊天室。
+一个个人业余练手的全栈项目，用 **Go + React + PostgreSQL + WebSocket** 实现一个轻量可运行的实时聊天室。
 
 ## 界面预览
 

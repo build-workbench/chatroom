@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- 修正 README 项目定位描述：调整为个人业余练手的全栈项目
 - 精简 README.md：移除冗余的教学知识点大纲与源码阅读路线，聚焦本地开发及 Docker 一键运行等使用说明
 - 修复 README 界面预览截图链接：改用仓库相对路径，恢复截图正常展示
 - 前端整体切换为浅色精美主题：雾蓝留白、柔和阴影与圆角卡片，重构 `index.css`、`AuthScreen`、`Sidebar`、`ChatRoom`、`MessageList`、`MessageInput`、`ErrorBoundary`、`Toast`，提升长时间阅读与演示体验
