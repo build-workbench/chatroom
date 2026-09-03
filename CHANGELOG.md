@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- 精简 README.md：移除冗余的教学知识点大纲与源码阅读路线，聚焦本地开发及 Docker 一键运行等使用说明
 - 前端整体切换为浅色精美主题：雾蓝留白、柔和阴影与圆角卡片，重构 `index.css`、`AuthScreen`、`Sidebar`、`ChatRoom`、`MessageList`、`MessageInput`、`ErrorBoundary`、`Toast`，提升长时间阅读与演示体验
 - README 界面预览更新为浅色主题截图（`docs/public/screenshots/chatroom.png` 1440×900，平均亮度 247），深色预览已替换
 
