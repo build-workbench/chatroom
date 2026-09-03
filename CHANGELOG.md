@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- 全面优化 README.md：基于个人全栈练手项目定位，精炼项目初衷与单机架构说明，补充功能亮点与技术栈表格，保留极简的本地与 Docker 运行指南，并修复截图为仓库相对路径
+- 精简并优化 README.md：去除大量 emoji，表述更加干练务实，以清晰列表呈现功能特性、技术栈及运行指引，修复截图为相对路径
 - 前端整体切换为浅色精美主题：雾蓝留白、柔和阴影与圆角卡片，重构 `index.css`、`AuthScreen`、`Sidebar`、`ChatRoom`、`MessageList`、`MessageInput`、`ErrorBoundary`、`Toast`，提升长时间阅读与演示体验
 - README 界面预览更新为浅色主题截图（`docs/public/screenshots/chatroom.png` 1440×900，平均亮度 247），深色预览已替换
 
