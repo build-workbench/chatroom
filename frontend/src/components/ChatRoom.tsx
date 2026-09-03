@@ -50,9 +50,13 @@ export function ChatRoom({
 
   if (!currentRoomId) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-gradient-to-br from-white via-slate-50 to-blue-50/30 relative overflow-hidden select-none">
-        <div className="absolute inset-0 dot-pattern opacity-30 pointer-events-none" />
-        <div className="text-center max-w-lg w-full relative z-10">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-gradient-to-br from-white via-slate-50 to-blue-50/40 relative overflow-hidden select-none">
+        {/* 装饰性背景光与点阵 */}
+        <div className="absolute inset-0 dot-pattern opacity-40 pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-200/30 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="text-center max-w-lg w-full relative z-10 animate-fade-in">
           <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-tr from-blue-600 via-primary-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-blue-500/20 ring-4 ring-blue-500/10 animate-scale-in">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -66,27 +70,36 @@ export function ChatRoom({
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-2.5">
             选择或新建一个频道开始畅聊
           </h2>
-          <p className="text-sm text-slate-500 mb-6 leading-relaxed max-w-md mx-auto">
+          <p className="text-sm text-slate-500 mb-7 leading-relaxed max-w-md mx-auto">
             点击左侧房间列表进入对话，体验毫秒级广播、在线人数感知、输入中提示与历史消息漫游。
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto mb-6 text-left">
-            <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-800 mb-1">
-                <span className="w-2 h-2 rounded-full bg-blue-500" />
-                全双工 WebSocket
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-lg mx-auto mb-7 text-left">
+            <div className="p-3.5 rounded-2xl bg-white/90 backdrop-blur-sm border border-slate-200/80 shadow-xs hover:shadow-sm transition-shadow">
+              <div className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold mb-2">⚡</div>
+              <div className="text-xs font-bold text-slate-800 mb-0.5">
+                全双工推送
               </div>
               <p className="text-[11px] text-slate-500 leading-snug">
-                基于 Gorilla WebSocket 实现低延迟即时双向推送
+                基于 Gorilla WebSocket 实现低延迟广播
               </p>
             </div>
-            <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-800 mb-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <div className="p-3.5 rounded-2xl bg-white/90 backdrop-blur-sm border border-slate-200/80 shadow-xs hover:shadow-sm transition-shadow">
+              <div className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold mb-2">👥</div>
+              <div className="text-xs font-bold text-slate-800 mb-0.5">
                 智能状态感知
               </div>
               <p className="text-[11px] text-slate-500 leading-snug">
-                在线列表、打字状态侦测与掉线平滑重连
+                在线列表侦测、打字提醒与掉线自动重连
+              </p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-white/90 backdrop-blur-sm border border-slate-200/80 shadow-xs hover:shadow-sm transition-shadow">
+              <div className="w-7 h-7 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-sm font-bold mb-2">📜</div>
+              <div className="text-xs font-bold text-slate-800 mb-0.5">
+                历史平滑漫游
+              </div>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                PostgreSQL 分页持久化与滑动自动加载
               </p>
             </div>
           </div>
@@ -96,7 +109,7 @@ export function ChatRoom({
               <button
                 type="button"
                 onClick={onToggleSidebar}
-                className="md:hidden inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-full text-xs font-semibold shadow-xs cursor-pointer"
+                className="md:hidden inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-full text-xs font-semibold shadow-xs cursor-pointer btn-shine"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -104,7 +117,7 @@ export function ChatRoom({
                 打开频道列表
               </button>
             ) : null}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200/90 shadow-xs text-xs font-medium text-slate-600">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm border border-slate-200/90 shadow-xs text-xs font-medium text-slate-600">
               <span className="w-2 h-2 bg-emerald-500 rounded-full status-online" />
               Go 1.24 + React 19 · 代码即教学文档
             </div>
@@ -144,14 +157,19 @@ export function ChatRoom({
                 </h2>
               </div>
               {connStatus === 'connected' ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-semibold">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-semibold shadow-xs">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                   已连接
                 </span>
-              ) : connStatus !== 'idle' ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-600 border border-amber-200 connection-pulse">
+              ) : connStatus === 'reconnecting' || connStatus === 'connecting' ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 connection-pulse shadow-xs">
                   <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
-                  {connStatus === 'reconnecting' ? '正在重连' : connStatus === 'connecting' ? '正在连接' : '已断开'}
+                  {connStatus === 'reconnecting' ? '正在重连...' : '正在连接...'}
+                </span>
+              ) : connStatus !== 'idle' ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 shadow-xs">
+                  <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                  已断开
                 </span>
               ) : null}
             </div>

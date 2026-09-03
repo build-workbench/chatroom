@@ -244,18 +244,24 @@ export function AuthScreen(props: {
                 </div>
               </div>
 
-              {/* 快捷测试账号填充小提示 */}
-              <div className="pt-1 flex items-center justify-between text-xs">
-                <span className="text-slate-400">没有账号？先注册或</span>
+              {/* 快捷测试账号填充卡片 */}
+              <div className="pt-1">
                 <button
                   type="button"
                   onClick={() => fillDemoAccount('demo_user', 'password123')}
-                  className="text-primary-600 hover:text-primary-700 font-medium hover:underline cursor-pointer inline-flex items-center gap-1"
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-blue-50/70 hover:bg-blue-100/70 border border-blue-200/70 text-blue-700 transition-all cursor-pointer group text-xs font-medium shadow-xs"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  一键填入演示账号
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                    <span>快捷测试演示账号</span>
+                    <span className="font-mono text-[11px] text-blue-600/80 bg-white/80 px-1.5 py-0.5 rounded border border-blue-200/60">demo_user</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform">
+                    一键填入
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
                 </button>
               </div>
 
@@ -390,23 +396,35 @@ export function AuthScreen(props: {
             </div>
           )}
 
-          {/* 特性徽章指示 */}
-          <div className="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 gap-2 text-[11px] text-slate-500">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              <span>毫秒级全双工推送</span>
+          {/* 精致架构特性卡片展示 */}
+          <div className="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 gap-2.5 text-xs">
+            <div className="p-2.5 rounded-xl bg-slate-50/70 border border-slate-100/90 flex items-start gap-2.5 transition-colors hover:bg-slate-50">
+              <div className="w-6 h-6 rounded-lg bg-blue-100/80 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">⚡</div>
+              <div className="min-w-0">
+                <div className="font-semibold text-slate-800 text-[11.5px] leading-tight">全双工推送</div>
+                <div className="text-[10px] text-slate-400 truncate mt-0.5">Gorilla WebSocket</div>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-              <span>JWT 双 Token 续签</span>
+            <div className="p-2.5 rounded-xl bg-slate-50/70 border border-slate-100/90 flex items-start gap-2.5 transition-colors hover:bg-slate-50">
+              <div className="w-6 h-6 rounded-lg bg-indigo-100/80 text-indigo-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">🔐</div>
+              <div className="min-w-0">
+                <div className="font-semibold text-slate-800 text-[11.5px] leading-tight">双 Token 鉴权</div>
+                <div className="text-[10px] text-slate-400 truncate mt-0.5">JWT 静默续签</div>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span>多房间实时在线隔离</span>
+            <div className="p-2.5 rounded-xl bg-slate-50/70 border border-slate-100/90 flex items-start gap-2.5 transition-colors hover:bg-slate-50">
+              <div className="w-6 h-6 rounded-lg bg-emerald-100/80 text-emerald-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">👥</div>
+              <div className="min-w-0">
+                <div className="font-semibold text-slate-800 text-[11.5px] leading-tight">多房间感知</div>
+                <div className="text-[10px] text-slate-400 truncate mt-0.5">在线隔离与打字侦测</div>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-              <span>历史消息平滑滚动</span>
+            <div className="p-2.5 rounded-xl bg-slate-50/70 border border-slate-100/90 flex items-start gap-2.5 transition-colors hover:bg-slate-50">
+              <div className="w-6 h-6 rounded-lg bg-violet-100/80 text-violet-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">📜</div>
+              <div className="min-w-0">
+                <div className="font-semibold text-slate-800 text-[11.5px] leading-tight">历史漫游</div>
+                <div className="text-[10px] text-slate-400 truncate mt-0.5">滚动加载与防刷限流</div>
+              </div>
             </div>
           </div>
         </div>

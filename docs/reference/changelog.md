@@ -11,6 +11,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- 前端界面与视觉效果深度美化：
+  - 优化全局设计系统：微质感环境渐变背景、消息气泡立体阴影与微光描边、平滑缩放与过渡曲线
+  - 升级登录认证界面：新增一键填入演示账号快捷卡片与四宫格架构微卡片（全双工推送、双 Token 续签、多房间隔离、历史漫游）
+  - 升级侧边栏：强化用户头像光环动效、重绘新建房间面板交互、平滑筛选与活跃频道色条指引
+  - 升级主聊天视窗：丰富未进房时的教学看板（三维特性网格）、细化连接状态指示（已连接/重连中/已断开）、日期分组双向细线与空消息破冰芯片
+- 精简并优化 README.md：去除大量 emoji，表述更加干练务实，以清晰列表呈现功能特性、技术栈及运行指引，修复截图为相对路径
+- 前端整体切换为浅色精美主题：雾蓝留白、柔和阴影与圆角卡片，重构 `index.css`、`AuthScreen`、`Sidebar`、`ChatRoom`、`MessageList`、`MessageInput`、`ErrorBoundary`、`Toast`，提升长时间阅读与演示体验
+- README 界面预览更新为浅色主题截图（`docs/public/screenshots/chatroom.png` 1440×900，平均亮度 247），深色预览已替换
+- 前端界面显示效果优化：消息气泡尾巴指示、自己消息显示头像、头像 hover 放大效果、滚动到底部快捷按钮、帮助面板点击外部关闭、Toast 退出动画、活跃房间左侧色条、头像渐变色扩展至 8 种
+
 ## [v2.1.0] - 2026-08-07
 
 全面改进：修复前后端不一致、清理死代码、简化复杂逻辑、补充测试。

@@ -33,14 +33,14 @@ export function Sidebar({
   }
 
   return (
-    <aside className="w-80 bg-slate-50/80 backdrop-blur-xl border-r border-slate-200/80 flex flex-col h-full shadow-[2px_0_12px_rgba(15,23,42,0.02)] select-none">
+    <aside className="w-80 bg-slate-50/90 backdrop-blur-xl border-r border-slate-200/80 flex flex-col h-full shadow-[2px_0_16px_rgba(15,23,42,0.03)] select-none">
       {/* 顶部当前用户信息卡片 */}
-      <div className="p-4 border-b border-slate-200/70 bg-white/60">
+      <div className="p-4 border-b border-slate-200/70 bg-white/70 backdrop-blur-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <div className="relative flex-shrink-0">
               <div
-                className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${userGradient} flex items-center justify-center text-white font-bold text-sm shadow-md shadow-blue-500/10 avatar-ring`}
+                className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${userGradient} flex items-center justify-center text-white font-bold text-sm shadow-md shadow-blue-500/15 avatar-ring avatar-hover`}
               >
                 <span>{user.username.substring(0, 2).toUpperCase()}</span>
               </div>
@@ -48,20 +48,20 @@ export function Sidebar({
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <p className="font-semibold text-sm text-slate-900 truncate">{user.username}</p>
-                <span className="text-[10px] font-medium px-1.5 py-0.2 rounded-md bg-blue-50 text-blue-600 border border-blue-200/60">
-                  当前账号
+                <p className="font-bold text-sm text-slate-900 truncate tracking-tight">{user.username}</p>
+                <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded-md bg-blue-50 text-blue-600 border border-blue-200/60 flex-shrink-0">
+                  当前用户
                 </span>
               </div>
-              <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                在线 · 教学演示
+              <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5 font-medium">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                在线 · 全双工连接
               </p>
             </div>
           </div>
           <button
             type="button"
-            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
+            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
             title="退出登录"
             onClick={onLogout}
             aria-label="退出登录"
@@ -113,9 +113,9 @@ export function Sidebar({
 
         {/* 新建房间面板 */}
         {isCreating ? (
-          <div className="p-2.5 bg-white rounded-2xl border border-primary-200/70 shadow-sm space-y-2 animate-scale-in">
+          <div className="p-3 bg-white rounded-2xl border border-primary-200/80 shadow-sm space-y-2.5 animate-scale-in">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
-              <span className="flex items-center gap-1 text-primary-700">
+              <span className="flex items-center gap-1.5 text-primary-700">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -125,6 +125,7 @@ export function Sidebar({
                 type="button"
                 onClick={() => setIsCreating(false)}
                 className="text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+                title="取消"
               >
                 ✕
               </button>
@@ -145,7 +146,7 @@ export function Sidebar({
                 type="button"
                 onClick={handleCreate}
                 disabled={!newRoomName.trim()}
-                className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shadow-xs disabled:opacity-50 cursor-pointer btn-shine"
               >
                 确认
               </button>
@@ -254,12 +255,12 @@ export function Sidebar({
       </div>
 
       {/* 侧边栏底部状态栏 */}
-      <div className="p-3 border-t border-slate-200/70 bg-white/50 flex items-center justify-between text-[11px] text-slate-400">
-        <span className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+      <div className="p-3 border-t border-slate-200/70 bg-white/60 backdrop-blur-md flex items-center justify-between text-[11px] text-slate-400">
+        <span className="flex items-center gap-1.5 font-medium text-slate-500">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 status-online" />
           WS 全双工服务
         </span>
-        <span>Go 1.24 · React 19</span>
+        <span className="font-mono text-[10.5px]">Go 1.24 · React 19</span>
       </div>
     </aside>
   )

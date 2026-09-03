@@ -45,13 +45,13 @@ export class ErrorBoundary extends React.Component<Props, State> {
             <div className="flex gap-3 justify-center">
               <button
                 onClick={this.handleRetry}
-                className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl transition-colors shadow-md shadow-primary-500/20 text-sm font-medium"
+                className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl transition-all shadow-md shadow-primary-500/20 text-sm font-medium cursor-pointer btn-shine"
               >
                 重试
               </button>
               <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors border border-slate-200 text-sm font-medium"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all border border-slate-200 text-sm font-medium cursor-pointer"
               >
                 刷新页面
               </button>

@@ -157,9 +157,9 @@ export function MessageList({
       }}
     >
       {!hasRenderableItems ? (
-        <div className="h-full min-h-[260px] flex items-center justify-center p-4">
-          <div className="max-w-md text-center px-6 py-8 rounded-3xl border border-dashed border-slate-200/90 bg-white/80 shadow-xs">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-center text-primary-600 shadow-xs">
+        <div className="h-full min-h-[280px] flex items-center justify-center p-4">
+          <div className="max-w-md text-center px-6 py-8 rounded-3xl border border-dashed border-slate-200/90 bg-white/85 backdrop-blur-sm shadow-xs animate-scale-in">
+            <div className="w-12 h-12 mx-auto mb-3.5 rounded-2xl bg-gradient-to-tr from-blue-50 to-indigo-50 border border-blue-100/80 flex items-center justify-center text-primary-600 shadow-xs">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
@@ -173,21 +173,21 @@ export function MessageList({
                 <button
                   type="button"
                   onClick={() => onDraftFill('👋 大家好，我在测试实时聊天室！')}
-                  className="text-xs px-2.5 py-1 rounded-full bg-slate-100 hover:bg-blue-50 hover:text-primary-600 text-slate-600 border border-slate-200 transition-colors cursor-pointer"
+                  className="text-xs px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 hover:text-primary-600 text-slate-600 border border-slate-200 transition-all cursor-pointer shadow-xs hover:border-blue-200"
                 >
                   👋 打个招呼
                 </button>
                 <button
                   type="button"
                   onClick={() => onDraftFill('🚀 实时推送速度非常快！')}
-                  className="text-xs px-2.5 py-1 rounded-full bg-slate-100 hover:bg-blue-50 hover:text-primary-600 text-slate-600 border border-slate-200 transition-colors cursor-pointer"
+                  className="text-xs px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 hover:text-primary-600 text-slate-600 border border-slate-200 transition-all cursor-pointer shadow-xs hover:border-blue-200"
                 >
                   🚀 体验推送
                 </button>
                 <button
                   type="button"
                   onClick={() => onDraftFill('💡 这是一个基于 Go + React 的教学项目。')}
-                  className="text-xs px-2.5 py-1 rounded-full bg-slate-100 hover:bg-blue-50 hover:text-primary-600 text-slate-600 border border-slate-200 transition-colors cursor-pointer"
+                  className="text-xs px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 hover:text-primary-600 text-slate-600 border border-slate-200 transition-all cursor-pointer shadow-xs hover:border-blue-200"
                 >
                   💡 介绍项目
                 </button>
@@ -246,10 +246,12 @@ export function MessageList({
         return (
           <div key={msg.id} className="space-y-1">
             {showDateDivider ? (
-              <div className="flex items-center justify-center my-3">
-                <span className="text-[11px] font-medium px-3 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200/70">
+              <div className="flex items-center justify-center my-4 gap-3">
+                <div className="h-px bg-slate-200/80 flex-1 max-w-[60px]" />
+                <span className="text-[11px] font-medium px-3 py-0.5 rounded-full bg-white/90 backdrop-blur-sm text-slate-500 border border-slate-200/80 shadow-xs">
                   {dateDividerText}
                 </span>
+                <div className="h-px bg-slate-200/80 flex-1 max-w-[60px]" />
               </div>
             ) : null}
 

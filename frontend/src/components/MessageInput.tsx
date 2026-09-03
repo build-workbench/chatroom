@@ -8,7 +8,7 @@ interface MessageInputProps {
   onTyping: () => void
 }
 
-const QUICK_EMOJIS = ['👍', '❤️', '🔥', '🎉', '😂', '🚀', '✨', '👋', '💡']
+const QUICK_EMOJIS = ['👍', '❤️', '🔥', '🎉', '😂', '🚀', '✨', '👋', '💡', '👏']
 
 function formatTyping(names: string[]): string {
   if (names.length === 0) return ''
