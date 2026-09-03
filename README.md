@@ -6,7 +6,11 @@
 
 一个全栈开发教学项目，用 **Go + React + PostgreSQL + WebSocket** 实现一个可运行、可读懂的实时聊天室。
 
-![聊天室界面](https://build-workbench.github.io/chatroom/screenshots/chatroom.png)
+## 界面预览
+
+![聊天室界面 — 浅色精美主题](docs/public/screenshots/chatroom.png)
+
+*浅色精美主题：左侧房间列表与在线人数，右侧消息流与输入区 · 雾蓝留白、柔和阴影、圆角卡片，轻盈通透适合长时间阅读与演示*
 
 ## 快速开始
 
