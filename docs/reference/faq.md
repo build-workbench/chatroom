@@ -203,4 +203,4 @@ make test && npm --prefix frontend run test
 
 ### 版本号规则？
 
-遵循 [语义化版本](https://semver.org/lang/zh-CN/)。版本历史见 [`CHANGELOG.md`](https://github.com/build-workbench/chatroom/blob/master/CHANGELOG.md)。
+遵循 [语义化版本](https://semver.org/lang/zh-CN/)。版本历史见 [`CHANGELOG.md`](https://github.com/build-workbench/chatroom/blob/main/CHANGELOG.md)。

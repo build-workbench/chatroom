@@ -74,7 +74,7 @@ export default withMermaid(defineConfig({
     ],
     externalLinkIcon: true,
     editLink: {
-      pattern: 'https://github.com/build-workbench/chatroom/edit/master/docs/:path',
+      pattern: 'https://github.com/build-workbench/chatroom/edit/main/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
     nav: [
