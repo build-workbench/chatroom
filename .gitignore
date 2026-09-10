@@ -46,3 +46,9 @@ Thumbs.db
 /bin/
 /server
 /chatroom
+
+# AI tools (local only)
+.commandcode/
+.codex/
+.agents/
+.superpowers/
