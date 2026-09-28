@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(暂无)_
+
+## [v2.2.0] - 2026-09-28
 ### Changed
 - 前端界面与视觉效果深度美化：
   - 优化全局设计系统：微质感环境渐变背景、消息气泡立体阴影与微光描边、平滑缩放与过渡曲线
