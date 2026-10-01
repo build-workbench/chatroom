@@ -4,6 +4,91 @@
 [![Docs](https://github.com/build-workbench/chatroom/actions/workflows/pages.yml/badge.svg)](https://build-workbench.github.io/chatroom/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+A lightweight real-time chat room built with **Go + React + PostgreSQL + WebSocket**, used to connect and practice the full-stack fundamentals pipeline.
+
+## UI Preview
+
+![Chat room UI](docs/public/screenshots/chatroom.png)
+
+## Features
+
+- **User authentication**: JWT dual-token rotation, bcrypt password hashing, and one-time WebSocket Ticket authentication handshake.
+- **Real-time communication**: room-level broadcast based on Go Channels and Goroutines, with heartbeat keep-alive and slow-connection cleanup.
+- **Presence awareness**: real-time room online user counts and debounced "user is typing" (Typing) indicators.
+- **Front-end interaction**: React 19 + TypeScript + Tailwind CSS, with a light card design and status feedback.
+- **Out of the box**: the back-end tests ship with an in-memory SQLite database (no external database needed), and Docker Compose can bring up the full stack with one command.
+
+## Tech Stack
+
+- **Back end**: Go 1.24, Gin, GORM, Gorilla WebSocket
+- **Front end**: React 19, TypeScript, Vite 7, Tailwind CSS v4
+- **Storage**: PostgreSQL 16 (in-memory SQLite for tests)
+- **Delivery**: Docker, Docker Compose
+
+## Quick Start
+
+### Prerequisites
+
+- Go 1.24+
+- Node.js 22+
+- Docker
+
+### Local development
+
+```bash
+# 1. 启动 PostgreSQL 数据库
+docker compose up -d postgres
+
+# 2. 启动 Go 后端（监听 :8080）
+go run ./cmd/server
+
+# 3. 启动前端（另开终端，监听 :5173）
+npm --prefix frontend ci
+npm --prefix frontend run dev
+```
+
+### Running with Docker
+
+No need to configure a local language environment; build and start the full-stack service with one command:
+
+```bash
+docker compose up -d
+# 停止运行：docker compose down
+```
+
+### Access points
+
+- Front-end page (local development): http://localhost:5173
+- Back-end service / Docker page: http://localhost:8080
+- Full documentation site: https://build-workbench.github.io/chatroom/
+
+## Common commands
+
+```bash
+# 运行测试
+go test -race ./...              # 后端测试
+npm --prefix frontend run test  # 前端测试
+
+# 代码检查与打包
+make lint                       # 后端代码检查（golangci-lint）
+npm --prefix frontend run build # 前端生产打包
+```
+
+## Protocol & Documentation
+
+- [Full documentation site](https://build-workbench.github.io/chatroom/) (architecture design, API reference and testing experiments)
+- [MIT License](LICENSE)
+
+---
+
+<a id="chinese"></a>
+
+# ChatRoom
+
+[![CI](https://github.com/build-workbench/chatroom/actions/workflows/ci.yml/badge.svg)](https://github.com/build-workbench/chatroom/actions/workflows/ci.yml)
+[![Docs](https://github.com/build-workbench/chatroom/actions/workflows/pages.yml/badge.svg)](https://build-workbench.github.io/chatroom/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 基于 **Go + React + PostgreSQL + WebSocket** 实现的轻量实时聊天室，用于串联和练习全栈基础链路。
 
 ## 界面预览
