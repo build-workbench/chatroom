@@ -1,3 +1,7 @@
+**English** | [中文](#chinese)
+
+<a id="top"></a>
+
 # ChatRoom
 
 [![CI](https://github.com/build-workbench/chatroom/actions/workflows/ci.yml/badge.svg)](https://github.com/build-workbench/chatroom/actions/workflows/ci.yml)
@@ -82,6 +86,7 @@ npm --prefix frontend run build # 前端生产打包
 ---
 
 <a id="chinese"></a>
+[English](#top) | **中文**
 
 # ChatRoom
 
