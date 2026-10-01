@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(暂无)_
+### Fixed
+- 补全 HTTP 服务超时配置（Read/Write/IdleTimeout、MaxHeaderBytes），加固慢连接与慢请求防护
 
 ## [v2.2.0] - 2026-09-28
 ### Changed
